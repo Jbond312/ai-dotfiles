@@ -12,17 +12,16 @@ This document describes the architectural patterns, conventions, and context spe
 - **Team name:** {Your Azure DevOps team name, e.g., "Platform Team"}
 - **Team ID:** {Team GUID from Azure DevOps - find via Project Settings > Teams > select team > URL contains the ID}
 
-The team name is used to construct:
+The team name is used by scripts to construct:
 
 - **Area Path filter:** `{Project}\{Team}` — scopes work items to your team
-- **Iteration Path filter:** `@CurrentIteration('[{Project}]\{Team}')` — scopes to current sprint
+- **Iteration lookup:** Gets the team's current sprint
 
 For example, if your project is "PaymentsPlatform" and team is "Platform Team":
 
 - Area Path: `PaymentsPlatform\Platform Team`
-- Iteration: `@CurrentIteration('[PaymentsPlatform]\Platform Team')`
 
-**Finding your team name:** In Azure DevOps, go to Project Settings > Teams. The team name is displayed in the list. This must match exactly (case-sensitive) for WIQL queries to work.
+**Finding your team name:** In Azure DevOps, go to Project Settings > Teams. The team name is displayed in the list. This must match exactly (case-sensitive) for queries to return the correct work items.
 
 ## Work Item Types
 

@@ -39,6 +39,94 @@ A template is provided at `.vscode/settings.template.json` — copy it to `setti
 
 ## Available Scripts
 
+### get_sprint_work_items.py
+
+Query work items from the current sprint board for a team.
+
+Uses the Azure DevOps REST API to:
+
+1. Get the current iteration for the specified team
+2. Query work items filtered by Area Path and Iteration Path
+
+**Why use this instead of MCP?** The Microsoft Azure DevOps MCP doesn't expose a WIQL query tool, so we can't filter work items by both Area Path (team ownership) and current iteration (sprint).
+
+**Usage:**
+
+```bash
+# Get unassigned items in current sprint (for picking up work)
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
+  --org "your-org" \
+  --project "your-project" \
+  --team "Your Team Name" \
+  --unassigned
+
+# Get in-progress items (to check on colleagues)
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
+  --org "your-org" \
+  --project "your-project" \
+  --team "Your Team Name" \
+  --state "In Progress"
+
+# Get items assigned to a specific user
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
+  --org "your-org" \
+  --project "your-project" \
+  --team "Your Team Name" \
+  --assigned-to "user@example.com"
+
+# Get all items in current sprint
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
+  --org "your-org" \
+  --project "your-project" \
+  --team "Your Team Name"
+```
+
+**Arguments:**
+
+| Argument        | Required | Description                                                           |
+| --------------- | -------- | --------------------------------------------------------------------- |
+| `--org`         | Yes      | Azure DevOps organization name                                        |
+| `--project`     | Yes      | Azure DevOps project name                                             |
+| `--team`        | Yes      | Team name (case-sensitive, must match exactly)                        |
+| `--state`       | No       | Filter by state (can be repeated for multiple states)                 |
+| `--unassigned`  | No       | Only return unassigned work items                                     |
+| `--assigned-to` | No       | Filter by assigned user email or display name                         |
+| `--type`        | No       | Work item types to include (default: "Product Backlog Item", "Spike") |
+
+**Output:**
+
+```json
+{
+  "iteration": {
+    "name": "Sprint 42",
+    "path": "PaymentsPlatform\\Sprint 42"
+  },
+  "team": "Platform Team",
+  "areaPath": "PaymentsPlatform\\Platform Team",
+  "count": 3,
+  "workItems": [
+    {
+      "id": 12345,
+      "type": "Product Backlog Item",
+      "title": "Add payment validation",
+      "state": "New",
+      "assignedTo": "Unassigned",
+      "effort": 5,
+      "priority": 1000000,
+      "daysSinceChange": 2,
+      "webUrl": "https://dev.azure.com/..."
+    }
+  ]
+}
+```
+
+**Important:** The team name must match exactly (case-sensitive) what's configured in Azure DevOps. The script uses it to construct:
+
+- Area Path: `{Project}\{Team}` — filters to work items owned by your team
+- Iteration query: Gets the team's current iteration
+
+---
+
 ### get_team_prs.py
 
 Get pull requests where a specific reviewer (team or user) is assigned.
@@ -156,13 +244,19 @@ Common errors:
 
 ## When to Use This Script vs MCP
 
-| Need                                   | Use                        |
-| -------------------------------------- | -------------------------- |
-| PRs filtered by team/user reviewer     | Script (`get_team_prs.py`) |
-| PR metadata (title, status, reviewers) | MCP or script              |
-| Work item details                      | MCP                        |
-| Pipeline status                        | MCP                        |
-| Creating/updating work items           | MCP                        |
-| Creating/updating PRs                  | MCP                        |
+| Need                                             | Use                                                       |
+| ------------------------------------------------ | --------------------------------------------------------- |
+| PRs filtered by team/user reviewer               | Script (`get_team_prs.py`)                                |
+| Current sprint board for a team (with Area Path) | Script (`get_sprint_work_items.py`)                       |
+| Unassigned items in current sprint               | Script (`get_sprint_work_items.py --unassigned`)          |
+| In-progress items to check on colleagues         | Script (`get_sprint_work_items.py --state "In Progress"`) |
+| PR metadata (title, status, reviewers)           | MCP or script                                             |
+| Work item details by ID                          | MCP                                                       |
+| Pipeline status                                  | MCP                                                       |
+| Creating/updating work items                     | MCP                                                       |
+| Creating/updating PRs                            | MCP                                                       |
 
-**Rule of thumb:** Use the MCP for writes and basic queries. Use this script when you need PRs filtered by team reviewer.
+**Rule of thumb:** Use the MCP for writes and basic queries. Use these scripts when you need:
+
+- PRs filtered by team reviewer
+- Work items filtered by Area Path AND current iteration (sprint board)

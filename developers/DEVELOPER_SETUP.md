@@ -83,19 +83,16 @@ See the template in `.github/project-context.md` for all available options.
 
 ### 5. Verify Team Configuration
 
-The **team name** must exactly match your Azure DevOps team name (case-sensitive). This is used to construct:
+The **team name** must exactly match your Azure DevOps team name (case-sensitive). This is used by the `get_sprint_work_items.py` script to construct:
 
 - **Area Path:** `{Project}\{Team}` — filters work items to those owned by your team
-- **Iteration Path:** `@CurrentIteration('[{Project}]\{Team}')` — filters to current sprint
+- **Current Iteration lookup:** Gets the team's active sprint
 
-Both are required in WIQL queries to get the correct work items. Without the Area Path, queries may return work items from other teams.
+Both are required to get the correct work items. Without the Area Path, queries may return work items from other teams.
 
 To find your team name: Azure DevOps > Project Settings > Teams
 
-**Example:** If your project is "PaymentsPlatform" and team is "Platform Team":
-
-- Area Path filter: `[System.AreaPath] UNDER 'PaymentsPlatform\Platform Team'`
-- Iteration filter: `[System.IterationPath] = @CurrentIteration('[PaymentsPlatform]\Platform Team')`
+**Note:** The Microsoft Azure DevOps MCP doesn't have a WIQL query tool, so we use Python scripts from the `azure-devops-api` skill for sprint board queries. These scripts call the Azure DevOps REST API directly.
 
 ### 6. Start the MCP Server
 
@@ -109,7 +106,10 @@ Verify the server is running in the MCP panel (View → MCP).
 
 ### 7. Configure Azure DevOps PAT for Scripts
 
-Some features (PR diffs, team-filtered PR lists) require the `azure-devops-api` skill scripts, which need a Personal Access Token.
+Several features require the `azure-devops-api` skill scripts, which need a Personal Access Token:
+
+- **Sprint board queries** (finding available work items, checking colleagues' work)
+- **Team-filtered PR lists** (PRs awaiting review by your team)
 
 **Step 1: Create a PAT in Azure DevOps**
 
