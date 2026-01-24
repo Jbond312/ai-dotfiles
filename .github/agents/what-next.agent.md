@@ -29,10 +29,13 @@ You help developers decide what to work on next. Before picking up new work, the
 **Read the project context.** Check `.github/project-context.md` for:
 
 - **Organization and project names** — Required for API calls
-- **Team name** — Required for sprint board queries (`@CurrentIteration` needs team context)
+- **Team name** — Required for sprint board queries
 - **Team ID** — Required for PR filtering
+- **Current user (display name, email)** — Required to identify your work items and filter out your own PRs
 
 If no project context exists, you can still check for work items assigned directly to the current user, but team-based queries (PRs, sprint board, colleagues) won't work correctly.
+
+**Note:** The Microsoft Azure DevOps MCP doesn't reliably provide current user info, so we read it from project context instead.
 
 ## Priority Order
 
@@ -127,25 +130,17 @@ Query Azure DevOps for work items in the current sprint that are:
 - Assigned to a member of the configured team (other than the current user)
 - Have been In Progress longer than expected based on effort
 
-Use WIQL with Area Path and `@CurrentIteration` to scope to your team's sprint:
+Use the `get_sprint_work_items.py` script from the `azure-devops-api` skill:
 
-```wiql
-SELECT [System.Id], [System.Title], [System.AssignedTo], [System.State],
-       [Microsoft.VSTS.Scheduling.Effort], [System.ChangedDate]
-FROM WorkItems
-WHERE [System.TeamProject] = @project
-  AND [System.AreaPath] UNDER '{project}\{team}'
-  AND [System.IterationPath] = @CurrentIteration('[{project}]\{team}')
-  AND [System.State] = 'In Progress'
-  AND [System.AssignedTo] <> '{current_user}'
-  AND [System.AssignedTo] <> ''
-ORDER BY [System.ChangedDate] ASC
+```bash
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
+  --org "{org}" \
+  --project "{project}" \
+  --team "{team}" \
+  --state "In Progress"
 ```
 
-**Important:** Both filters are required:
-
-- `[System.AreaPath] UNDER '{project}\{team}'` — scopes to work items owned by your team
-- `[System.IterationPath] = @CurrentIteration(...)` — scopes to the current sprint
+The script filters by Area Path (`{Project}\{Team}`) and current iteration automatically. From the results, identify items assigned to others (not the current user) and calculate days since last change.
 
 **Stuck thresholds (based on Effort field):**
 
@@ -183,19 +178,18 @@ Query Azure DevOps for work items in the current sprint that are:
 - State = **In Progress**
 - Assigned to the current user
 
-Use WIQL with Area Path and `@CurrentIteration`:
+Read the current user's email from `.github/project-context.md`, then use the `get_sprint_work_items.py` script:
 
-```wiql
-SELECT [System.Id], [System.Title], [System.State],
-       [Microsoft.VSTS.Scheduling.Effort], [System.ChangedDate]
-FROM WorkItems
-WHERE [System.TeamProject] = @project
-  AND [System.AreaPath] UNDER '{project}\{team}'
-  AND [System.IterationPath] = @CurrentIteration('[{project}]\{team}')
-  AND [System.State] = 'In Progress'
-  AND [System.AssignedTo] = @me
-ORDER BY [Microsoft.VSTS.Common.BacklogPriority] ASC
+```bash
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
+  --org "{org}" \
+  --project "{project}" \
+  --team "{team}" \
+  --state "In Progress" \
+  --assigned-to "{current_user_email_from_project_context}"
 ```
+
+Alternatively, you can get all in-progress items and filter client-side by the current user's display name.
 
 **If you have in-progress work:**
 

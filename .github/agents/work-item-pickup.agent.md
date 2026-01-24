@@ -41,13 +41,15 @@ First, read configuration from `.github/project-context.md`:
 - Project name
 - Team name (case-sensitive)
 
-Then run the script to find unassigned items:
+Then run the script to find unassigned items in states "New" or "Ready":
 
 ```bash
 python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
   --org "{org}" \
   --project "{project}" \
   --team "{team}" \
+  --state "New" \
+  --state "Ready" \
   --unassigned
 ```
 
@@ -57,10 +59,10 @@ The script:
 2. Queries work items filtered by:
    - Area Path: `{Project}\{Team}` (team ownership)
    - Iteration Path: current sprint
-   - State: New, Ready (available items)
+   - State: New or Ready (available items only)
    - Unassigned
 
-**Note:** If your team uses different work item types (e.g., "User Story" instead of "Product Backlog Item"), add `--type "User Story"` to the command.
+**Note:** The default work item types are "Product Backlog Item" and "Spike". If your team uses different types, add `--type "Your Type"` to the command.
 
 ### Present Available Items
 
@@ -167,9 +169,15 @@ git checkout -b backlog/{workitem_id}-{short-description}
 
 Derive the short description from the work item title (see `azure-devops-workflow` skill for branch naming conventions).
 
-### 9. Confirm Ready State
+### 9. Confirm Ready State and Repository Guidance
+
+Present the completion message:
 
 "Work item **#{id}** is now assigned to you and marked as In Progress. You're on branch `backlog/{id}-{description}` based on `{default_branch}`.
+
+**⚠️ IMPORTANT: Before continuing, ensure you have the correct repository open in VS Code.**
+
+The planner agent needs access to the codebase to create an effective implementation plan. If this work item targets a different repository than your current workspace, open that repository now.
 
 Ready to create an implementation plan? The planner will analyse the codebase and create a checklist of tasks with test scenarios. You'll choose between TDD (iterative) or one-shot implementation after reviewing the plan."
 

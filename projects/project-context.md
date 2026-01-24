@@ -23,12 +23,22 @@ For example, if your project is "PaymentsPlatform" and team is "Platform Team":
 
 **Finding your team name:** In Azure DevOps, go to Project Settings > Teams. The team name is displayed in the list. This must match exactly (case-sensitive) for queries to return the correct work items.
 
+## Current User
+
+- **Display name:** {Your name as it appears in Azure DevOps, e.g., "Jane Smith"}
+- **Email:** {Your Azure DevOps email, e.g., "jane.smith@company.com"}
+- **User ID:** {Your Azure DevOps user GUID - optional, for filtering PRs}
+
+This is used when agents need to identify you (e.g., filtering out your own PRs, checking your in-progress work). The Microsoft Azure DevOps MCP doesn't reliably provide current user info, so we configure it here.
+
+**Finding your user ID:** In Azure DevOps, go to your profile settings. The URL contains your user ID, or use the "Connection Data" REST API.
+
 ## Work Item Types
 
 - **Backlog item type:** Product Backlog Item
-- **Bug tracking:** Bugs are treated as backlog items
+- **Research/exploration type:** Spike
 
-If your project uses different work item types (e.g., "User Story" instead of "Product Backlog Item"), update the type above and agents will adjust their queries accordingly.
+If your project uses different work item types (e.g., "User Story" instead of "Product Backlog Item"), update the types above and agents will adjust their queries accordingly.
 
 ## Architecture
 

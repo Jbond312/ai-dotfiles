@@ -105,7 +105,7 @@ def query_work_items(
     
     # Default work item types
     if not work_item_types:
-        work_item_types = ["Product Backlog Item", "Bug"]
+        work_item_types = ["Product Backlog Item", "Spike"]
     
     types_clause = ", ".join(f"'{t}'" for t in work_item_types)
     
@@ -236,7 +236,7 @@ def main():
         "--type",
         action="append",
         dest="work_item_types",
-        help="Work item types to include (default: 'Product Backlog Item', 'Bug')",
+        help="Work item types to include (default: 'Product Backlog Item', 'Spike')",
     )
     
     args = parser.parse_args()
