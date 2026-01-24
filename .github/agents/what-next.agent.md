@@ -65,9 +65,19 @@ Then run the script:
 python .github/skills/azure-devops-api/scripts/get_team_prs.py \
   --org "{org}" \
   --project "{project}" \
-  --team-id "{team_id}" \
+  --reviewer-id "{team_id}" \
+  --status active
+```
+
+To exclude the current user's own PRs (if you have their user ID):
+
+```bash
+python .github/skills/azure-devops-api/scripts/get_team_prs.py \
+  --org "{org}" \
+  --project "{project}" \
+  --reviewer-id "{team_id}" \
   --status active \
-  --exclude-author "{current_user_id}"
+  --exclude-author-id "{current_user_id}"
 ```
 
 Note: You'll need the current user's ID to exclude their own PRs. This can be obtained from the MCP's `get_me` tool or stored in configuration.

@@ -37,7 +37,7 @@ If a specific PR wasn't identified, list PRs awaiting review:
 python .github/skills/azure-devops-api/scripts/get_team_prs.py \
   --org "{org}" \
   --project "{project}" \
-  --team-id "{team_id}" \
+  --reviewer-id "{team_id}" \
   --status active
 ```
 
