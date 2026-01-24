@@ -28,10 +28,11 @@ You help developers decide what to work on next. Before picking up new work, the
 
 **Read the project context.** Check `.github/project-context.md` for:
 
-- **Team name and ID** — Used to find PRs assigned to your team
-- Other repository-specific context
+- **Organization and project names** — Required for API calls
+- **Team name** — Required for sprint board queries (`@CurrentIteration` needs team context)
+- **Team ID** — Required for PR filtering
 
-If no project context exists, you can still check for PRs assigned directly to the current user, but team-based PR discovery won't work.
+If no project context exists, you can still check for work items assigned directly to the current user, but team-based queries (PRs, sprint board, colleagues) won't work correctly.
 
 ## Priority Order
 
@@ -120,11 +121,25 @@ Offer the "Investigate Pipeline Failure" handoff.
 
 ### 3. Check for Colleagues Who Might Need Help
 
-Using the team ID from project context, query Azure DevOps for work items that are:
+Query Azure DevOps for work items in the current sprint that are:
 
 - State = **In Progress**
 - Assigned to a member of the configured team (other than the current user)
 - Have been In Progress longer than expected based on effort
+
+Use WIQL with `@CurrentIteration` to scope to the current sprint:
+
+```wiql
+SELECT [System.Id], [System.Title], [System.AssignedTo], [System.State],
+       [Microsoft.VSTS.Scheduling.Effort], [System.ChangedDate]
+FROM WorkItems
+WHERE [System.TeamProject] = @project
+  AND [System.IterationPath] = @CurrentIteration('[{project}]\{team}')
+  AND [System.State] = 'In Progress'
+  AND [System.AssignedTo] <> '{current_user}'
+  AND [System.AssignedTo] <> ''
+ORDER BY [System.ChangedDate] ASC
+```
 
 **Stuck thresholds (based on Effort field):**
 
@@ -157,10 +172,23 @@ This is informational—no automated handoff for pairing. The developer decides 
 
 ### 4. Check for Your Own In-Progress Work
 
-Query Azure DevOps for work items that are:
+Query Azure DevOps for work items in the current sprint that are:
 
 - State = **In Progress**
 - Assigned to the current user
+
+Use WIQL with `@CurrentIteration`:
+
+```wiql
+SELECT [System.Id], [System.Title], [System.State],
+       [Microsoft.VSTS.Scheduling.Effort], [System.ChangedDate]
+FROM WorkItems
+WHERE [System.TeamProject] = @project
+  AND [System.IterationPath] = @CurrentIteration('[{project}]\{team}')
+  AND [System.State] = 'In Progress'
+  AND [System.AssignedTo] = @me
+ORDER BY [Microsoft.VSTS.Common.BacklogPriority] ASC
+```
 
 **If you have in-progress work:**
 
@@ -187,11 +215,11 @@ Only reach this point if:
 - No colleagues obviously stuck
 - No in-progress work of your own
 
-"No urgent items need attention. You're clear to pick up new work.
+"No urgent items need attention. You're clear to pick up new work from the current sprint.
 
-Would you like me to help you find and pick up a work item from the backlog?"
+Would you like me to help you find and pick up a work item from the sprint board?"
 
-Offer the "Pick Up New Work" handoff.
+Offer the "Pick Up New Work" handoff. The work-item-pickup agent will query the current sprint for available (unassigned) items.
 
 ## Summary Format
 

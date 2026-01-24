@@ -12,7 +12,20 @@ This document describes the architectural patterns, conventions, and context spe
 - **Team name:** {Your Azure DevOps team name, e.g., "Platform Team"}
 - **Team ID:** {Team GUID from Azure DevOps - find via Project Settings > Teams > select team > URL contains the ID}
 
-This is used to find PRs awaiting review and identify colleagues who might need help.
+The team name is used to:
+
+- Query the current sprint board for available work items (via `@CurrentIteration` in WIQL)
+- Filter PRs awaiting review by your team
+- Identify colleagues who might need help
+
+**Finding your team name:** In Azure DevOps, go to Project Settings > Teams. The team name is displayed in the list. Note: this is case-sensitive in WIQL queries.
+
+## Work Item Types
+
+- **Backlog item type:** Product Backlog Item
+- **Bug tracking:** Bugs are treated as backlog items
+
+If your project uses different work item types (e.g., "User Story" instead of "Product Backlog Item"), update the type above and agents will adjust their queries accordingly.
 
 ## Architecture
 

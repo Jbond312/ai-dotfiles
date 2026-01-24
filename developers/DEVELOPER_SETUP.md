@@ -60,15 +60,36 @@ echo ".planning/" >> .gitignore
 echo ".vscode/settings.json" >> .gitignore
 ```
 
-### 4. Configure Project Context (Optional)
+### 4. Configure Project Context
 
-If your repository uses specific architectural patterns (e.g., Vertical Slice Architecture), create `.github/project-context.md` to declare them. This helps agents understand how to structure code appropriately.
+Edit `.github/project-context.md` to configure your team and repository settings. This is **required** for most workflow features.
 
-See the template in `.github/project-context.md` for guidance. Key sections:
+**Required fields:**
 
-- **Architecture:** Pattern name and folder structure
-- **Testing:** Test project locations and conventions
-- **Domain:** Primary domain and key aggregates
+| Field        | Purpose                | Where to Find                                         |
+| ------------ | ---------------------- | ----------------------------------------------------- |
+| Organization | Azure DevOps API calls | Your Azure DevOps URL: `dev.azure.com/{organization}` |
+| Project      | Azure DevOps API calls | Your project name in Azure DevOps                     |
+| Team name    | Sprint board queries   | Project Settings > Teams (case-sensitive)             |
+| Team ID      | PR filtering           | Team settings URL contains the GUID                   |
+
+**Optional fields:**
+
+- Architecture pattern (e.g., VSA) — enables pattern-specific guidance
+- Testing conventions
+- Domain context
+
+See the template in `.github/project-context.md` for all available options.
+
+### 5. Verify Team Configuration
+
+The **team name** must exactly match your Azure DevOps team name (case-sensitive). This is used for:
+
+- Querying the current sprint board (`@CurrentIteration` in WIQL)
+- Finding in-progress work for colleagues
+- Filtering available work items
+
+To find your team name: Azure DevOps > Project Settings > Teams
 
 ### 6. Start the MCP Server
 
