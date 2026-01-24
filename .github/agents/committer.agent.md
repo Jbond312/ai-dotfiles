@@ -1,6 +1,7 @@
 ---
 name: Committer
 description: "Commits reviewed code with a conventional commit message and updates the plan. After all items are committed, signals readiness for PR creation but waits for developer confirmation."
+model: Claude Haiku 4.5 (copilot)
 tools:
   - "execute/runInTerminal"
   - "read"
@@ -143,9 +144,24 @@ Confirm the commit was created successfully.
 
 ### 7. Update the Plan
 
-Edit `.planning/PLAN.md` to update the Work In Progress section.
+**CRITICAL:** Edit `.planning/PLAN.md` to mark progress. You must do BOTH of these:
 
-**If more items remain:**
+**A. Check off the completed item(s) in the Checklist section:**
+
+Find the checklist item(s) that were just committed and change `- [ ]` to `- [x]`:
+
+```markdown
+### 1. Decline payments when balance is insufficient
+
+- [x] **Test:** Payment with insufficient funds returns declined result
+- [x] **Implement:** Add balance validation to PaymentProcessor
+```
+
+For one-shot workflow, check off ALL items in the plan since they were all implemented together.
+
+**B. Update the Work In Progress section:**
+
+**If more items remain (TDD workflow):**
 
 ```markdown
 ## Work In Progress
@@ -154,7 +170,7 @@ Edit `.planning/PLAN.md` to update the Work In Progress section.
 **Status:** Ready for implementation
 ```
 
-**If all items are complete:**
+**If all items are complete (TDD final item or one-shot):**
 
 ```markdown
 ## Work In Progress
@@ -162,6 +178,8 @@ Edit `.planning/PLAN.md` to update the Work In Progress section.
 **Current step:** All items complete
 **Status:** Ready for PR
 ```
+
+**Do not skip updating the plan.** Other agents and the developer rely on the checkboxes to track progress.
 
 ### 8. Report and Hand Off
 

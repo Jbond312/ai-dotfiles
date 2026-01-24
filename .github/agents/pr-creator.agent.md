@@ -1,6 +1,7 @@
 ---
 name: PR Creator
 description: "Pushes the branch and creates a draft pull request linked to the work item. Updates the work item state to Awaiting Merge. Uses repository PR templates where available."
+model: Claude Sonnet 4 (copilot)
 tools:
   - "execute/runInTerminal"
   - "read"

@@ -1,6 +1,7 @@
 ---
 name: What's Next
 description: "Helps developers decide what to work on next by checking PRs awaiting review, failing pipelines, colleagues who might need help, and in-progress work before suggesting new work items."
+model: Claude Haiku 4.5 (copilot)
 tools:
   - "microsoft/azure-devops-mcp/*"
   - "execute/runInTerminal"
@@ -67,19 +68,6 @@ python .github/skills/azure-devops-api/scripts/get_team_prs.py \
   --reviewer-id "{team_id}" \
   --status active
 ```
-
-To exclude the current user's own PRs (if you have their user ID):
-
-```bash
-python .github/skills/azure-devops-api/scripts/get_team_prs.py \
-  --org "{org}" \
-  --project "{project}" \
-  --reviewer-id "{team_id}" \
-  --status active \
-  --exclude-author-id "{current_user_id}"
-```
-
-Note: You'll need the current user's ID to exclude their own PRs. This can be obtained from the MCP's `get_me` tool or stored in configuration.
 
 **If PRs are found:**
 

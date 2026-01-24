@@ -1,6 +1,7 @@
 ---
 name: Planner
 description: "Analyses a work item and the codebase to produce a structured implementation plan with test scenarios. The plan serves as a checklist that coding and review agents use to track progress."
+model: claude-sonnet-4
 tools:
   - "microsoft/azure-devops-mcp/*"
   - "search"
@@ -190,9 +191,45 @@ Order checklist items so that:
 - Tests and their implementations are paired together
 - The developer could stop after any completed unit and have working (if incomplete) functionality
 
-### 6. Save the Plan
+### 6. Ensure .planning is Gitignored
 
-Write the plan to `.planning/PLAN.md`. If the `.planning/` directory doesn't exist, create it.
+Before creating the `.planning/` directory, check that it won't be committed to the repository.
+
+**Check `.gitignore`:**
+
+```bash
+# Check if .planning is already gitignored
+git check-ignore .planning/
+```
+
+If the command returns nothing (not ignored), add it:
+
+1. If `.gitignore` exists, append `.planning/` to it
+2. If `.gitignore` doesn't exist, create it with only `.planning/` as content
+
+```bash
+# Add .planning to .gitignore if not already present
+if ! git check-ignore -q .planning/ 2>/dev/null; then
+    echo ".planning/" >> .gitignore
+fi
+```
+
+This ensures planning documents (which are temporary working files) don't clutter the repository.
+
+### 7. Save the Plan
+
+**CRITICAL:** You MUST write the plan to `.planning/PLAN.md` every time you create or update a plan. This is not optional—other agents depend on reading this file.
+
+1. Create the `.planning/` directory if it doesn't exist
+2. **Overwrite** `.planning/PLAN.md` with the complete plan (don't append)
+3. Verify the file was created by reading it back
+
+```bash
+mkdir -p .planning
+# Then use edit/createFile to write PLAN.md
+```
+
+**Do not skip this step.** If you've analysed the work item and explored the codebase, you MUST save the plan before finishing your response.
 
 Confirm to the developer:
 
@@ -206,9 +243,11 @@ Please review the plan and let me know if you'd like to adjust the approach befo
 
 If the developer asks for changes:
 
-- Adjust the relevant sections
-- Save the updated plan
-- Summarise what changed
+1. Adjust the relevant sections
+2. **Save the updated plan to `.planning/PLAN.md`** (overwrite the file)
+3. Summarise what changed
+
+**Always save after any update.** The plan file is the source of truth for coding and review agents.
 
 The plan is a living document—it's fine to revise it based on feedback or discoveries during implementation.
 

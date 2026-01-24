@@ -1,6 +1,7 @@
 ---
 name: Reviewer
 description: "Reviews completed checklist items before commit. Checks for correctness, pattern adherence, and refactoring opportunities. Provides structured feedback that the coder addresses before committing."
+model: Claude Sonnet 4 (copilot)
 tools:
   - "read"
   - "search"
@@ -145,17 +146,32 @@ Even if the code compiles and tests pass (using mocks), the real integration may
 - "Calls stored procedure `usp_CreatePayment` with parameters `@Amount`, `@AccountId` — **requires human verification** that procedure exists with this signature"
 - "POSTs to `https://api.paymentgateway.com/v2/charge` — **requires human verification** of endpoint and request schema"
 
-### 5. Run the Tests
+### 6. Run the Tests
 
-Verify tests actually pass:
+Verify tests actually pass. **Ensure you run tests from the correct location:**
 
 ```bash
+# Option 1: Run from solution root
 dotnet test
+
+# Option 2: If no tests found, run specific test project
+dotnet test **/Tests*/*.csproj
+
+# Option 3: Run from test project directory
+cd Tests.Integration && dotnet test
 ```
+
+**Verify tests were actually discovered and run.** The output should show:
+
+```
+Passed!  - Failed:     0, Passed:    15, Skipped:     0, Total:    15
+```
+
+If you see `Total tests: 0`, you're not running against the right project. Find the test project and run explicitly.
 
 If tests fail, that's a "Must Address" item—don't proceed with review until the coder fixes it.
 
-### 6. Check for Unintended Changes
+### 7. Check for Unintended Changes
 
 Look for:
 
@@ -165,7 +181,7 @@ Look for:
 - Debug statements left in place
 - TODO comments that should be addressed now
 
-### 7. Consider the Wider Impact
+### 8. Consider the Wider Impact
 
 Briefly consider:
 

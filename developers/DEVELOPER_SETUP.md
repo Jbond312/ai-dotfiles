@@ -434,6 +434,26 @@ work-item-pickup → planner → [coder → reviewer → committer] → pr-creat
 | committer             | pr-creator            | All items complete             |
 | pipeline-investigator | what-next             | Investigation complete         |
 
+### Model Configuration
+
+Agents are configured with appropriate models to balance capability and cost:
+
+| Agent                 | Model            | Rationale                             |
+| --------------------- | ---------------- | ------------------------------------- |
+| what-next             | claude-3-5-haiku | Light orchestration, simple decisions |
+| pipeline-investigator | claude-sonnet-4  | Log analysis requires reasoning       |
+| work-item-pickup      | claude-sonnet-4  | Predecessor checks, context gathering |
+| planner               | claude-sonnet-4  | Codebase analysis, plan structuring   |
+| tdd-coder             | claude-sonnet-4  | Code generation, test writing         |
+| one-shot-coder        | claude-sonnet-4  | Code generation, test writing         |
+| reviewer              | claude-sonnet-4  | Code review requires judgment         |
+| committer             | claude-3-5-haiku | Template-based, simple task           |
+| pr-creator            | claude-3-5-haiku | Template-based, simple task           |
+
+**To change a model:** Edit the `model:` field in the agent's YAML frontmatter. Leave blank to use the model selected in the Copilot dropdown.
+
+**Cost considerations:** Using Haiku for simple agents (committer, pr-creator, what-next) significantly reduces token usage without affecting quality, since these agents perform straightforward, template-based tasks.
+
 ### Branch Naming
 
 ```

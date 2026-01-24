@@ -1,6 +1,7 @@
 ---
 name: Pipeline Investigator
 description: "Investigates failing Azure DevOps pipelines, identifies the root cause, and suggests fixes."
+model: Claude Sonnet 4 (copilot)
 tools:
   - "microsoft/azure-devops-mcp/*"
   - "execute/runInTerminal"

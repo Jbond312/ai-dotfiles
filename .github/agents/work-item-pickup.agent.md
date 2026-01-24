@@ -1,6 +1,7 @@
 ---
 name: Work Item Pickup
 description: "Assigns a work item to the current user, moves it to In Progress, summarises the scope, and creates a feature branch ready for development."
+model: Claude Sonnet 4 (copilot)
 tools:
   - "microsoft/azure-devops-mcp/*"
   - "execute/runInTerminal"
@@ -113,9 +114,35 @@ Check the work item's current state against valid pickup states (see `azure-devo
 
 ### 3. Check for Incomplete Predecessors
 
-Examine linked items for **Predecessor** links. If any predecessor is not in `Merged` or `Done` state, display a warning table and ask the developer to confirm before proceeding.
+**CRITICAL:** Examine linked items for **Predecessor** links. If any predecessor work item is not in `Merged` or `Done` state, this work item should NOT be picked up.
 
-This is a soft gate—they can override it, but must acknowledge the risk.
+Query the state of each predecessor and present findings:
+
+**If predecessors are incomplete:**
+
+"⚠️ **This work item has incomplete predecessors:**
+
+| ID    | Title   | State   | Assigned To |
+| ----- | ------- | ------- | ----------- |
+| #{id} | {title} | {state} | {assignee}  |
+
+**You should not pick up this work item** until its predecessors are complete. Working on dependent items before their predecessors are done typically results in:
+
+- Rework when predecessor changes affect your implementation
+- Merge conflicts
+- Integration issues discovered late
+
+**Options:**
+
+1. Pick up one of the predecessor items instead
+2. Help the assignee complete their work
+3. If you believe the predecessor dependency is incorrect, discuss with your team
+
+Would you like to see available items without blocking predecessors, or do you want to proceed anyway? (Not recommended)"
+
+**Only if the developer explicitly confirms** should you proceed with pickup. Log this override in the work item summary.
+
+**If all predecessors are complete (or no predecessors exist):** Continue to the next step.
 
 ### 4. Check for Repository Hints
 
@@ -159,13 +186,41 @@ If the work item had a repository hint that matched the current directory, fetch
 
 ### 8. Prepare the Feature Branch
 
+**Important:** Always fetch and pull latest changes before creating your branch to avoid merge conflicts.
+
+First, detect the default branch and update it:
+
 ```bash
 git fetch origin
-git rev-parse --verify origin/main >/dev/null 2>&1 && DEFAULT_BRANCH="main" || DEFAULT_BRANCH="master"
+```
+
+Then detect the default branch. The approach depends on the shell:
+
+**PowerShell (Windows):**
+
+```powershell
+$defaultBranch = if (git rev-parse --verify origin/main 2>$null) { "main" } else { "master" }
+git checkout $defaultBranch
+git pull origin $defaultBranch
+git checkout -b backlog/{workitem_id}-{short-description}
+```
+
+**Bash (macOS/Linux):**
+
+```bash
+DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
 git checkout $DEFAULT_BRANCH
 git pull origin $DEFAULT_BRANCH
 git checkout -b backlog/{workitem_id}-{short-description}
 ```
+
+**Alternative (works in both shells):**
+Run each command separately, checking for main first:
+
+1. `git fetch origin`
+2. `git checkout main` (if this fails, use `git checkout master`)
+3. `git pull`
+4. `git checkout -b backlog/{workitem_id}-{short-description}`
 
 Derive the short description from the work item title (see `azure-devops-workflow` skill for branch naming conventions).
 
