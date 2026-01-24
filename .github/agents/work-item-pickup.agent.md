@@ -33,21 +33,27 @@ When a developer asks what to work on (without specifying an ID), query the curr
 
 ### Query the Current Sprint Board
 
-Use the Azure DevOps MCP to run a WIQL query that finds unassigned items in the current sprint:
+Use the Azure DevOps MCP to run a WIQL query that finds unassigned items in the current sprint for your team:
 
 ```wiql
 SELECT [System.Id], [System.Title], [System.State], [System.WorkItemType],
        [Microsoft.VSTS.Scheduling.Effort], [Microsoft.VSTS.Common.BacklogPriority]
 FROM WorkItems
 WHERE [System.TeamProject] = @project
+  AND [System.AreaPath] UNDER '{project}\{team}'
   AND [System.IterationPath] = @CurrentIteration('[{project}]\{team}')
-  AND [System.WorkItemType] IN ('Product Backlog Item', 'Spike')
+  AND [System.WorkItemType] IN ('Product Backlog Item', 'Bug')
   AND [System.State] IN ('New', 'Ready')
   AND ([System.AssignedTo] = '' OR [System.AssignedTo] IS NULL)
 ORDER BY [Microsoft.VSTS.Common.BacklogPriority] ASC
 ```
 
 Replace `{project}` and `{team}` with values from project context.
+
+**Important:** Both filters are required:
+
+- `[System.AreaPath] UNDER '{project}\{team}'` — scopes to work items owned by your team
+- `[System.IterationPath] = @CurrentIteration(...)` — scopes to the current sprint
 
 **Note:** If your team uses different work item types (e.g., "User Story" instead of "Product Backlog Item"), adjust the query accordingly.
 

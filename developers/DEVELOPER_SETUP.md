@@ -83,13 +83,19 @@ See the template in `.github/project-context.md` for all available options.
 
 ### 5. Verify Team Configuration
 
-The **team name** must exactly match your Azure DevOps team name (case-sensitive). This is used for:
+The **team name** must exactly match your Azure DevOps team name (case-sensitive). This is used to construct:
 
-- Querying the current sprint board (`@CurrentIteration` in WIQL)
-- Finding in-progress work for colleagues
-- Filtering available work items
+- **Area Path:** `{Project}\{Team}` — filters work items to those owned by your team
+- **Iteration Path:** `@CurrentIteration('[{Project}]\{Team}')` — filters to current sprint
+
+Both are required in WIQL queries to get the correct work items. Without the Area Path, queries may return work items from other teams.
 
 To find your team name: Azure DevOps > Project Settings > Teams
+
+**Example:** If your project is "PaymentsPlatform" and team is "Platform Team":
+
+- Area Path filter: `[System.AreaPath] UNDER 'PaymentsPlatform\Platform Team'`
+- Iteration filter: `[System.IterationPath] = @CurrentIteration('[PaymentsPlatform]\Platform Team')`
 
 ### 6. Start the MCP Server
 

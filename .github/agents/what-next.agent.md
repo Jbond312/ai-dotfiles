@@ -127,19 +127,25 @@ Query Azure DevOps for work items in the current sprint that are:
 - Assigned to a member of the configured team (other than the current user)
 - Have been In Progress longer than expected based on effort
 
-Use WIQL with `@CurrentIteration` to scope to the current sprint:
+Use WIQL with Area Path and `@CurrentIteration` to scope to your team's sprint:
 
 ```wiql
 SELECT [System.Id], [System.Title], [System.AssignedTo], [System.State],
        [Microsoft.VSTS.Scheduling.Effort], [System.ChangedDate]
 FROM WorkItems
 WHERE [System.TeamProject] = @project
+  AND [System.AreaPath] UNDER '{project}\{team}'
   AND [System.IterationPath] = @CurrentIteration('[{project}]\{team}')
   AND [System.State] = 'In Progress'
   AND [System.AssignedTo] <> '{current_user}'
   AND [System.AssignedTo] <> ''
 ORDER BY [System.ChangedDate] ASC
 ```
+
+**Important:** Both filters are required:
+
+- `[System.AreaPath] UNDER '{project}\{team}'` — scopes to work items owned by your team
+- `[System.IterationPath] = @CurrentIteration(...)` — scopes to the current sprint
 
 **Stuck thresholds (based on Effort field):**
 
@@ -177,13 +183,14 @@ Query Azure DevOps for work items in the current sprint that are:
 - State = **In Progress**
 - Assigned to the current user
 
-Use WIQL with `@CurrentIteration`:
+Use WIQL with Area Path and `@CurrentIteration`:
 
 ```wiql
 SELECT [System.Id], [System.Title], [System.State],
        [Microsoft.VSTS.Scheduling.Effort], [System.ChangedDate]
 FROM WorkItems
 WHERE [System.TeamProject] = @project
+  AND [System.AreaPath] UNDER '{project}\{team}'
   AND [System.IterationPath] = @CurrentIteration('[{project}]\{team}')
   AND [System.State] = 'In Progress'
   AND [System.AssignedTo] = @me
