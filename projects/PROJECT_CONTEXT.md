@@ -2,6 +2,11 @@
 
 This document describes the architectural patterns, conventions, and context specific to this repository. Copilot agents read this file to understand how to structure code appropriately.
 
+## Azure DevOps
+
+- **Organization:** {Your Azure DevOps organization name, e.g., "contoso"}
+- **Project:** {Your Azure DevOps project name, e.g., "payments-platform"}
+
 ## Team
 
 - **Team name:** {Your Azure DevOps team name, e.g., "Platform Team"}

@@ -1,7 +1,10 @@
 ---
 name: What's Next
 description: "Helps developers decide what to work on next by checking PRs awaiting review, failing pipelines, colleagues who might need help, and in-progress work before suggesting new work items."
-tools: ["execute/runInTerminal", "read", "microsoft/azure-devops-mcp/*"]
+tools:
+  - "microsoft/azure-devops-mcp/*"
+  - "execute/runInTerminal"
+  - "read"
 handoffs:
   - label: Review a Pull Request
     agent: PR Reviewer
@@ -48,28 +51,36 @@ Check these in order. Stop at the first category that has actionable items:
 
 ### 1. Check for PRs Awaiting Review
 
-First, get the current user's ID using the Azure DevOps MCP tools (`get_me`).
+For PR queries, use the `azure-devops-api` skill scripts instead of the MCP (the MCP doesn't support team-based filtering).
 
-Then, read the team ID from `.github/project-context.md`.
+First, read the configuration from `.github/project-context.md`:
 
-Query Azure DevOps for active pull requests where the reviewer is:
+- Organization name
+- Project name
+- Team ID
 
-- The current user's ID, OR
-- The team ID from project context
+Then run the script:
 
+```bash
+python .github/skills/azure-devops-api/scripts/get_team_prs.py \
+  --org "{org}" \
+  --project "{project}" \
+  --team-id "{team_id}" \
+  --status active \
+  --exclude-author "{current_user_id}"
 ```
-PRs where reviewer = {current_user_id} OR reviewer = {team_id}, status = Active
-```
 
-Exclude PRs created by the current user (you shouldn't review your own PRs).
+Note: You'll need the current user's ID to exclude their own PRs. This can be obtained from the MCP's `get_me` tool or stored in configuration.
 
 **If PRs are found:**
 
+Parse the JSON response and present:
+
 "You have **{count} pull request(s)** awaiting review:
 
-| PR    | Repository | Title   | Author   | Age         |
-| ----- | ---------- | ------- | -------- | ----------- |
-| !{id} | {repo}     | {title} | {author} | {days} days |
+| PR    | Repository | Title   | Author   | Age            |
+| ----- | ---------- | ------- | -------- | -------------- |
+| !{id} | {repo}     | {title} | {author} | {ageDays} days |
 
 Reviewing PRs unblocks your colleagues and keeps work flowing. Would you like to review one of these?"
 
@@ -77,7 +88,7 @@ Offer the "Review a Pull Request" handoff.
 
 **If no PRs:** Continue to next check.
 
-**If no team configured:** Note this in the summary: "Team not configured in project context—only checked for PRs assigned directly to you."
+**If script fails or team not configured:** Note this in the summary and continue.
 
 ### 2. Check for Failing Pipelines
 

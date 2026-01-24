@@ -36,23 +36,30 @@ Copy the following directories and files to your repository:
 └── skills/
     ├── azure-devops-workflow/
     │   └── SKILL.md
+    ├── azure-devops-api/           # Scripts for PR diffs and team queries
+    │   ├── SKILL.md
+    │   └── scripts/
+    │       ├── get_team_prs.py
+    │       └── get_pr_diff.py
     └── vertical-slice-architecture/
         └── SKILL.md                # Only for VSA repos
 
 .vscode/
-└── mcp.json
+├── mcp.json
+└── settings.template.json          # Copy to settings.json and add your PAT
 ```
 
 ### 2. Configure the MCP Server
 
 Edit `.vscode/mcp.json` if you need to adjust the Azure DevOps organisation name. The file will prompt you for this when the server starts.
 
-### 3. Add .planning to .gitignore
+### 3. Add entries to .gitignore
 
-The workflow creates planning files that shouldn't be committed:
+The workflow creates planning files and uses local settings that shouldn't be committed:
 
 ```bash
 echo ".planning/" >> .gitignore
+echo ".vscode/settings.json" >> .gitignore
 ```
 
 ### 4. Configure Project Context (Optional)
@@ -75,7 +82,67 @@ See the template in `.github/project-context.md` for guidance. Key sections:
 
 Verify the server is running in the MCP panel (View → MCP).
 
-### 7. Verify Azure CLI Authentication
+### 7. Configure Azure DevOps PAT for Scripts
+
+Some features (PR diffs, team-filtered PR lists) require the `azure-devops-api` skill scripts, which need a Personal Access Token.
+
+**Step 1: Create a PAT in Azure DevOps**
+
+1. Go to Azure DevOps → User Settings → Personal Access Tokens
+2. Create a new token with these scopes:
+   - **Code:** Read
+   - **Work Items:** Read
+   - **Build:** Read (for pipeline status)
+3. Copy the token (you won't see it again)
+
+**Step 2: Configure VS Code to provide the PAT**
+
+Add the PAT to your VS Code workspace settings. Create or edit `.vscode/settings.json`:
+
+```json
+{
+  "terminal.integrated.env.linux": {
+    "AZURE_DEVOPS_PAT": "your-pat-here"
+  },
+  "terminal.integrated.env.osx": {
+    "AZURE_DEVOPS_PAT": "your-pat-here"
+  },
+  "terminal.integrated.env.windows": {
+    "AZURE_DEVOPS_PAT": "your-pat-here"
+  }
+}
+```
+
+**Step 3: Ensure the PAT isn't committed**
+
+Add to `.gitignore`:
+
+```
+# VS Code settings may contain secrets
+.vscode/settings.json
+```
+
+If you need to share other VS Code settings with the team, use `.vscode/settings.template.json` (without the PAT) and have developers copy it locally.
+
+**Step 4: Restart VS Code**
+
+Close and reopen VS Code (or reload the window) for the environment variable to take effect.
+
+**Verify it works:**
+
+Open a new terminal in VS Code and run:
+
+```bash
+# Linux/macOS
+echo $AZURE_DEVOPS_PAT
+
+# Windows PowerShell
+echo $env:AZURE_DEVOPS_PAT
+```
+
+You should see your PAT (or at least confirm it's set).
+
+### 8. Verify Azure CLI Authentication
 
 The MCP server uses your Azure CLI credentials:
 
@@ -212,14 +279,17 @@ Choose TDD when in doubt—the overhead is small compared to catching issues lat
 
 ## File Locations
 
-| File/Directory                    | Purpose                                          |
-| --------------------------------- | ------------------------------------------------ |
-| `.github/copilot-instructions.md` | Global coding standards, applied to all agents   |
-| `.github/project-context.md`      | Repository-specific architecture and conventions |
-| `.github/agents/*.agent.md`       | Custom agent definitions                         |
-| `.github/skills/*/SKILL.md`       | Reusable knowledge loaded on-demand              |
-| `.vscode/mcp.json`                | MCP server configuration                         |
-| `.planning/PLAN.md`               | Current implementation plan (gitignored)         |
+| File/Directory                             | Purpose                                                         |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| `.github/copilot-instructions.md`          | Global coding standards, applied to all agents                  |
+| `.github/project-context.md`               | Repository-specific architecture, team, and Azure DevOps config |
+| `.github/agents/*.agent.md`                | Custom agent definitions                                        |
+| `.github/skills/*/SKILL.md`                | Reusable knowledge loaded on-demand                             |
+| `.github/skills/azure-devops-api/scripts/` | Python scripts for Azure DevOps API access                      |
+| `.vscode/mcp.json`                         | MCP server configuration                                        |
+| `.vscode/settings.json`                    | VS Code settings including PAT (gitignored)                     |
+| `.vscode/settings.template.json`           | Template for settings.json                                      |
+| `.planning/PLAN.md`                        | Current implementation plan (gitignored)                        |
 
 ## Troubleshooting
 

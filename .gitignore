@@ -1,0 +1,5 @@
+# Agent workflow files
+.planning/
+
+# VS Code settings contain PAT - do not commit
+.vscode/settings.json
