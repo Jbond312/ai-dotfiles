@@ -1,15 +1,11 @@
 ---
 name: azure-devops-api
-description: "Scripts for interacting with Azure DevOps REST API directly. Use these scripts instead of the Azure DevOps MCP when you need PR diffs, team-filtered PR lists, or other data the MCP does not provide."
+description: "Scripts for interacting with Azure DevOps REST API directly. Use these scripts instead of the Azure DevOps MCP when you need team-filtered PR lists or other data the MCP does not provide."
 ---
 
 # Azure DevOps API Scripts
 
-This skill provides Python scripts that interact with the Azure DevOps REST API directly. Use these scripts when the Azure DevOps MCP server doesn't provide the data you need—particularly for:
-
-- Getting PR diffs and file changes (MCP limitation)
-- Filtering PRs by team reviewer (MCP limitation)
-- Any other Azure DevOps data not exposed by the MCP
+This skill provides Python scripts that interact with the Azure DevOps REST API directly. Use these scripts when the Azure DevOps MCP server doesn't provide the data you need—particularly for filtering PRs by team reviewer (an MCP limitation).
 
 ## Prerequisites
 
@@ -95,107 +91,25 @@ python .github/skills/azure-devops-api/scripts/get_team_prs.py \
 }
 ```
 
----
-
-### get_pr_diff.py
-
-Get the changed files and optionally their content for a pull request.
-
-**Usage:**
-
-```bash
-python .github/skills/azure-devops-api/scripts/get_pr_diff.py \
-  --org "your-org" \
-  --project "your-project" \
-  --repo "repository-name" \
-  --pr-id 123 \
-  [--file "src/path/to/file.cs"] \
-  [--include-content]
-```
-
-**Arguments:**
-
-| Argument            | Required | Description                                            |
-| ------------------- | -------- | ------------------------------------------------------ |
-| `--org`             | Yes      | Azure DevOps organization name                         |
-| `--project`         | Yes      | Azure DevOps project name                              |
-| `--repo`            | Yes      | Repository name                                        |
-| `--pr-id`           | Yes      | Pull request ID                                        |
-| `--file`            | No       | Specific file to get content for                       |
-| `--include-content` | No       | Include full file content for all files (can be large) |
-
-**Output (without --include-content):**
-
-```json
-{
-  "pullRequest": {
-    "id": 123,
-    "title": "Add payment validation",
-    "description": "Adds balance validation before processing payments",
-    "author": "Jane Smith",
-    "sourceBranch": "backlog/12345-add-payment-validation",
-    "targetBranch": "main",
-    "status": "active",
-    "isDraft": false
-  },
-  "commits": {
-    "source": "abc123...",
-    "target": "def456..."
-  },
-  "summary": {
-    "totalFiles": 4,
-    "additions": 3,
-    "deletions": 0
-  },
-  "changedFiles": [
-    {
-      "path": "/src/Features/Payments/CreatePayment/CreatePaymentHandler.cs",
-      "changeType": "Modified"
-    },
-    {
-      "path": "/src/Features/Payments/CreatePayment/CreatePaymentValidator.cs",
-      "changeType": "Added"
-    },
-    {
-      "path": "/tests/Payments/CreatePaymentTests.cs",
-      "changeType": "Modified"
-    }
-  ]
-}
-```
-
-**Output (with --include-content or --file):**
-
-When content is included, each file in `changedFiles` will also have:
-
-```json
-{
-  "path": "/src/Features/Payments/CreatePayment/CreatePaymentHandler.cs",
-  "changeType": "Modified",
-  "content": "// Full file content from PR branch...",
-  "originalContent": "// Original file content from target branch..."
-}
-```
-
 ## Reading Configuration from Project Context
 
-These scripts require org, project, and team-id. Read these from `.github/project-context.md`:
+The script requires org, project, and reviewer-id. Read these from `.github/project-context.md`:
 
 ```markdown
-## Team
-
-- **Team name:** Platform Team
-- **Team ID:** a1b2c3d4-e5f6-7890-abcd-ef1234567890
-
 ## Azure DevOps
 
 - **Organization:** contoso
 - **Project:** payments-platform
+
+## Team
+
+- **Team name:** Platform Team
+- **Team ID:** a1b2c3d4-e5f6-7890-abcd-ef1234567890
 ```
 
-When calling the scripts, extract these values and pass them as arguments.
+When calling the script, extract these values and pass them as arguments.
 
-## Example: Finding PRs to Review
+## Example: Finding PRs for Your Team
 
 ```bash
 # Set PAT (or configure in .vscode/settings.json)
@@ -218,28 +132,9 @@ python .github/skills/azure-devops-api/scripts/get_team_prs.py \
   --exclude-author-id "your-user-guid"
 ```
 
-## Example: Reviewing a PR
-
-```bash
-# Get overview of changed files
-python .github/skills/azure-devops-api/scripts/get_pr_diff.py \
-  --org "contoso" \
-  --project "payments-platform" \
-  --repo "payment-service" \
-  --pr-id 123
-
-# Get content of a specific file
-python .github/skills/azure-devops-api/scripts/get_pr_diff.py \
-  --org "contoso" \
-  --project "payments-platform" \
-  --repo "payment-service" \
-  --pr-id 123 \
-  --file "/src/Features/Payments/CreatePayment/CreatePaymentHandler.cs"
-```
-
 ## Error Handling
 
-Scripts return JSON error objects on failure:
+The script returns JSON error objects on failure:
 
 ```json
 {
@@ -252,24 +147,22 @@ Scripts return JSON error objects on failure:
 
 Common errors:
 
-| Error                                           | Cause                              | Solution                        |
-| ----------------------------------------------- | ---------------------------------- | ------------------------------- |
-| `AZURE_DEVOPS_PAT environment variable not set` | PAT not configured                 | Set the environment variable    |
-| `401 Unauthorized`                              | PAT invalid or expired             | Generate a new PAT              |
-| `404 Not Found`                                 | Repo, PR, or project doesn't exist | Check names/IDs                 |
-| `403 Forbidden`                                 | PAT lacks required scope           | Add required permissions to PAT |
+| Error                                           | Cause                    | Solution                        |
+| ----------------------------------------------- | ------------------------ | ------------------------------- |
+| `AZURE_DEVOPS_PAT environment variable not set` | PAT not configured       | Set the environment variable    |
+| `401 Unauthorized`                              | PAT invalid or expired   | Generate a new PAT              |
+| `404 Not Found`                                 | Project doesn't exist    | Check project name              |
+| `403 Forbidden`                                 | PAT lacks required scope | Add required permissions to PAT |
 
-## When to Use These Scripts vs MCP
+## When to Use This Script vs MCP
 
-| Need                                   | Use                                          |
-| -------------------------------------- | -------------------------------------------- |
-| PR metadata (title, status, reviewers) | MCP or scripts                               |
-| List of changed files in PR            | Scripts (`get_pr_diff.py`)                   |
-| Actual file diffs/content              | Scripts (`get_pr_diff.py --include-content`) |
-| PRs filtered by team reviewer          | Scripts (`get_team_prs.py`)                  |
-| Work item details                      | MCP                                          |
-| Pipeline status                        | MCP                                          |
-| Creating/updating work items           | MCP                                          |
-| Creating/updating PRs                  | MCP                                          |
+| Need                                   | Use                        |
+| -------------------------------------- | -------------------------- |
+| PRs filtered by team/user reviewer     | Script (`get_team_prs.py`) |
+| PR metadata (title, status, reviewers) | MCP or script              |
+| Work item details                      | MCP                        |
+| Pipeline status                        | MCP                        |
+| Creating/updating work items           | MCP                        |
+| Creating/updating PRs                  | MCP                        |
 
-**Rule of thumb:** Use the MCP for writes and basic queries. Use these scripts when you need PR diffs or team-filtered PR lists.
+**Rule of thumb:** Use the MCP for writes and basic queries. Use this script when you need PRs filtered by team reviewer.

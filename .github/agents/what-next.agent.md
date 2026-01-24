@@ -6,10 +6,6 @@ tools:
   - "execute/runInTerminal"
   - "read"
 handoffs:
-  - label: Review a Pull Request
-    agent: PR Reviewer
-    prompt: "Review the pull request identified above."
-    send: false
   - label: Investigate Pipeline Failure
     agent: Pipeline Investigator
     prompt: "Investigate the failing pipeline identified above."
@@ -86,15 +82,15 @@ Note: You'll need the current user's ID to exclude their own PRs. This can be ob
 
 Parse the JSON response and present:
 
-"You have **{count} pull request(s)** awaiting review:
+"There are **{count} pull request(s)** awaiting review by your team:
 
-| PR    | Repository | Title   | Author   | Age            |
-| ----- | ---------- | ------- | -------- | -------------- |
-| !{id} | {repo}     | {title} | {author} | {ageDays} days |
+| PR    | Repository | Title   | Author   | Age            | Link             |
+| ----- | ---------- | ------- | -------- | -------------- | ---------------- |
+| !{id} | {repo}     | {title} | {author} | {ageDays} days | [View]({webUrl}) |
 
-Reviewing PRs unblocks your colleagues and keeps work flowing. Would you like to review one of these?"
+Reviewing PRs unblocks your colleagues and keeps work flowing. You can review these in Azure DevOps."
 
-Offer the "Review a Pull Request" handoff.
+Provide the web URLs so developers can click through to review manually. Do not offer automated PR review—this is out of scope for this workflow.
 
 **If no PRs:** Continue to next check.
 

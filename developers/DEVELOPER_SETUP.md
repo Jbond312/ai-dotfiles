@@ -24,7 +24,6 @@ Copy the following directories and files to your repository:
 ├── project-context.md              # Template—customise for your repo
 ├── agents/
 │   ├── what-next.agent.md          # Entry point
-│   ├── pr-reviewer.agent.md
 │   ├── pipeline-investigator.agent.md
 │   ├── work-item-pickup.agent.md
 │   ├── planner.agent.md
@@ -36,11 +35,10 @@ Copy the following directories and files to your repository:
 └── skills/
     ├── azure-devops-workflow/
     │   └── SKILL.md
-    ├── azure-devops-api/           # Scripts for PR diffs and team queries
+    ├── azure-devops-api/           # Script for team PR queries
     │   ├── SKILL.md
     │   └── scripts/
-    │       ├── get_team_prs.py
-    │       └── get_pr_diff.py
+    │       └── get_team_prs.py
     └── vertical-slice-architecture/
         └── SKILL.md                # Only for VSA repos
 
@@ -172,20 +170,13 @@ The workflow starts with the **What's Next** agent, which helps you prioritise:
 
 The agent checks (in priority order):
 
-- PRs awaiting your review
+- PRs awaiting your team's review (with links to review manually)
 - Failing pipelines
 - Colleagues who might need help (work items stuck too long)
 - Your own in-progress work
 - New work items to pick up
 
 Only after confirming higher-priority items don't need attention will it suggest picking up new work.
-
-### Reviewing a Pull Request
-
-If the What's Next agent surfaces PRs awaiting your review, hand off to the **PR Reviewer** agent:
-
-1. Click the "Review a Pull Request" handoff, or
-2. Select the PR Reviewer agent and specify which PR to review
 
 ### Investigating a Pipeline Failure
 
@@ -386,7 +377,7 @@ When rolling out to your team:
 
 ```
 what-next (entry point)
-    ├── PRs to review → pr-reviewer
+    ├── PRs awaiting review → (review manually in Azure DevOps)
     ├── Failing pipelines → pipeline-investigator
     ├── Colleagues need help → (informational, reach out manually)
     ├── Your in-progress work → planner / coder (resume)
@@ -399,7 +390,6 @@ work-item-pickup → planner → [coder → reviewer → committer] → pr-creat
 
 | From                  | To                    | When                           |
 | --------------------- | --------------------- | ------------------------------ |
-| what-next             | pr-reviewer           | PRs awaiting your review       |
 | what-next             | pipeline-investigator | Failing pipelines              |
 | what-next             | planner               | Resume in-progress work        |
 | what-next             | work-item-pickup      | Ready for new work             |
@@ -413,7 +403,6 @@ work-item-pickup → planner → [coder → reviewer → committer] → pr-creat
 | reviewer              | committer             | Approved                       |
 | committer             | tdd-coder             | Next item (TDD only)           |
 | committer             | pr-creator            | All items complete             |
-| pr-reviewer           | what-next             | Review complete                |
 | pipeline-investigator | what-next             | Investigation complete         |
 
 ### Branch Naming
