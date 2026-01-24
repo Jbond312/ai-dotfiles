@@ -145,7 +145,8 @@ def get_commit_diffs(
     """Get the diff between two commits."""
     url = (
         f"https://dev.azure.com/{org}/{project}/_apis/git/repositories/{repo}"
-        f"/diffs/commits?baseVersion={base_commit}&targetVersion={target_commit}"
+        f"/diffs/commits?baseVersion={base_commit}&baseVersionType=commit"
+        f"&targetVersion={target_commit}&targetVersionType=commit"
         f"&api-version=7.1"
     )
     response = api_request(url, headers)

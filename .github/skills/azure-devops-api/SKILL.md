@@ -19,17 +19,35 @@ This skill provides Python scripts that interact with the Azure DevOps REST API 
    - Work Items (Read) — if querying work items
    - Build (Read) — if querying pipelines
 
-The PAT should be set before running the scripts:
+### Setting up the PAT
 
-```bash
-export AZURE_DEVOPS_PAT="your-pat-token-here"
+The recommended approach is to configure VS Code to provide the PAT to all terminals. Add to `.vscode/settings.json`:
+
+```json
+{
+  "terminal.integrated.env.linux": {
+    "AZURE_DEVOPS_PAT": "your-pat-here"
+  },
+  "terminal.integrated.env.osx": {
+    "AZURE_DEVOPS_PAT": "your-pat-here"
+  },
+  "terminal.integrated.env.windows": {
+    "AZURE_DEVOPS_PAT": "your-pat-here"
+  }
+}
 ```
+
+**Important:** Add `.vscode/settings.json` to `.gitignore` to avoid committing your PAT.
+
+A template is provided at `.vscode/settings.template.json` — copy it to `settings.json` and add your PAT.
 
 ## Available Scripts
 
 ### get_team_prs.py
 
-Get pull requests where a specific team (or user) is assigned as a reviewer.
+Get pull requests where a specific reviewer (team or user) is assigned.
+
+Uses the project-level PR endpoint with `searchCriteria.reviewerId` filter—a single API call.
 
 **Usage:**
 
@@ -37,22 +55,20 @@ Get pull requests where a specific team (or user) is assigned as a reviewer.
 python .github/skills/azure-devops-api/scripts/get_team_prs.py \
   --org "your-org" \
   --project "your-project" \
-  --team-id "team-guid-here" \
-  [--user-id "user-guid-here"] \
+  --reviewer-id "team-or-user-guid" \
   [--status active] \
-  [--exclude-author "user-guid-to-exclude"]
+  [--exclude-author-id "user-guid-to-exclude"]
 ```
 
 **Arguments:**
 
-| Argument           | Required | Description                                                    |
-| ------------------ | -------- | -------------------------------------------------------------- |
-| `--org`            | Yes      | Azure DevOps organization name                                 |
-| `--project`        | Yes      | Azure DevOps project name                                      |
-| `--team-id`        | Yes      | Team GUID to filter by                                         |
-| `--user-id`        | No       | Additional user GUID to include                                |
-| `--status`         | No       | PR status: `active` (default), `completed`, `abandoned`, `all` |
-| `--exclude-author` | No       | Exclude PRs by this author (useful to filter out your own PRs) |
+| Argument              | Required | Description                                                    |
+| --------------------- | -------- | -------------------------------------------------------------- |
+| `--org`               | Yes      | Azure DevOps organization name                                 |
+| `--project`           | Yes      | Azure DevOps project name                                      |
+| `--reviewer-id`       | Yes      | Reviewer GUID (can be team ID or user ID)                      |
+| `--status`            | No       | PR status: `active` (default), `completed`, `abandoned`, `all` |
+| `--exclude-author-id` | No       | Exclude PRs by this author (useful to filter out your own PRs) |
 
 **Output:**
 
@@ -65,7 +81,7 @@ python .github/skills/azure-devops-api/scripts/get_team_prs.py \
       "repository": "my-service",
       "title": "Add payment validation",
       "author": "Jane Smith",
-      "authorEmail": "jane@example.com",
+      "authorId": "abc-123-...",
       "status": "active",
       "sourceBranch": "backlog/12345-add-payment-validation",
       "targetBranch": "main",
@@ -182,22 +198,24 @@ When calling the scripts, extract these values and pass them as arguments.
 ## Example: Finding PRs to Review
 
 ```bash
-# Set PAT
+# Set PAT (or configure in .vscode/settings.json)
 export AZURE_DEVOPS_PAT="your-pat"
-
-# Get current user ID (you'll need to know this or get it from az cli)
-USER_ID="current-user-guid"
 
 # Get team ID from project context
 TEAM_ID="team-guid-from-project-context"
 
-# Get PRs for review, excluding your own
+# Get PRs where your team is a reviewer
 python .github/skills/azure-devops-api/scripts/get_team_prs.py \
   --org "contoso" \
   --project "payments-platform" \
-  --team-id "$TEAM_ID" \
-  --user-id "$USER_ID" \
-  --exclude-author "$USER_ID"
+  --reviewer-id "$TEAM_ID"
+
+# Or exclude your own PRs (if you know your user ID)
+python .github/skills/azure-devops-api/scripts/get_team_prs.py \
+  --org "contoso" \
+  --project "payments-platform" \
+  --reviewer-id "$TEAM_ID" \
+  --exclude-author-id "your-user-guid"
 ```
 
 ## Example: Reviewing a PR
