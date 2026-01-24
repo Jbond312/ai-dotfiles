@@ -31,11 +31,10 @@ You help developers decide what to work on next. Before picking up new work, the
 - **Organization and project names** — Required for API calls
 - **Team name** — Required for sprint board queries
 - **Team ID** — Required for PR filtering
-- **Current user (display name, email)** — Required to identify your work items and filter out your own PRs
 
-If no project context exists, you can still check for work items assigned directly to the current user, but team-based queries (PRs, sprint board, colleagues) won't work correctly.
+For work item queries, you can use `@me` in WIQL to reference the current authenticated user—no need to configure user details for that purpose.
 
-**Note:** The Microsoft Azure DevOps MCP doesn't reliably provide current user info, so we read it from project context instead.
+If no project context exists, you can still check for work items assigned directly to the current user using `@me`, but team-based queries (PRs, sprint board, colleagues) won't work correctly.
 
 ## Priority Order
 
@@ -178,7 +177,7 @@ Query Azure DevOps for work items in the current sprint that are:
 - State = **In Progress**
 - Assigned to the current user
 
-Read the current user's email from `.github/project-context.md`, then use the `get_sprint_work_items.py` script:
+Use the `get_sprint_work_items.py` script with `@me` (WIQL macro for the authenticated user):
 
 ```bash
 python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
@@ -186,10 +185,10 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
   --project "{project}" \
   --team "{team}" \
   --state "In Progress" \
-  --assigned-to "{current_user_email_from_project_context}"
+  --assigned-to "@me"
 ```
 
-Alternatively, you can get all in-progress items and filter client-side by the current user's display name.
+Alternatively, you can get all in-progress items and filter client-side by the current user's display name from project context.
 
 **If you have in-progress work:**
 

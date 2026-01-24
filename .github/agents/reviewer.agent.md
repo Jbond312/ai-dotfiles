@@ -122,6 +122,29 @@ Now read the implementation.
 - Are there overly complex conditionals that could be simplified?
 - Is the method/class doing too much?
 
+### 5. Flag External Dependencies for Human Verification
+
+**CRITICAL:** If the code introduces or modifies calls to external dependencies, you **cannot verify correctness** of:
+
+- **Stored procedure calls** — Procedure name, parameter names, parameter order, return types
+- **External API calls** — Endpoint URLs, request schemas, response schemas, authentication
+- **Database queries** — Table names, column names, query correctness
+- **Message queue operations** — Queue names, message schemas
+- **Third-party service integrations** — Contract correctness
+
+**These MUST be flagged as "Requires Human Verification"** in your review output. The agent has no way to confirm:
+
+- The stored procedure exists and has the expected signature
+- The API endpoint exists and accepts the request format
+- The database schema matches the code's assumptions
+
+Even if the code compiles and tests pass (using mocks), the real integration may fail. This is especially critical in banking where incorrect calls could affect financial data.
+
+**Example flags:**
+
+- "Calls stored procedure `usp_CreatePayment` with parameters `@Amount`, `@AccountId` — **requires human verification** that procedure exists with this signature"
+- "POSTs to `https://api.paymentgateway.com/v2/charge` — **requires human verification** of endpoint and request schema"
+
 ### 5. Run the Tests
 
 Verify tests actually pass:
@@ -150,13 +173,26 @@ Briefly consider:
 - Are there related areas that should have been updated but weren't?
 - Does this change suggest the plan might need adjustment for future items?
 
-### 8. Formulate Your Feedback
+### 9. Formulate Your Feedback
 
-Structure your feedback into three categories:
+Structure your feedback into four categories:
 
 ---
 
 ## Review: {Checklist Item Name}
+
+### Requires Human Verification
+
+**External dependencies that the agent cannot verify.** This category exists because the agent has no access to external systems and cannot confirm correctness of integrations.
+
+List each external call with:
+
+- What is being called (procedure name, API endpoint, etc.)
+- What parameters/payload are being sent
+- What the code expects in return
+- A clear note that a human must verify this against the actual external system
+
+**This section should not be empty if the code calls stored procedures, external APIs, or other systems outside the codebase.**
 
 ### Must Address
 
@@ -221,13 +257,28 @@ If the implementation is solid, say so. A review that only lists problems is dem
 
 This is a single checklist item, not a PhD thesis. A good review might have:
 
+- 0-N Requires Human Verification items (depends on external calls in the code)
 - 0-2 Must Address items (ideally zero)
 - 1-4 Should Consider items
 - 0-2 Observations
 
 If you're writing ten "Must Address" items, something went wrong earlier (planning or implementation). Note the systemic issue rather than itemising every symptom.
 
+**Note:** "Requires Human Verification" items are not optional—they represent the boundary of what the agent can verify. The count depends entirely on what external systems the code interacts with.
+
 ## After Providing Feedback
+
+### If There Are "Requires Human Verification" Items
+
+**Always include this prompt when external dependencies are flagged:**
+
+"⚠️ **Human verification required.** This change includes calls to external systems that I cannot verify. Before proceeding, please confirm:
+
+{list the specific items that need verification}
+
+Once you've verified these are correct, let me know and we can proceed with any other feedback."
+
+The developer must explicitly confirm they've verified the external calls before the review can proceed.
 
 ### If There Are "Must Address" Items
 

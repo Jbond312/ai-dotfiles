@@ -27,11 +27,12 @@ For example, if your project is "PaymentsPlatform" and team is "Platform Team":
 
 - **Display name:** {Your name as it appears in Azure DevOps, e.g., "Jane Smith"}
 - **Email:** {Your Azure DevOps email, e.g., "jane.smith@company.com"}
-- **User ID:** {Your Azure DevOps user GUID - optional, for filtering PRs}
 
-This is used when agents need to identify you (e.g., filtering out your own PRs, checking your in-progress work). The Microsoft Azure DevOps MCP doesn't reliably provide current user info, so we configure it here.
+For work item queries, agents can use `@me` in WIQL to reference the current authenticated user, so you don't need to configure your user ID for that purpose.
 
-**Finding your user ID:** In Azure DevOps, go to your profile settings. The URL contains your user ID, or use the "Connection Data" REST API.
+**Optional:**
+
+- **User ID:** {Your Azure DevOps user GUID} — Only needed if you want to exclude your own PRs from review lists using the `--exclude-author-id` flag in `get_team_prs.py`.
 
 ## Work Item Types
 

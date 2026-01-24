@@ -66,22 +66,20 @@ Edit `.github/project-context.md` to configure your team and repository settings
 
 **Required fields:**
 
-| Field                      | Purpose                     | Where to Find                                         |
-| -------------------------- | --------------------------- | ----------------------------------------------------- |
-| Organization               | Azure DevOps API calls      | Your Azure DevOps URL: `dev.azure.com/{organization}` |
-| Project                    | Azure DevOps API calls      | Your project name in Azure DevOps                     |
-| Team name                  | Sprint board queries        | Project Settings > Teams (case-sensitive)             |
-| Team ID                    | PR filtering                | Team settings URL contains the GUID                   |
-| Current user (name, email) | Identifying your work items | Your Azure DevOps profile                             |
+| Field        | Purpose                | Where to Find                                         |
+| ------------ | ---------------------- | ----------------------------------------------------- |
+| Organization | Azure DevOps API calls | Your Azure DevOps URL: `dev.azure.com/{organization}` |
+| Project      | Azure DevOps API calls | Your project name in Azure DevOps                     |
+| Team name    | Sprint board queries   | Project Settings > Teams (case-sensitive)             |
+| Team ID      | PR filtering           | Team settings URL contains the GUID                   |
 
 **Optional fields:**
 
-- User ID (GUID) — for excluding your own PRs from review lists
-- Architecture pattern (e.g., VSA) — enables pattern-specific guidance
+- Current user (name, email) — For display purposes; WIQL queries can use `@me` instead
+- User ID (GUID) — For excluding your own PRs from review lists
+- Architecture pattern (e.g., VSA) — Enables pattern-specific guidance
 - Testing conventions
 - Domain context
-
-**Note:** The Microsoft Azure DevOps MCP doesn't reliably provide current user info, so we configure it in project context.
 
 See the template in `.github/project-context.md` for all available options.
 

@@ -67,7 +67,14 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
   --team "Your Team Name" \
   --state "In Progress"
 
-# Get items assigned to a specific user
+# Get items assigned to the current user (using @me WIQL macro)
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
+  --org "your-org" \
+  --project "your-project" \
+  --team "Your Team Name" \
+  --assigned-to "@me"
+
+# Get items assigned to a specific user by email
 python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
   --org "your-org" \
   --project "your-project" \
@@ -83,15 +90,15 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
 
 **Arguments:**
 
-| Argument        | Required | Description                                                           |
-| --------------- | -------- | --------------------------------------------------------------------- |
-| `--org`         | Yes      | Azure DevOps organization name                                        |
-| `--project`     | Yes      | Azure DevOps project name                                             |
-| `--team`        | Yes      | Team name (case-sensitive, must match exactly)                        |
-| `--state`       | No       | Filter by state (can be repeated for multiple states)                 |
-| `--unassigned`  | No       | Only return unassigned work items                                     |
-| `--assigned-to` | No       | Filter by assigned user email or display name                         |
-| `--type`        | No       | Work item types to include (default: "Product Backlog Item", "Spike") |
+| Argument        | Required | Description                                                                |
+| --------------- | -------- | -------------------------------------------------------------------------- |
+| `--org`         | Yes      | Azure DevOps organization name                                             |
+| `--project`     | Yes      | Azure DevOps project name                                                  |
+| `--team`        | Yes      | Team name (case-sensitive, must match exactly)                             |
+| `--state`       | No       | Filter by state (can be repeated for multiple states)                      |
+| `--unassigned`  | No       | Only return unassigned work items                                          |
+| `--assigned-to` | No       | Filter by assigned user: use `@me` for current user, or email/display name |
+| `--type`        | No       | Work item types to include (default: "Product Backlog Item", "Spike")      |
 
 **Output:**
 
@@ -211,13 +218,6 @@ python .github/skills/azure-devops-api/scripts/get_team_prs.py \
   --org "contoso" \
   --project "payments-platform" \
   --reviewer-id "$TEAM_ID"
-
-# Or exclude your own PRs (if you know your user ID)
-python .github/skills/azure-devops-api/scripts/get_team_prs.py \
-  --org "contoso" \
-  --project "payments-platform" \
-  --reviewer-id "$TEAM_ID" \
-  --exclude-author-id "your-user-guid"
 ```
 
 ## Error Handling

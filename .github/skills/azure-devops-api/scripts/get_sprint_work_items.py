@@ -21,7 +21,10 @@ Examples:
     # Get in-progress items (to check on colleagues)
     python get_sprint_work_items.py --org contoso --project payments --team "Platform Team" --state "In Progress"
 
-    # Get items assigned to a specific user
+    # Get items assigned to the current user (uses @me WIQL macro)
+    python get_sprint_work_items.py --org contoso --project payments --team "Platform Team" --assigned-to "@me"
+
+    # Get items assigned to a specific user by email
     python get_sprint_work_items.py --org contoso --project payments --team "Platform Team" --assigned-to "user@example.com"
 """
 
@@ -122,9 +125,13 @@ def query_work_items(
         where_clauses.append(f"[System.State] IN ({states_clause})")
     
     if unassigned:
-        where_clauses.append("([System.AssignedTo] = '' OR [System.AssignedTo] IS NULL)")
+        where_clauses.append("[System.AssignedTo] = ''")
     elif assigned_to:
-        where_clauses.append(f"[System.AssignedTo] = '{assigned_to}'")
+        # @me is a WIQL macro - don't quote it
+        if assigned_to.lower() == "@me":
+            where_clauses.append("[System.AssignedTo] = @me")
+        else:
+            where_clauses.append(f"[System.AssignedTo] = '{assigned_to}'")
     
     wiql = f"""
         SELECT [System.Id], [System.Title], [System.State], [System.WorkItemType],
@@ -230,7 +237,7 @@ def main():
     )
     parser.add_argument(
         "--assigned-to",
-        help="Filter by assigned user (email or display name)",
+        help="Filter by assigned user (use '@me' for current user, or email/display name)",
     )
     parser.add_argument(
         "--type",
