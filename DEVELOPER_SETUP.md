@@ -20,8 +20,13 @@ Copy the following directories and files to your repository:
 
 ```
 .github/
-├── copilot-instructions.md
+├── CHANGELOG.md                    # Version history
+├── copilot-instructions.md         # Global workflow overview
 ├── project-context.md              # Template—customise for your repo
+├── instructions/                   # Pattern-specific instructions (auto-apply)
+│   ├── banking.instructions.md     # → Features/Domain/Infrastructure
+│   ├── csharp.instructions.md      # → All .cs files
+│   └── tests.instructions.md       # → Test files
 ├── agents/
 │   ├── what-next.agent.md          # Entry point
 │   ├── pipeline-investigator.agent.md
@@ -35,12 +40,22 @@ Copy the following directories and files to your repository:
 └── skills/
     ├── azure-devops-workflow/
     │   └── SKILL.md
-    ├── azure-devops-api/           # Script for team PR queries
+    ├── azure-devops-api/
     │   ├── SKILL.md
     │   └── scripts/
+    │       ├── get_sprint_work_items.py
     │       └── get_team_prs.py
+    ├── code-reviewing/             # Review checklist, external dependency flagging
+    │   └── SKILL.md
+    ├── dotnet-testing/             # Test discovery and execution
+    │   └── SKILL.md
+    ├── git-committing/             # Conventional commit format
+    │   └── SKILL.md
     └── vertical-slice-architecture/
-        └── SKILL.md                # Only for VSA repos
+        ├── SKILL.md
+        └── reference/              # Detailed examples (loaded on-demand)
+            ├── code-review-checklist.md
+            └── slice-components.md
 
 .vscode/
 ├── mcp.json
@@ -301,10 +316,13 @@ Choose TDD when in doubt—the overhead is small compared to catching issues lat
 
 | File/Directory                             | Purpose                                                         |
 | ------------------------------------------ | --------------------------------------------------------------- |
-| `.github/copilot-instructions.md`          | Global coding standards, applied to all agents                  |
+| `.github/CHANGELOG.md`                     | Version history for the agent configuration                     |
+| `.github/copilot-instructions.md`          | Global workflow overview, applied to all agents                 |
 | `.github/project-context.md`               | Repository-specific architecture, team, and Azure DevOps config |
+| `.github/instructions/*.instructions.md`   | Pattern-specific instructions (auto-apply based on `applyTo`)   |
 | `.github/agents/*.agent.md`                | Custom agent definitions                                        |
 | `.github/skills/*/SKILL.md`                | Reusable knowledge loaded on-demand                             |
+| `.github/skills/*/reference/*.md`          | Detailed reference files for progressive disclosure             |
 | `.github/skills/azure-devops-api/scripts/` | Python scripts for Azure DevOps API access                      |
 | `.vscode/mcp.json`                         | MCP server configuration                                        |
 | `.vscode/settings.json`                    | VS Code settings including PAT (gitignored)                     |
@@ -351,12 +369,32 @@ The coder agents expect `.planning/PLAN.md` to exist:
 
 ### Adjusting Coding Standards
 
-Edit `.github/copilot-instructions.md` to change:
+The configuration uses a layered approach:
 
-- C# conventions
-- Testing philosophy
-- Commit message format
-- Banking domain constraints
+1. **Global instructions** (`.github/copilot-instructions.md`) — Workflow overview, branch naming, commit format references
+2. **Pattern-specific instructions** (`.github/instructions/`) — Auto-apply based on file type:
+   - `csharp.instructions.md` — C# conventions (all `.cs` files)
+   - `tests.instructions.md` — Testing philosophy (test files)
+   - `banking.instructions.md` — Domain constraints (Features/Domain/Infrastructure)
+3. **Skills** (`.github/skills/`) — Loaded on-demand for specific tasks
+
+To modify coding standards, edit the appropriate instruction file. Pattern-specific files only load when editing matching files, keeping context lean.
+
+### Adding New Pattern-Specific Instructions
+
+Create a new file in `.github/instructions/`:
+
+```yaml
+---
+applyTo: "**/*.razor,**/*.cshtml"
+description: "Blazor and Razor component conventions"
+---
+# Blazor Conventions
+
+Your instructions here...
+```
+
+The `applyTo` field uses glob patterns. Multiple patterns can be separated with commas.
 
 ### Adding New Skills
 
@@ -371,6 +409,18 @@ description: "When to use this skill. Be specific about triggers."
 
 Your detailed instructions here...
 ```
+
+For larger skills, use progressive disclosure with reference files:
+
+```
+.github/skills/my-skill/
+├── SKILL.md              # Overview (<100 lines ideally)
+└── reference/
+    ├── detailed-guide.md # Loaded only when needed
+    └── examples.md       # Loaded only when needed
+```
+
+Reference files from SKILL.md with relative links: `See [reference/detailed-guide.md](reference/detailed-guide.md) for examples.`
 
 ### Modifying Agents
 
@@ -392,11 +442,12 @@ If your Azure DevOps board uses different state names, update:
 
 When rolling out to your team:
 
-- [ ] Copy configuration files to shared repositories
+- [ ] Copy configuration files to shared repositories (agents, skills, instructions)
+- [ ] Customise `.github/project-context.md` for each repository
+- [ ] Review pattern-specific instructions in `.github/instructions/` for your team's conventions
 - [ ] Add `.planning/` to `.gitignore`
 - [ ] Verify MCP server works for each team member
 - [ ] Ensure everyone has Azure CLI configured
-- [ ] Review and adjust coding standards in `copilot-instructions.md`
 - [ ] Walk through the workflow with one real work item
 - [ ] Collect feedback and iterate
 
