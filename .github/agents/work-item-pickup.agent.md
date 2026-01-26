@@ -10,7 +10,7 @@ handoffs:
   - label: Create Implementation Plan
     agent: Planner
     prompt: "Create an implementation plan for this work item."
-    send: false
+    send: true
 ---
 
 # Work Item Pickup Agent

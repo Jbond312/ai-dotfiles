@@ -1,6 +1,6 @@
 ---
 name: vertical-slice-architecture
-description: "Vertical Slice Architecture patterns with Clean Architecture layers. Use when planning, implementing, or reviewing code in repositories that use VSA. Check .github/project-context.md to confirm."
+description: "Vertical Slice Architecture patterns with Clean Architecture layers. Use when planning features, creating slices, implementing handlers, or reviewing VSA code structure. Triggers on: VSA, vertical slice, feature slice, handler, command, query, MediatR, slice structure."
 ---
 
 # Vertical Slice Architecture

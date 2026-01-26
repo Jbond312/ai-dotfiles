@@ -1,13 +1,13 @@
 ---
 name: What Next
 description: "Helps decide what to work on next. Shows available work items, PRs needing review, and in-progress work."
-model: claude-3-5-haiku
+model: Claude Haiku 4.5 (copilot)
 tools:
   - "read"
   - "execute/runInTerminal"
 handoffs:
   - label: Pick Up Work Item
-    agent: work-item-pickup
+    agent: Work Item Pickup
     prompt: "I want to pick up work item #{id}."
     send: false
 ---
@@ -18,62 +18,30 @@ Helps developers decide what to work on. Shows options without making decisions 
 
 ## Before Taking Action
 
-**Consult the `known-issues` skill** to avoid repeating past mistakes, particularly around script arguments and context files.
+**Consult the `known-issues` skill** to avoid repeating past mistakes.
 
-## Step 1: Read and Confirm Context (MANDATORY)
+## Queries
 
-**You MUST complete this step before running any scripts.**
+Scripts read Azure DevOps configuration from environment variables. **Do not use MCP for these queries.**
 
-1. Read `.github/team-context.md`
-2. Read `project-context.md` (repo root) if it exists
-3. **Output the values to the user for confirmation:**
-
-```markdown
-## Configuration Loaded
-
-| Setting      | Value               |
-| ------------ | ------------------- |
-| Organization | {org from file}     |
-| Project      | {project from file} |
-| Team Name    | {team from file}    |
-| Team ID      | {team_id from file} |
-| User ID      | {user_id from file} |
-
-Proceeding with these settings...
-```
-
-**Do NOT proceed to Step 2 until you have displayed this table with actual values from the file.**
-
-If `.github/team-context.md` does not exist or is missing values, ask the user to configure it first.
-
-## Step 2: Run Queries
-
-**Only after displaying the configuration table above**, run these scripts using the exact values shown.
-
-**Important:** Do not use MCP for these queries. Use the Python scripts only.
-
-### 2a. In-Progress Work
+### 1. In-Progress Work
 
 ```bash
-python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
-  --org "{org}" --project "{project}" --team "{team}" --assigned-to "@me"
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py --assigned-to "@me"
 ```
 
 If items exist, ask if they want to continue or see other options.
 
-### 2b. PRs Needing Review
+### 2. PRs Needing Review
 
 ```bash
-python .github/skills/azure-devops-api/scripts/get_team_prs.py \
-  --org "{org}" --project "{project}" --reviewer-id "{team_id}" \
-  --exclude-author-id "{user_id}"
+python .github/skills/azure-devops-api/scripts/get_team_prs.py
 ```
 
-### 2c. Available Work Items
+### 3. Available Work Items
 
 ```bash
-python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
-  --org "{org}" --project "{project}" --team "{team}" --unassigned
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py --unassigned
 ```
 
 **Show only the first 5 items.** If more exist, mention the total count and offer to show more.

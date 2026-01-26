@@ -10,7 +10,7 @@ handoffs:
   - label: Approved - Ready to Commit
     agent: Committer
     prompt: "Code review passed. Commit the changes."
-    send: true
+    send: false
   - label: Request Changes
     agent: TDD Coder
     prompt: "Please address the review feedback."

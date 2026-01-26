@@ -12,11 +12,11 @@ handoffs:
   - label: Review This Item
     agent: Reviewer
     prompt: "Review the implementation of the current checklist item."
-    send: false
+    send: true
   - label: Commit This Item
     agent: Committer
     prompt: "Commit the current checklist item. Code has been reviewed."
-    send: false
+    send: true
 ---
 
 # TDD Coder Agent

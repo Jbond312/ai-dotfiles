@@ -1,6 +1,6 @@
 ---
 name: code-reviewing
-description: "Code review checklist, issue categorisation, and external dependency flagging for banking applications. Use when reviewing code before commit or PR."
+description: "Code review checklist for banking applications with external dependency flagging. Use when reviewing code, checking changes before commit, or validating implementation quality. Triggers on: review, code review, check code, validate, before commit, external dependency, stored procedure, API call."
 ---
 
 # Code Reviewing

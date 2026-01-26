@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Get pull requests where a specific reviewer (team or user) is assigned.
-Uses Azure DevOps REST API searchCriteria.reviewerId filter.
+Query pull requests where a team is assigned as reviewer.
+Uses environment variables for Azure DevOps configuration.
 """
 
 import argparse
@@ -14,71 +14,83 @@ from urllib.error import HTTPError
 import base64
 
 
-def get_auth_header():
-    pat = os.environ.get("AZURE_DEVOPS_PAT")
-    if not pat:
-        return None, "AZURE_DEVOPS_PAT environment variable not set"
-    token = base64.b64encode(f":{pat}".encode()).decode()
-    return {"Authorization": f"Basic {token}"}, None
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Get PRs for a team/user reviewer")
-    parser.add_argument("--org", required=True, help="Azure DevOps organization")
-    parser.add_argument("--project", required=True, help="Project name")
-    parser.add_argument("--reviewer-id", required=True, help="Reviewer GUID (team or user)")
-    parser.add_argument("--status", default="active", choices=["active", "completed", "abandoned", "all"])
-    parser.add_argument("--exclude-author-id", help="Exclude PRs by this author")
-    args = parser.parse_args()
-
-    headers, err = get_auth_header()
-    if err:
-        print(json.dumps({"error": True, "message": err}))
+def get_env_or_exit(name):
+    """Get environment variable or exit with error."""
+    value = os.environ.get(name)
+    if not value:
+        print(json.dumps({"error": True, "message": f"{name} environment variable not set"}))
         sys.exit(1)
+    return value
 
-    url = f"https://dev.azure.com/{args.org}/{args.project}/_apis/git/pullrequests?searchCriteria.reviewerId={args.reviewer_id}&searchCriteria.status={args.status}&api-version=7.1"
 
+def get_env_optional(name):
+    """Get optional environment variable."""
+    return os.environ.get(name)
+
+
+def get_auth_header():
+    pat = get_env_or_exit("AZURE_DEVOPS_PAT")
+    token = base64.b64encode(f":{pat}".encode()).decode()
+    return {"Authorization": f"Basic {token}"}
+
+
+def get_prs(org, project, reviewer_id, status, headers):
+    """Get PRs where reviewer is assigned."""
+    url = f"https://dev.azure.com/{org}/{project}/_apis/git/pullrequests?searchCriteria.reviewerId={reviewer_id}&searchCriteria.status={status}&api-version=7.1"
     try:
         req = Request(url, headers=headers)
         with urlopen(req) as response:
-            data = json.loads(response.read().decode())
+            return json.loads(response.read().decode()).get("value", []), None
     except HTTPError as e:
-        print(json.dumps({"error": True, "status": e.code, "message": e.reason}))
+        return None, {"error": True, "status": e.code, "message": e.reason}
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Get PRs for team review")
+    parser.add_argument("--status", default="active", help="PR status (default: active)")
+    parser.add_argument("--include-own", action="store_true", help="Include your own PRs")
+    args = parser.parse_args()
+
+    # Get configuration from environment variables
+    org = get_env_or_exit("AZURE_DEVOPS_ORG")
+    project = get_env_or_exit("AZURE_DEVOPS_PROJECT")
+    team_id = get_env_or_exit("AZURE_DEVOPS_TEAM_ID")
+    user_id = get_env_optional("AZURE_DEVOPS_USER_ID")
+    headers = get_auth_header()
+
+    prs, err = get_prs(org, project, team_id, args.status, headers)
+    if err:
+        print(json.dumps(err))
         sys.exit(1)
 
-    prs = data.get("value", [])
-    now = datetime.utcnow()
+    # Filter out user's own PRs unless --include-own
+    if user_id and not args.include_own:
+        prs = [pr for pr in prs if pr.get("createdBy", {}).get("id") != user_id]
 
-    output = {"count": 0, "pullRequests": []}
+    now = datetime.utcnow()
+    output = {
+        "org": org,
+        "project": project,
+        "teamId": team_id,
+        "count": len(prs),
+        "pullRequests": []
+    }
 
     for pr in prs:
-        author_id = pr.get("createdBy", {}).get("id")
-        if args.exclude_author_id and author_id == args.exclude_author_id:
-            continue
-
-        created = datetime.fromisoformat(pr["creationDate"].replace("Z", "+00:00"))
+        created = datetime.fromisoformat(pr.get("creationDate", "").replace("Z", "+00:00"))
         age_days = (now - created.replace(tzinfo=None)).days
 
         output["pullRequests"].append({
             "id": pr["pullRequestId"],
-            "repository": pr["repository"]["name"],
             "title": pr["title"],
+            "repository": pr["repository"]["name"],
             "author": pr["createdBy"]["displayName"],
-            "authorId": author_id,
-            "status": pr["status"],
-            "sourceBranch": pr["sourceRefName"].replace("refs/heads/", ""),
-            "targetBranch": pr["targetRefName"].replace("refs/heads/", ""),
-            "createdDate": pr["creationDate"],
-            "ageDays": age_days,
             "isDraft": pr.get("isDraft", False),
-            "reviewers": [
-                {"name": r["displayName"], "vote": r.get("vote", 0), "isRequired": r.get("isRequired", False)}
-                for r in pr.get("reviewers", [])
-            ],
-            "webUrl": f"https://dev.azure.com/{args.org}/{args.project}/_git/{pr['repository']['name']}/pullrequest/{pr['pullRequestId']}"
+            "status": "Draft" if pr.get("isDraft", False) else "Ready",
+            "ageDays": age_days,
+            "webUrl": f"https://dev.azure.com/{org}/{project}/_git/{pr['repository']['name']}/pullrequest/{pr['pullRequestId']}"
         })
 
-    output["count"] = len(output["pullRequests"])
     print(json.dumps(output, indent=2))
 
 

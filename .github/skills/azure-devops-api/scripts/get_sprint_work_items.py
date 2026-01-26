@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Query work items from the current sprint board for a team.
-Uses WIQL with @CurrentIteration macro.
+Uses environment variables for Azure DevOps configuration.
 """
 
 import argparse
@@ -15,17 +15,23 @@ from urllib.parse import quote
 import base64
 
 
+def get_env_or_exit(name):
+    """Get environment variable or exit with error."""
+    value = os.environ.get(name)
+    if not value:
+        print(json.dumps({"error": True, "message": f"{name} environment variable not set"}))
+        sys.exit(1)
+    return value
+
+
 def get_auth_header():
-    pat = os.environ.get("AZURE_DEVOPS_PAT")
-    if not pat:
-        return None, "AZURE_DEVOPS_PAT environment variable not set"
+    pat = get_env_or_exit("AZURE_DEVOPS_PAT")
     token = base64.b64encode(f":{pat}".encode()).decode()
-    return {"Authorization": f"Basic {token}"}, None
+    return {"Authorization": f"Basic {token}"}
 
 
 def query_work_items(org, project, team, wiql, headers):
     """Execute WIQL query. Team is required for @CurrentIteration to resolve."""
-    # URL encode team name for the API path (spaces become %20, etc.)
     team_encoded = quote(team, safe='')
     url = f"https://dev.azure.com/{org}/{project}/{team_encoded}/_apis/wit/wiql?api-version=7.1"
     body = json.dumps({"query": wiql}).encode()
@@ -58,9 +64,6 @@ def get_work_items_batch(org, project, ids, headers):
 
 def main():
     parser = argparse.ArgumentParser(description="Get sprint work items for a team")
-    parser.add_argument("--org", required=True, help="Azure DevOps organization")
-    parser.add_argument("--project", required=True, help="Project name")
-    parser.add_argument("--team", required=True, help="Team name (case-sensitive)")
     parser.add_argument("--state", action="append", help="Filter by state (can repeat)")
     parser.add_argument("--unassigned", action="store_true", help="Only unassigned items")
     parser.add_argument("--assigned-to", help="Filter by assignee (@me or email)")
@@ -68,16 +71,17 @@ def main():
                         help="Work item types (default: Product Backlog Item, Spike)")
     args = parser.parse_args()
 
-    headers, err = get_auth_header()
-    if err:
-        print(json.dumps({"error": True, "message": err}))
-        sys.exit(1)
+    # Get configuration from environment variables
+    org = get_env_or_exit("AZURE_DEVOPS_ORG")
+    project = get_env_or_exit("AZURE_DEVOPS_PROJECT")
+    team = get_env_or_exit("AZURE_DEVOPS_TEAM")
+    headers = get_auth_header()
 
     # Default work item types
     types = args.type if args.type else ["Product Backlog Item", "Spike"]
     
     # Build WIQL query using @CurrentIteration macro
-    area_path = f"{args.project}\\{args.team}"
+    area_path = f"{project}\\{team}"
     type_filter = " OR ".join([f"[System.WorkItemType] = '{t}'" for t in types])
     
     wiql = f"""
@@ -102,20 +106,22 @@ def main():
 
     wiql += " ORDER BY [Microsoft.VSTS.Common.Priority] ASC, [System.ChangedDate] DESC"
 
-    result, err = query_work_items(args.org, args.project, args.team, wiql, headers)
+    result, err = query_work_items(org, project, team, wiql, headers)
     if err:
         print(json.dumps(err))
         sys.exit(1)
 
     ids = [item["id"] for item in result.get("workItems", [])]
-    work_items, err = get_work_items_batch(args.org, args.project, ids, headers)
+    work_items, err = get_work_items_batch(org, project, ids, headers)
     if err:
         print(json.dumps(err))
         sys.exit(1)
 
     now = datetime.utcnow()
     output = {
-        "team": args.team,
+        "org": org,
+        "project": project,
+        "team": team,
         "areaPath": area_path,
         "count": len(work_items),
         "workItems": []
@@ -135,7 +141,7 @@ def main():
             "effort": fields.get("Microsoft.VSTS.Scheduling.Effort"),
             "priority": fields.get("Microsoft.VSTS.Common.Priority"),
             "daysSinceChange": days_since,
-            "webUrl": f"https://dev.azure.com/{args.org}/{args.project}/_workitems/edit/{wi['id']}"
+            "webUrl": f"https://dev.azure.com/{org}/{project}/_workitems/edit/{wi['id']}"
         })
 
     print(json.dumps(output, indent=2))

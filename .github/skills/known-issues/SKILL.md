@@ -1,35 +1,32 @@
 ---
 name: known-issues
-description: "Known agent mistakes and corrections. Consult before executing scripts or taking actions to avoid repeating past errors."
+description: "Known agent mistakes and how to avoid them. Use before running scripts, executing commands, or taking actions in Azure DevOps workflows. Triggers on: before running, check issues, avoid mistakes, script arguments, team name, context files."
 ---
 
 # Known Issues
 
 **Check your planned action against these known issues before proceeding.**
 
-## Context Files
-
-| #   | Mistake                                                                        | Correct Behaviour                                                                       |
-| --- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| 1   | Assumed or hallucinated team name (e.g., used "CBI Platform" without checking) | Always read `.github/team-context.md` first and use the exact team name specified there |
-
-**Rule:** Never assume Azure DevOps values (org, project, team name, team ID). Always read from `.github/team-context.md`.
-
 ## Script Arguments
 
-| #   | Mistake                                                                  | Correct Behaviour                                                                                                     |
-| --- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| 2   | Added unsupported `--max-results` argument to `get_sprint_work_items.py` | The script has no `--max-results` flag. Run the script without it and filter/limit results in your output to the user |
+| #   | Mistake                                                                                        | Correct Behaviour                                                                                                                                                                                 |
+| --- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Added unsupported arguments to scripts (e.g., `--max-results`, `--org`, `--project`, `--team`) | Scripts read org/project/team from environment variables. Only use documented arguments: `--state`, `--unassigned`, `--assigned-to`, `--type` for work items; `--status`, `--include-own` for PRs |
 
-**Rule:** Only use arguments documented in the skill. Check `.github/skills/azure-devops-api/SKILL.md` for valid arguments:
+**Rule:** Scripts get Azure DevOps configuration from environment variables (`AZURE_DEVOPS_ORG`, `AZURE_DEVOPS_PROJECT`, `AZURE_DEVOPS_TEAM`, etc.). Do not pass org/project/team as arguments.
 
-- `get_sprint_work_items.py`: `--org`, `--project`, `--team`, `--state`, `--unassigned`, `--assigned-to`, `--type`
-- `get_team_prs.py`: `--org`, `--project`, `--reviewer-id`, `--status`, `--exclude-author-id`
+## MCP vs Scripts
+
+| #   | Mistake                                         | Correct Behaviour                                                                                                 |
+| --- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 2   | Used MCP to query sprint work items or team PRs | MCP cannot filter by Area Path or team reviewer. Use Python scripts in `.github/skills/azure-devops-api/scripts/` |
+
+**Rule:** Use scripts for team-filtered queries, MCP only for individual item lookups and updates.
 
 ## Pre-Action Checklist
 
 Before executing any Azure DevOps script:
 
-1. ✓ Have I read `.github/team-context.md` for org, project, team values?
-2. ✓ Am I using only documented script arguments?
-3. ✓ Am I using scripts (not MCP) for team-filtered queries?
+1. ✓ Am I using only documented script arguments?
+2. ✓ Am I using scripts (not MCP) for team-filtered queries?
+3. ✓ Are the required environment variables configured? (Script will error if not)

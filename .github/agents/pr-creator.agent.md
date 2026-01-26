@@ -6,11 +6,6 @@ tools:
   - "microsoft/azure-devops-mcp/*"
   - "read"
   - "execute/runInTerminal"
-handoffs:
-  - label: Check Pipeline Status
-    agent: Pipeline Investigator
-    prompt: "Check if the pipeline is passing for this PR."
-    send: false
 ---
 
 # PR Creator Agent

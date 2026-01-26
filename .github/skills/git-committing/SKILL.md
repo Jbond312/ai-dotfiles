@@ -1,6 +1,6 @@
 ---
 name: git-committing
-description: "Conventional commit message format, type/scope determination, and commit examples. Use when committing code, writing commit messages, or reviewing commit history."
+description: "Conventional commit message format with type, scope, and description. Use when committing code, writing commit messages, or preparing changes for commit. Triggers on: commit, git commit, commit message, conventional commit, feat, fix, refactor."
 ---
 
 # Git Committing

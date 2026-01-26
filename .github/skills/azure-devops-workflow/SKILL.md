@@ -1,6 +1,6 @@
 ---
 name: azure-devops-workflow
-description: "Work item states, transitions, branch naming, and linking conventions for Azure DevOps. Use when picking up work items, updating states, creating branches, or linking PRs."
+description: "Azure DevOps work item states, transitions, and branch naming conventions. Use when picking up work items, creating branches, changing work item state, or linking PRs to work items. Triggers on: pick up, assign, branch naming, work item state, In Progress, Awaiting Merge, predecessor, backlog."
 ---
 
 # Azure DevOps Workflow

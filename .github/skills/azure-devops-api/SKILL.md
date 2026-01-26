@@ -1,6 +1,6 @@
 ---
 name: azure-devops-api
-description: "Scripts for Azure DevOps REST API. Use instead of MCP when you need team-filtered PR lists, sprint work items with Area Path filtering, or other data the MCP cannot provide."
+description: 'Query Azure DevOps sprint work items and team PRs using Python scripts. Use when asked to find work items, show sprint backlog, list PRs for review, check what is available to pick up, or answer "what next" / "what should I work on". Triggers on: work items, sprint, backlog, PRs, pull requests, available work, unassigned items, team review.'
 ---
 
 # Azure DevOps API Scripts
@@ -15,49 +15,70 @@ Use MCP only for: fetching individual items by ID, creating/updating work items,
 
 ## Prerequisites
 
-- Python 3.6+
-- `AZURE_DEVOPS_PAT` environment variable with Code (Read), Work Items (Read) permissions
-
-Configure in `.vscode/settings.json` (add to `.gitignore`):
+Configure these environment variables in `.vscode/settings.json` (add settings.json to `.gitignore`):
 
 ```json
 {
-  "terminal.integrated.env.windows": { "AZURE_DEVOPS_PAT": "your-pat" }
+  "terminal.integrated.env.windows": {
+    "AZURE_DEVOPS_PAT": "your-pat-here",
+    "AZURE_DEVOPS_ORG": "your-org",
+    "AZURE_DEVOPS_PROJECT": "your-project",
+    "AZURE_DEVOPS_TEAM": "Your Team Name",
+    "AZURE_DEVOPS_TEAM_ID": "team-guid-for-pr-queries",
+    "AZURE_DEVOPS_USER_ID": "your-user-guid"
+  },
+  "terminal.integrated.env.osx": {
+    "AZURE_DEVOPS_PAT": "your-pat-here",
+    "AZURE_DEVOPS_ORG": "your-org",
+    "AZURE_DEVOPS_PROJECT": "your-project",
+    "AZURE_DEVOPS_TEAM": "Your Team Name",
+    "AZURE_DEVOPS_TEAM_ID": "team-guid-for-pr-queries",
+    "AZURE_DEVOPS_USER_ID": "your-user-guid"
+  },
+  "terminal.integrated.env.linux": {
+    "AZURE_DEVOPS_PAT": "your-pat-here",
+    "AZURE_DEVOPS_ORG": "your-org",
+    "AZURE_DEVOPS_PROJECT": "your-project",
+    "AZURE_DEVOPS_TEAM": "Your Team Name",
+    "AZURE_DEVOPS_TEAM_ID": "team-guid-for-pr-queries",
+    "AZURE_DEVOPS_USER_ID": "your-user-guid"
+  }
 }
 ```
 
+**Required:** `AZURE_DEVOPS_PAT`, `AZURE_DEVOPS_ORG`, `AZURE_DEVOPS_PROJECT`, `AZURE_DEVOPS_TEAM`
+**Optional:** `AZURE_DEVOPS_TEAM_ID` (for PR queries), `AZURE_DEVOPS_USER_ID` (to exclude own PRs)
+
 ## get_sprint_work_items.py
 
-Query work items from current sprint for a team using WIQL with `@CurrentIteration` macro.
+Query work items from current sprint for a team.
 
 ```bash
 # Unassigned items (for picking up work)
-python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
-  --org "your-org" --project "your-project" --team "Team Name" --unassigned
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py --unassigned
 
 # Items assigned to current user
-python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
-  --org "your-org" --project "your-project" --team "Team Name" --assigned-to "@me"
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py --assigned-to "@me"
 
 # Items by state
-python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
-  --org "your-org" --project "your-project" --team "Team Name" --state "In Progress"
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py --state "In Progress"
 ```
 
-**Arguments:** `--org`, `--project`, `--team` (required), `--state`, `--unassigned`, `--assigned-to`, `--type`
-
-**Note:** Team name must be exact (case-sensitive) — it's used to resolve `@CurrentIteration` and construct the Area Path filter.
+**Arguments:** `--state`, `--unassigned`, `--assigned-to`, `--type`
 
 ## get_team_prs.py
 
-Get PRs where a team/user is assigned as reviewer.
+Get PRs where the team is assigned as reviewer.
 
 ```bash
-python .github/skills/azure-devops-api/scripts/get_team_prs.py \
-  --org "your-org" --project "your-project" --reviewer-id "team-guid"
+# PRs needing team review (excluding your own)
+python .github/skills/azure-devops-api/scripts/get_team_prs.py
+
+# Include your own PRs
+python .github/skills/azure-devops-api/scripts/get_team_prs.py --include-own
 ```
 
-**Arguments:** `--org`, `--project`, `--reviewer-id` (required), `--status`, `--exclude-author-id`
+**Arguments:** `--status`, `--include-own`
 
 ## When to Use
 
@@ -67,5 +88,3 @@ python .github/skills/azure-devops-api/scripts/get_team_prs.py \
 | Sprint work items with Area Path    | Script |
 | PR metadata, work item by ID        | MCP    |
 | Creating/updating work items or PRs | MCP    |
-
-Read org/project/team from `.github/team-context.md`.

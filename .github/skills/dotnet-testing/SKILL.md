@@ -1,6 +1,6 @@
 ---
 name: dotnet-testing
-description: "Test discovery, execution, and baseline verification for .NET projects. Use when running tests, verifying test coverage, or debugging test failures."
+description: "Run and verify .NET tests, check test baseline, execute specific tests. Use when running tests, verifying test coverage, checking if tests pass, or debugging test failures. Triggers on: run tests, dotnet test, test baseline, verify tests, test discovery, failing tests, TDD."
 ---
 
 # .NET Testing

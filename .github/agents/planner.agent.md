@@ -14,11 +14,11 @@ handoffs:
   - label: Start Coding (TDD)
     agent: TDD Coder
     prompt: "Implement the plan using test-first development."
-    send: false
+    send: true
   - label: Start Coding (One-shot)
     agent: One-Shot Coder
     prompt: "Implement the plan in a single pass."
-    send: false
+    send: true
 ---
 
 # Planner Agent
