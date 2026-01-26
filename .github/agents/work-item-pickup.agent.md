@@ -89,7 +89,48 @@ git pull origin $DEFAULT
 git checkout -b backlog/{id}-{short-description}
 ```
 
-### 7. Summarise and Handoff
+### 7. Ensure Local Folders Are Gitignored
+
+Check that `.vscode` and `.planning` are gitignored (they contain local configuration that shouldn't be committed):
+
+```bash
+# Ensure .vscode is gitignored
+if ! git check-ignore -q .vscode/ 2>/dev/null; then
+    echo ".vscode/" >> .gitignore
+    echo "Added .vscode/ to .gitignore"
+fi
+
+# Ensure .planning is gitignored
+if ! git check-ignore -q .planning/ 2>/dev/null; then
+    echo ".planning/" >> .gitignore
+    echo "Added .planning/ to .gitignore"
+fi
+```
+
+### 8. Check for Conventions
+
+Check if `.planning/CONVENTIONS.md` exists:
+
+```bash
+mkdir -p .planning
+if [ ! -f ".planning/CONVENTIONS.md" ]; then
+    echo "Conventions file not found"
+fi
+```
+
+**If conventions file doesn't exist:**
+
+```markdown
+📋 **Repository conventions not yet analysed**
+
+For the planner to create a good implementation plan, I should first analyse this repository's coding patterns (test framework, naming conventions, error handling style, etc.).
+
+Shall I run the repository analyser first? This takes a few moments but ensures consistent code.
+```
+
+If user agrees, refer to `repo-analyzer` skill to generate `.planning/CONVENTIONS.md`.
+
+### 9. Summarise and Handoff
 
 ```markdown
 ## Work Item #{id}: {title}
@@ -97,6 +138,7 @@ git checkout -b backlog/{id}-{short-description}
 **Branch:** `backlog/{id}-{description}`
 **State:** In Progress
 **Assigned:** {user}
+**Conventions:** {Analysed ✓ | Not yet analysed}
 
 ### Description
 

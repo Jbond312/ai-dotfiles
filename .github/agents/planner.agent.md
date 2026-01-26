@@ -31,7 +31,9 @@ Creates implementation plans that guide coding agents. Plans are saved to `.plan
 
 ## Before Starting
 
-Read `.github/team-context.md` for Azure DevOps settings. Check `project-context.md` (repo root) for architecture patterns — if VSA, refer to `vertical-slice-architecture` skill.
+1. **Check for conventions:** If `.planning/CONVENTIONS.md` doesn't exist, ask to run the `repo-analyzer` skill first
+2. **Read conventions:** Use patterns from CONVENTIONS.md for test naming, handler structure, etc.
+3. **Check architecture:** Read `project-context.md` (repo root) for architecture — if VSA, refer to `vertical-slice-architecture` skill
 
 ## Planning Process
 
@@ -45,7 +47,7 @@ Review work item description and acceptance criteria. Note linked items.
 
 - Existing patterns in the feature area
 - Entry points for this change
-- Test structure and patterns
+- Test structure and patterns (compare to CONVENTIONS.md)
 
 ### 3. Design Checklist
 
@@ -57,14 +59,21 @@ For each: **What**, **How**, **Done when**.
 
 ### 4. Define Test Scenarios
 
-Each implementation task needs test(s). Focus on behaviour.
+Each implementation task needs test(s). Focus on behaviour. Use test naming pattern from CONVENTIONS.md.
 
-### 5. Ensure .planning is Gitignored
+### 5. Ensure Local Folders Are Gitignored
 
 ```bash
+# Ensure .vscode is gitignored (local MCP config)
+if ! git check-ignore -q .vscode/ 2>/dev/null; then
+    echo ".vscode/" >> .gitignore
+fi
+
+# Ensure .planning is gitignored (planning artifacts)
 if ! git check-ignore -q .planning/ 2>/dev/null; then
     echo ".planning/" >> .gitignore
 fi
+
 mkdir -p .planning
 ```
 
@@ -86,16 +95,44 @@ mkdir -p .planning
 
 {2-3 sentence overview}
 
-## Checklist
+## Implementation Checklist
 
 ### 1. {Unit of work}
 
 **What:** {Description}
-**How:** {Approach, files, patterns}
+**How:** {Approach, files, patterns from CONVENTIONS.md}
 **Done when:** {Observable outcome}
 
-- [ ] **Test:** {scenario}
+- [ ] **Test:** {scenario using naming from CONVENTIONS.md}
 - [ ] **Implement:** {task}
+
+---
+
+## Verification Checklist
+
+### Before Implementation
+
+- [ ] Test baseline passes (`dotnet test`)
+- [ ] Branch created from latest main
+- [ ] CONVENTIONS.md reviewed for patterns
+
+### Per Item (mark as you complete each)
+
+- [ ] Failing test written first (TDD RED)
+- [ ] Implementation passes test (TDD GREEN)
+- [ ] Refactoring complete (TDD REFACTOR)
+- [ ] No new warnings introduced
+
+### Before PR
+
+- [ ] All tests pass
+- [ ] No new compiler warnings
+- [ ] Code follows patterns in CONVENTIONS.md
+- [ ] External dependencies flagged for review
+
+### External Dependencies Detected
+
+{None | List any stored procs, APIs, or services that need human verification}
 
 ---
 
@@ -112,5 +149,6 @@ mkdir -p .planning
 ## Guidelines
 
 - Be specific: "Add `ValidateBalance` to `PaymentProcessor`"
-- Reference patterns: "Follow `AccountService.ValidateWithdrawal`"
+- Reference patterns: "Follow approach in CONVENTIONS.md"
+- Reference similar code: "Follow `AccountService.ValidateWithdrawal`"
 - Don't over-plan: Note uncertainty as decision points

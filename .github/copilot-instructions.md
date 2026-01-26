@@ -5,7 +5,6 @@
 ## Pattern-Specific Instructions
 
 Additional instructions auto-apply based on file type:
-
 - `instructions/csharp.instructions.md` → All `.cs` files
 - `instructions/tests.instructions.md` → Test files
 - `instructions/banking.instructions.md` → Features, Domain, Infrastructure

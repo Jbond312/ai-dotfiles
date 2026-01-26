@@ -4,6 +4,96 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] - 2025-01-26
+
+### Added
+
+- **repo-analyzer skill** — Discovers coding conventions from existing codebase and generates `.planning/CONVENTIONS.md`:
+  - Test framework and naming patterns
+  - Handler/mediator patterns (MediatR, custom, direct services)
+  - Mapping approach (AutoMapper, Mapster, static methods)
+  - Error handling style (Result pattern, exceptions)
+  - Code style preferences (nullability, namespaces, records)
+- **csharp-coding skill** — C# coding standards with Must/Must Not rules:
+  - Hard rules: Explicit null handling, DI patterns, input validation
+  - Must Not: DateTime.Now, swallowing exceptions, magic strings, service locator
+  - Golden examples: Constructor injection, Result pattern, guard clauses
+  - Anti-patterns with explanations of why they're problematic
+  - Banking-specific rules: decimal for money, idempotency, audit trails
+
+- **Verification checklist in PLAN.md** — Tracks TDD compliance and quality gates:
+  - Before Implementation: baseline passes, branch created, conventions reviewed
+  - Per Item: RED/GREEN/REFACTOR phases, no new warnings
+  - Before PR: all tests pass, follows conventions, external dependencies flagged
+
+- **Automatic gitignore management** — Agents ensure `.vscode/` and `.planning/` are gitignored:
+  - Checked during work-item-pickup and planner phases
+  - Prevents accidental commit of local settings and PATs
+
+### Changed
+
+- **dotnet-testing skill significantly enriched:**
+  - Complete TDD workflow (RED → GREEN → REFACTOR) with commands
+  - Golden examples for test structure, naming patterns, parameterised tests
+  - Anti-patterns: testing implementation details, non-deterministic tests, over-mocking
+  - Must/Must Not rules for test quality
+
+- **code-reviewing skill enriched:**
+  - Good vs Bad code examples with explanations
+  - Null handling, error handling, idempotency, logging examples
+  - External dependency flag template with verification checklist
+  - Review report format includes PLAN.md verification status
+
+- **planner agent** now:
+  - Checks for `.planning/CONVENTIONS.md` before planning
+  - References conventions for test naming and patterns
+  - Generates verification checklist in plan
+  - Ensures `.vscode/` and `.planning/` are gitignored
+
+- **work-item-pickup agent** now:
+  - Checks if conventions file exists before handoff to planner
+  - Offers to run repo-analyzer if conventions missing
+  - Ensures `.vscode/` and `.planning/` are gitignored
+
+- **reviewer agent** now:
+  - Verifies against CONVENTIONS.md patterns
+  - Checks PLAN.md verification checklist completion
+  - Updates verification status in review report
+
+- **tdd-coder agent** now:
+  - Reads CONVENTIONS.md for naming and patterns
+  - Updates verification checklist during TDD cycle
+  - References csharp-coding and dotnet-testing skills
+
+### Philosophy
+
+This release follows the "Must / Must Not / Golden Example" pattern from community best practices:
+
+- Skills now contain detailed instructions, not just triggers
+- Convention discovery ensures portability across repositories
+- Verification checklists provide concrete quality gates
+
+## [0.5.0] - 2025-01-26
+
+### Changed
+
+- **Azure DevOps configuration now uses environment variables** instead of team-context.md:
+  - `AZURE_DEVOPS_PAT`, `AZURE_DEVOPS_ORG`, `AZURE_DEVOPS_PROJECT`, `AZURE_DEVOPS_TEAM`
+  - Optional: `AZURE_DEVOPS_TEAM_ID`, `AZURE_DEVOPS_USER_ID`
+  - Configure in `.vscode/settings.json` under `terminal.integrated.env.*`
+- **Python scripts simplified** — no longer require `--org`, `--project`, `--team` arguments
+- **Improved skill descriptions** with explicit trigger phrases for better automatic discovery:
+  - Added "Triggers on:" keywords to all skill descriptions
+  - Added "Use when asked to..." phrases matching common user prompts
+
+### Removed
+
+- **team-context.md** — replaced by environment variables
+
+### Fixed
+
+- Agents should now be more reliable as configuration comes from environment variables rather than requiring file parsing
+
 ## [0.4.0] - 2025-01-25
 
 ### Changed

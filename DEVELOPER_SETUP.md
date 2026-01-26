@@ -19,170 +19,161 @@ Before starting, ensure you have:
 Copy the following directories and files to your repository:
 
 ```
-.github/
-├── CHANGELOG.md                    # Version history
-├── copilot-instructions.md         # Global workflow overview
-├── project-context.md              # Template—customise for your repo
-├── instructions/                   # Pattern-specific instructions (auto-apply)
-│   ├── banking.instructions.md     # → Features/Domain/Infrastructure
-│   ├── csharp.instructions.md      # → All .cs files
-│   └── tests.instructions.md       # → Test files
-├── agents/
-│   ├── what-next.agent.md          # Entry point
-│   ├── pipeline-investigator.agent.md
-│   ├── work-item-pickup.agent.md
-│   ├── planner.agent.md
-│   ├── tdd-coder.agent.md
-│   ├── one-shot-coder.agent.md
-│   ├── reviewer.agent.md
-│   ├── committer.agent.md
-│   └── pr-creator.agent.md
-└── skills/
-    ├── azure-devops-workflow/
-    │   └── SKILL.md
-    ├── azure-devops-api/
-    │   ├── SKILL.md
-    │   └── scripts/
-    │       ├── get_sprint_work_items.py
-    │       └── get_team_prs.py
-    ├── code-reviewing/             # Review checklist, external dependency flagging
-    │   └── SKILL.md
-    ├── dotnet-testing/             # Test discovery and execution
-    │   └── SKILL.md
-    ├── git-committing/             # Conventional commit format
-    │   └── SKILL.md
-    └── vertical-slice-architecture/
-        ├── SKILL.md
-        └── reference/              # Detailed examples (loaded on-demand)
-            ├── code-review-checklist.md
-            └── slice-components.md
+my-repo/
+├── project-context.md              # Repo-specific (architecture, external deps)
+└── .github/
+    ├── CHANGELOG.md                # Version history
+    ├── copilot-instructions.md     # Global workflow overview
+    ├── instructions/               # Pattern-specific instructions (auto-apply)
+    │   ├── banking.instructions.md # → Features/Domain/Infrastructure
+    │   ├── csharp.instructions.md  # → All .cs files
+    │   └── tests.instructions.md   # → Test files
+    ├── agents/
+    │   ├── what-next.agent.md      # Entry point
+    │   ├── work-item-pickup.agent.md
+    │   ├── planner.agent.md
+    │   ├── tdd-coder.agent.md
+    │   ├── one-shot-coder.agent.md
+    │   ├── reviewer.agent.md
+    │   ├── committer.agent.md
+    │   └── pr-creator.agent.md
+    └── skills/
+        ├── azure-devops-workflow/
+        │   └── SKILL.md
+        ├── azure-devops-api/
+        │   ├── SKILL.md
+        │   └── scripts/
+        │       ├── get_sprint_work_items.py
+        │       └── get_team_prs.py
+        ├── code-reviewing/
+        │   └── SKILL.md
+        ├── csharp-coding/
+        │   └── SKILL.md
+        ├── dotnet-testing/
+        │   └── SKILL.md
+        ├── git-committing/
+        │   └── SKILL.md
+        ├── known-issues/
+        │   └── SKILL.md
+        ├── repo-analyzer/
+        │   └── SKILL.md
+        └── vertical-slice-architecture/
+            ├── SKILL.md
+            └── reference/
+                ├── code-review-checklist.md
+                └── slice-components.md
 
 .vscode/
 ├── mcp.json
-└── settings.template.json          # Copy to settings.json and add your PAT
+└── settings.template.json          # Copy to settings.json and configure
 ```
 
-### 2. Configure the MCP Server
+### 2. Enable Agent Skills in VS Code
 
-Edit `.vscode/mcp.json` if you need to adjust the Azure DevOps organisation name. The file will prompt you for this when the server starts.
+Agent Skills are in preview. Enable them in VS Code settings:
 
-### 3. Add entries to .gitignore
+1. Open Settings (Ctrl+,)
+2. Search for `chat.useAgentSkills`
+3. Check the box to enable
 
-The workflow creates planning files and uses local settings that shouldn't be committed:
+### 3. Configure Azure DevOps Environment Variables
 
-```bash
-echo ".planning/" >> .gitignore
-echo ".vscode/settings.json" >> .gitignore
-```
-
-### 4. Configure Project Context
-
-Edit `.github/project-context.md` to configure your team and repository settings. This is **required** for most workflow features.
-
-**Required fields:**
-
-| Field        | Purpose                | Where to Find                                         |
-| ------------ | ---------------------- | ----------------------------------------------------- |
-| Organization | Azure DevOps API calls | Your Azure DevOps URL: `dev.azure.com/{organization}` |
-| Project      | Azure DevOps API calls | Your project name in Azure DevOps                     |
-| Team name    | Sprint board queries   | Project Settings > Teams (case-sensitive)             |
-| Team ID      | PR filtering           | Team settings URL contains the GUID                   |
-
-**Optional fields:**
-
-- Current user (name, email) — For display purposes; WIQL queries can use `@me` instead
-- User ID (GUID) — For excluding your own PRs from review lists
-- Architecture pattern (e.g., VSA) — Enables pattern-specific guidance
-- Testing conventions
-- Domain context
-
-See the template in `.github/project-context.md` for all available options.
-
-### 5. Verify Team Configuration
-
-The **team name** must exactly match your Azure DevOps team name (case-sensitive). This is used by the `get_sprint_work_items.py` script to construct:
-
-- **Area Path:** `{Project}\{Team}` — filters work items to those owned by your team
-- **Current Iteration lookup:** Gets the team's active sprint
-
-Both are required to get the correct work items. Without the Area Path, queries may return work items from other teams.
-
-To find your team name: Azure DevOps > Project Settings > Teams
-
-**Note:** The Microsoft Azure DevOps MCP doesn't have a WIQL query tool, so we use Python scripts from the `azure-devops-api` skill for sprint board queries. These scripts call the Azure DevOps REST API directly.
-
-### 6. Start the MCP Server
-
-1. Open VS Code in your repository
-2. Open the Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
-3. Run "MCP: Start Server"
-4. Select "azure-devops" when prompted
-5. Enter your Azure DevOps organisation name
-
-Verify the server is running in the MCP panel (View → MCP).
-
-### 7. Configure Azure DevOps PAT for Scripts
-
-Several features require the `azure-devops-api` skill scripts, which need a Personal Access Token:
-
-- **Sprint board queries** (finding available work items, checking colleagues' work)
-- **Team-filtered PR lists** (PRs awaiting review by your team)
-
-**Step 1: Create a PAT in Azure DevOps**
-
-1. Go to Azure DevOps → User Settings → Personal Access Tokens
-2. Create a new token with these scopes:
-   - **Code:** Read
-   - **Work Items:** Read
-   - **Build:** Read (for pipeline status)
-3. Copy the token (you won't see it again)
-
-**Step 2: Configure VS Code to provide the PAT**
-
-Add the PAT to your VS Code workspace settings. Create or edit `.vscode/settings.json`:
+The Python scripts read Azure DevOps configuration from environment variables. Configure these in `.vscode/settings.json`:
 
 ```json
 {
-  "terminal.integrated.env.linux": {
-    "AZURE_DEVOPS_PAT": "your-pat-here"
+  "terminal.integrated.env.windows": {
+    "AZURE_DEVOPS_PAT": "your-pat-here",
+    "AZURE_DEVOPS_ORG": "your-org",
+    "AZURE_DEVOPS_PROJECT": "your-project",
+    "AZURE_DEVOPS_TEAM": "Your Team Name",
+    "AZURE_DEVOPS_TEAM_ID": "team-guid-for-pr-queries",
+    "AZURE_DEVOPS_USER_ID": "your-user-guid"
   },
   "terminal.integrated.env.osx": {
-    "AZURE_DEVOPS_PAT": "your-pat-here"
+    "AZURE_DEVOPS_PAT": "your-pat-here",
+    "AZURE_DEVOPS_ORG": "your-org",
+    "AZURE_DEVOPS_PROJECT": "your-project",
+    "AZURE_DEVOPS_TEAM": "Your Team Name",
+    "AZURE_DEVOPS_TEAM_ID": "team-guid-for-pr-queries",
+    "AZURE_DEVOPS_USER_ID": "your-user-guid"
   },
-  "terminal.integrated.env.windows": {
-    "AZURE_DEVOPS_PAT": "your-pat-here"
+  "terminal.integrated.env.linux": {
+    "AZURE_DEVOPS_PAT": "your-pat-here",
+    "AZURE_DEVOPS_ORG": "your-org",
+    "AZURE_DEVOPS_PROJECT": "your-project",
+    "AZURE_DEVOPS_TEAM": "Your Team Name",
+    "AZURE_DEVOPS_TEAM_ID": "team-guid-for-pr-queries",
+    "AZURE_DEVOPS_USER_ID": "your-user-guid"
   }
 }
 ```
 
-**Step 3: Ensure the PAT isn't committed**
+**Required variables:**
+| Variable | Purpose | Where to Find |
+|----------|---------|---------------|
+| `AZURE_DEVOPS_PAT` | Authentication | Azure DevOps > User Settings > Personal Access Tokens |
+| `AZURE_DEVOPS_ORG` | API calls | Your Azure DevOps URL: `dev.azure.com/{organization}` |
+| `AZURE_DEVOPS_PROJECT` | API calls | Your project name in Azure DevOps |
+| `AZURE_DEVOPS_TEAM` | Sprint queries | Project Settings > Teams (case-sensitive) |
 
-Add to `.gitignore`:
+**Optional variables:**
+| Variable | Purpose | Where to Find |
+|----------|---------|---------------|
+| `AZURE_DEVOPS_TEAM_ID` | PR filtering by team | Team settings URL contains the GUID |
+| `AZURE_DEVOPS_USER_ID` | Exclude own PRs | Azure DevOps API or network inspection |
 
-```
-# VS Code settings may contain secrets
-.vscode/settings.json
-```
+### 4. Add entries to .gitignore
 
-If you need to share other VS Code settings with the team, use `.vscode/settings.template.json` (without the PAT) and have developers copy it locally.
-
-**Step 4: Restart VS Code**
-
-Close and reopen VS Code (or reload the window) for the environment variable to take effect.
-
-**Verify it works:**
-
-Open a new terminal in VS Code and run:
+The workflow creates planning files and uses local settings that shouldn't be committed:
 
 ```bash
-# Linux/macOS
-echo $AZURE_DEVOPS_PAT
+# Local planning artifacts
+echo ".planning/" >> .gitignore
 
-# Windows PowerShell
-echo $env:AZURE_DEVOPS_PAT
+# Local VS Code settings (contains PAT and env vars)
+echo ".vscode/" >> .gitignore
 ```
 
-You should see your PAT (or at least confirm it's set).
+**Note:** The agents will also check and add these entries automatically when you pick up a work item or create a plan, but it's good practice to add them upfront.
+
+If you want to share some VS Code settings with your team while keeping secrets local, you can be more selective:
+
+```bash
+# Alternative: only ignore settings.json, share other .vscode files
+echo ".vscode/settings.json" >> .gitignore
+```
+
+### 5. Configure Project Context (Per-Repo)
+
+Create `project-context.md` at the **repository root** (not in `.github/`). This file is specific to each repository.
+
+| Field                 | Purpose                                          |
+| --------------------- | ------------------------------------------------ |
+| Repository name       | Display purposes                                 |
+| Architecture pattern  | Enables pattern-specific guidance (e.g., VSA)    |
+| Key directories       | Helps agents navigate the codebase               |
+| External dependencies | Documents stored procs, APIs for review flagging |
+
+See the template in `project-context.md` for all available options.
+
+### 6. Configure the MCP Server (Optional)
+
+If you need Azure DevOps MCP for individual work item lookups:
+
+1. Edit `.vscode/mcp.json` if you need to adjust the Azure DevOps organisation name
+2. The server will prompt for this when it starts
+
+### 7. Verify Setup
+
+1. Open a new terminal in VS Code
+2. Run a test query:
+
+```bash
+python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py --unassigned
+```
+
+If configured correctly, you'll see JSON output with work items. If not, you'll see an error indicating which environment variable is missing.
 
 ### 8. Verify Azure CLI Authentication
 
@@ -215,19 +206,8 @@ The workflow starts with the **What's Next** agent, which helps you prioritise:
 The agent checks (in priority order):
 
 - PRs awaiting your team's review (with links to review manually)
-- Failing pipelines
-- Colleagues who might need help (work items stuck too long)
 - Your own in-progress work
-- New work items to pick up
-
-Only after confirming higher-priority items don't need attention will it suggest picking up new work.
-
-### Investigating a Pipeline Failure
-
-If the What's Next agent surfaces failing pipelines, hand off to the **Pipeline Investigator** agent:
-
-1. Click the "Investigate Pipeline Failure" handoff, or
-2. Select the Pipeline Investigator agent and specify which pipeline to investigate
+- New work items to pick up (shows top 5)
 
 ### Picking Up a Work Item
 
@@ -314,22 +294,34 @@ Choose TDD when in doubt—the overhead is small compared to catching issues lat
 
 ## File Locations
 
-| File/Directory                             | Purpose                                                         |
-| ------------------------------------------ | --------------------------------------------------------------- |
-| `.github/CHANGELOG.md`                     | Version history for the agent configuration                     |
-| `.github/copilot-instructions.md`          | Global workflow overview, applied to all agents                 |
-| `.github/project-context.md`               | Repository-specific architecture, team, and Azure DevOps config |
-| `.github/instructions/*.instructions.md`   | Pattern-specific instructions (auto-apply based on `applyTo`)   |
-| `.github/agents/*.agent.md`                | Custom agent definitions                                        |
-| `.github/skills/*/SKILL.md`                | Reusable knowledge loaded on-demand                             |
-| `.github/skills/*/reference/*.md`          | Detailed reference files for progressive disclosure             |
-| `.github/skills/azure-devops-api/scripts/` | Python scripts for Azure DevOps API access                      |
-| `.vscode/mcp.json`                         | MCP server configuration                                        |
-| `.vscode/settings.json`                    | VS Code settings including PAT (gitignored)                     |
-| `.vscode/settings.template.json`           | Template for settings.json                                      |
-| `.planning/PLAN.md`                        | Current implementation plan (gitignored)                        |
+| File/Directory                             | Purpose                                                            |
+| ------------------------------------------ | ------------------------------------------------------------------ |
+| `project-context.md`                       | Repo-specific config (architecture, external deps) — **repo root** |
+| `.github/CHANGELOG.md`                     | Version history for the agent configuration                        |
+| `.github/copilot-instructions.md`          | Global workflow overview, applied to all agents                    |
+| `.github/instructions/*.instructions.md`   | Pattern-specific instructions (auto-apply based on `applyTo`)      |
+| `.github/agents/*.agent.md`                | Custom agent definitions                                           |
+| `.github/skills/*/SKILL.md`                | Reusable knowledge loaded on-demand                                |
+| `.github/skills/*/reference/*.md`          | Detailed reference files for progressive disclosure                |
+| `.github/skills/azure-devops-api/scripts/` | Python scripts for Azure DevOps API access                         |
+| `.vscode/mcp.json`                         | MCP server configuration                                           |
+| `.vscode/settings.json`                    | VS Code settings with Azure DevOps env vars (gitignored)           |
+| `.vscode/settings.template.json`           | Template for settings.json                                         |
+| `.planning/PLAN.md`                        | Current implementation plan (gitignored)                           |
+| `.planning/CONVENTIONS.md`                 | Discovered repository coding conventions (gitignored)              |
 
 ## Troubleshooting
+
+### Scripts Fail with "Environment Variable Not Set"
+
+Check your `.vscode/settings.json` has all required variables:
+
+- `AZURE_DEVOPS_PAT`
+- `AZURE_DEVOPS_ORG`
+- `AZURE_DEVOPS_PROJECT`
+- `AZURE_DEVOPS_TEAM`
+
+Restart VS Code after changing settings for environment variables to take effect.
 
 ### MCP Server Won't Start
 
@@ -442,12 +434,14 @@ If your Azure DevOps board uses different state names, update:
 
 When rolling out to your team:
 
-- [ ] Copy configuration files to shared repositories (agents, skills, instructions)
-- [ ] Customise `.github/project-context.md` for each repository
+- [ ] Copy `.github/` directory to shared repositories (agents, skills, instructions)
+- [ ] Each developer configures `.vscode/settings.json` with Azure DevOps environment variables
+- [ ] Create `project-context.md` at root of each repository
+- [ ] Enable `chat.useAgentSkills` in VS Code settings
 - [ ] Review pattern-specific instructions in `.github/instructions/` for your team's conventions
-- [ ] Add `.planning/` to `.gitignore`
-- [ ] Verify MCP server works for each team member
+- [ ] Add `.planning/` and `.vscode/` to `.gitignore` (agents will also auto-add if missing)
 - [ ] Ensure everyone has Azure CLI configured
+- [ ] Run `repo-analyzer` skill once per repo to generate `.planning/CONVENTIONS.md`
 - [ ] Walk through the workflow with one real work item
 - [ ] Collect feedback and iterate
 
@@ -458,48 +452,42 @@ When rolling out to your team:
 ```
 what-next (entry point)
     ├── PRs awaiting review → (review manually in Azure DevOps)
-    ├── Failing pipelines → pipeline-investigator
-    ├── Colleagues need help → (informational, reach out manually)
     ├── Your in-progress work → planner / coder (resume)
-    └── Nothing urgent → work-item-pickup
+    └── Available work → work-item-pickup
 
 work-item-pickup → planner → [coder → reviewer → committer] → pr-creator
 ```
 
 ### Handoff Shortcuts
 
-| From                  | To                    | When                           |
-| --------------------- | --------------------- | ------------------------------ |
-| what-next             | pipeline-investigator | Failing pipelines              |
-| what-next             | planner               | Resume in-progress work        |
-| what-next             | work-item-pickup      | Ready for new work             |
-| work-item-pickup      | planner               | After branch created           |
-| planner               | tdd-coder             | Ready to implement (iterative) |
-| planner               | one-shot-coder        | Ready to implement (batch)     |
-| tdd-coder             | reviewer              | Item implemented               |
-| one-shot-coder        | reviewer              | All items implemented          |
-| reviewer              | tdd-coder             | Feedback to address            |
-| reviewer              | one-shot-coder        | Feedback to address            |
-| reviewer              | committer             | Approved                       |
-| committer             | tdd-coder             | Next item (TDD only)           |
-| committer             | pr-creator            | All items complete             |
-| pipeline-investigator | what-next             | Investigation complete         |
+| From             | To               | When                           |
+| ---------------- | ---------------- | ------------------------------ |
+| what-next        | work-item-pickup | Ready for new work             |
+| work-item-pickup | planner          | After branch created           |
+| planner          | tdd-coder        | Ready to implement (iterative) |
+| planner          | one-shot-coder   | Ready to implement (batch)     |
+| tdd-coder        | reviewer         | Item implemented               |
+| one-shot-coder   | reviewer         | All items implemented          |
+| reviewer         | tdd-coder        | Feedback to address            |
+| reviewer         | one-shot-coder   | Feedback to address            |
+| reviewer         | committer        | Approved                       |
+| committer        | tdd-coder        | Next item (TDD only)           |
+| committer        | pr-creator       | All items complete             |
 
 ### Model Configuration
 
 Agents are configured with appropriate models to balance capability and cost:
 
-| Agent                 | Model            | Rationale                             |
-| --------------------- | ---------------- | ------------------------------------- |
-| what-next             | claude-3-5-haiku | Light orchestration, simple decisions |
-| pipeline-investigator | claude-sonnet-4  | Log analysis requires reasoning       |
-| work-item-pickup      | claude-sonnet-4  | Predecessor checks, context gathering |
-| planner               | claude-sonnet-4  | Codebase analysis, plan structuring   |
-| tdd-coder             | claude-sonnet-4  | Code generation, test writing         |
-| one-shot-coder        | claude-sonnet-4  | Code generation, test writing         |
-| reviewer              | claude-sonnet-4  | Code review requires judgment         |
-| committer             | claude-3-5-haiku | Template-based, simple task           |
-| pr-creator            | claude-3-5-haiku | Template-based, simple task           |
+| Agent            | Model            | Rationale                             |
+| ---------------- | ---------------- | ------------------------------------- |
+| what-next        | claude-3-5-haiku | Light orchestration, simple decisions |
+| work-item-pickup | claude-sonnet-4  | Predecessor checks, context gathering |
+| planner          | claude-sonnet-4  | Codebase analysis, plan structuring   |
+| tdd-coder        | claude-sonnet-4  | Code generation, test writing         |
+| one-shot-coder   | claude-sonnet-4  | Code generation, test writing         |
+| reviewer         | claude-sonnet-4  | Code review requires judgment         |
+| committer        | claude-3-5-haiku | Template-based, simple task           |
+| pr-creator       | claude-3-5-haiku | Template-based, simple task           |
 
 **To change a model:** Edit the `model:` field in the agent's YAML frontmatter. Leave blank to use the model selected in the Copilot dropdown.
 
