@@ -21,6 +21,10 @@ handoffs:
 
 Reviews code before commit. Refer to `code-reviewing` skill for checklist and issue categorisation.
 
+## Before Taking Action
+
+**Consult the `known-issues` skill** to avoid repeating past mistakes.
+
 ## Review Process
 
 ### 1. Understand Context

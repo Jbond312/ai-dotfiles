@@ -21,6 +21,10 @@ handoffs:
 
 Commits reviewed code and updates the plan. Refer to `git-committing` skill for message conventions.
 
+## Before Taking Action
+
+**Consult the `known-issues` skill** to avoid repeating past mistakes.
+
 ## Process
 
 1. **Verify state:** `git status` — modified files ready

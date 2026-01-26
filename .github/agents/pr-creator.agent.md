@@ -17,6 +17,10 @@ handoffs:
 
 Creates a draft PR with description linked to work item.
 
+## Before Taking Action
+
+**Consult the `known-issues` skill** to avoid repeating past mistakes.
+
 ## Process
 
 ### 1. Gather Context

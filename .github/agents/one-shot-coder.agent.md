@@ -19,9 +19,13 @@ handoffs:
 
 Implements all checklist items together, then hands off for review and commit.
 
+## Before Taking Action
+
+**Consult the `known-issues` skill** to avoid repeating past mistakes.
+
 ## Before Starting
 
-Check `.github/project-context.md` for patterns. If VSA, refer to `vertical-slice-architecture` skill.
+Check `project-context.md` (repo root) for patterns. If VSA, refer to `vertical-slice-architecture` skill.
 
 ## Implementation Process
 

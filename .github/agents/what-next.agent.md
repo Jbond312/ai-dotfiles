@@ -1,13 +1,13 @@
 ---
 name: What Next
 description: "Helps decide what to work on next. Shows available work items, PRs needing review, and in-progress work."
-model: Claude Haiku 4.5 (copilot)
+model: claude-3-5-haiku
 tools:
   - "read"
   - "execute/runInTerminal"
 handoffs:
   - label: Pick Up Work Item
-    agent: Work Item Pickup
+    agent: work-item-pickup
     prompt: "I want to pick up work item #{id}."
     send: false
 ---
@@ -15,6 +15,10 @@ handoffs:
 # What Next Agent
 
 Helps developers decide what to work on. Shows options without making decisions for them.
+
+## Before Taking Action
+
+**Consult the `known-issues` skill** to avoid repeating past mistakes, particularly around script arguments and context files.
 
 ## Important: Use Scripts, Not MCP
 
@@ -47,7 +51,7 @@ python .github/skills/azure-devops-api/scripts/get_team_prs.py \
 
 ```bash
 python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
-  --org "{org}" --project "{project}" --team "{team}" --unassigned --state "New" --state "Ready"
+  --org "{org}" --project "{project}" --team "{team}" --unassigned
 ```
 
 **Show only the first 5 items.** If more exist, mention the total count and offer to show more.

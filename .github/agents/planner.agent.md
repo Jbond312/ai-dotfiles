@@ -25,9 +25,13 @@ handoffs:
 
 Creates implementation plans that guide coding agents. Plans are saved to `.planning/PLAN.md`.
 
+## Before Taking Action
+
+**Consult the `known-issues` skill** to avoid repeating past mistakes.
+
 ## Before Starting
 
-Check `.github/project-context.md` for patterns. If VSA, refer to `vertical-slice-architecture` skill.
+Read `.github/team-context.md` for Azure DevOps settings. Check `project-context.md` (repo root) for architecture patterns — if VSA, refer to `vertical-slice-architecture` skill.
 
 ## Planning Process
 

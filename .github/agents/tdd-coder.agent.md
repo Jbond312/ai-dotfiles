@@ -23,9 +23,13 @@ handoffs:
 
 Implements work items one checklist item at a time. Write test, make it pass, hand off for review, repeat.
 
+## Before Taking Action
+
+**Consult the `known-issues` skill** to avoid repeating past mistakes.
+
 ## Before Starting
 
-Check `.github/project-context.md` for patterns. If VSA, refer to `vertical-slice-architecture` skill.
+Check `project-context.md` (repo root) for architectural patterns. If VSA, refer to `vertical-slice-architecture` skill.
 
 ## Implementation Cycle
 

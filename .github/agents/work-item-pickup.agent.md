@@ -17,6 +17,10 @@ handoffs:
 
 Validates a work item can be picked up, checks predecessors, and prepares the working environment. **Does not assign until user confirms.**
 
+## Before Taking Action
+
+**Consult the `known-issues` skill** to avoid repeating past mistakes.
+
 ## Process
 
 ### 1. Fetch Work Item Details
