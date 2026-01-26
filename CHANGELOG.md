@@ -4,6 +4,37 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2025-01-25
+
+### Changed
+
+- **what-next agent:**
+  - PRs now show "Draft" or "Ready" status in output table
+  - Available work items limited to first 5 (with total count shown)
+  - Removed MCP from tools (uses scripts exclusively for queries)
+- **work-item-pickup agent:**
+  - Now explicitly blocks on incomplete predecessors instead of just warning
+  - Requires user confirmation before assigning work item
+  - Does not offer to plan implementation until user confirms pickup
+
+### Removed
+
+- **pipeline-investigator agent** — Removed as it didn't provide enough value yet
+
+## [0.3.0] - 2025-01-25
+
+### Changed
+
+- **Split context configuration into two files:**
+  - `team-context.md` (in `.github/`) — Shared Azure DevOps settings (org, project, team name, team ID, user ID)
+  - `project-context.md` (repo root) — Repo-specific settings (architecture, external dependencies, key directories)
+- Updated all agents and skills to reference the appropriate context file
+- This enables sharing `.github/` across multiple repositories while keeping repo-specific config separate
+
+### Fixed
+
+- Agents now look for `project-context.md` at repo root instead of inside `.github/`
+
 ## [0.2.0] - 2025-01-25
 
 ### Added

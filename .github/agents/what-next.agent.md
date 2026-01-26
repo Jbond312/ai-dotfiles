@@ -3,17 +3,12 @@ name: What Next
 description: "Helps decide what to work on next. Shows available work items, PRs needing review, and in-progress work."
 model: Claude Haiku 4.5 (copilot)
 tools:
-  - "microsoft/azure-devops-mcp/*"
   - "read"
   - "execute/runInTerminal"
 handoffs:
   - label: Pick Up Work Item
     agent: Work Item Pickup
     prompt: "I want to pick up work item #{id}."
-    send: false
-  - label: Review PR
-    agent: Reviewer
-    prompt: "Review PR #{id}."
     send: false
 ---
 
@@ -55,6 +50,8 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
   --org "{org}" --project "{project}" --team "{team}" --unassigned --state "New" --state "Ready"
 ```
 
+**Show only the first 5 items.** If more exist, mention the total count and offer to show more.
+
 ## Output Format
 
 ```markdown
@@ -66,11 +63,12 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
 
 ## PRs Needing Review
 
-| PR  | Repository   | Author | Age |
-| --- | ------------ | ------ | --- |
-| #45 | payments-api | Jane   | 2d  |
+| PR  | Repository   | Author | Age | Status |
+| --- | ------------ | ------ | --- | ------ |
+| #45 | payments-api | Jane   | 2d  | Ready  |
+| #46 | accounts-api | Bob    | 1d  | Draft  |
 
-## Available to Pick Up
+## Available to Pick Up (showing 5 of 12)
 
 | ID   | Title              | Effort | Priority |
 | ---- | ------------------ | ------ | -------- |
@@ -79,7 +77,8 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
 What would you like to do?
 ```
 
+**PR Status column:** Show "Draft" for draft PRs, "Ready" for non-draft PRs ready for review.
+
 ## Handoffs
 
 - User selects work item → hand off to `work-item-pickup`
-- User selects PR → hand off to `reviewer`
