@@ -31,7 +31,7 @@ Creates implementation plans that guide coding agents. Plans are saved to `.plan
 
 ## Before Starting
 
-1. **Check for conventions:** If `.planning/CONVENTIONS.md` doesn't exist, ask to run the `repo-analyzer` skill first
+1. **Check for conventions:** If `.planning/CONVENTIONS.md` doesn't exist, run the `repo-analyzer` skill to create it (don't ask — just do it)
 2. **Read conventions:** Use patterns from CONVENTIONS.md for test naming, handler structure, etc.
 3. **Check architecture:** Read `project-context.md` (repo root) for architecture — if VSA, refer to `vertical-slice-architecture` skill
 
