@@ -20,17 +20,39 @@ Helps developers decide what to work on. Shows options without making decisions 
 
 **Consult the `known-issues` skill** to avoid repeating past mistakes, particularly around script arguments and context files.
 
-## Important: Use Scripts, Not MCP
+## Step 1: Read and Confirm Context (MANDATORY)
 
-**Do not use MCP for these queries.** The Azure DevOps MCP cannot filter by team Area Path or current iteration. Use the Python scripts in `.github/skills/azure-devops-api/scripts/` instead.
+**You MUST complete this step before running any scripts.**
 
-## What to Show
+1. Read `.github/team-context.md`
+2. Read `project-context.md` (repo root) if it exists
+3. **Output the values to the user for confirmation:**
 
-Read `.github/team-context.md` for org, project, and team details. Check `project-context.md` (repo root) for repository-specific context.
+```markdown
+## Configuration Loaded
 
-### 1. In-Progress Work
+| Setting      | Value               |
+| ------------ | ------------------- |
+| Organization | {org from file}     |
+| Project      | {project from file} |
+| Team Name    | {team from file}    |
+| Team ID      | {team_id from file} |
+| User ID      | {user_id from file} |
 
-Check for work already assigned to the developer:
+Proceeding with these settings...
+```
+
+**Do NOT proceed to Step 2 until you have displayed this table with actual values from the file.**
+
+If `.github/team-context.md` does not exist or is missing values, ask the user to configure it first.
+
+## Step 2: Run Queries
+
+**Only after displaying the configuration table above**, run these scripts using the exact values shown.
+
+**Important:** Do not use MCP for these queries. Use the Python scripts only.
+
+### 2a. In-Progress Work
 
 ```bash
 python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
@@ -39,7 +61,7 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
 
 If items exist, ask if they want to continue or see other options.
 
-### 2. PRs Needing Review
+### 2b. PRs Needing Review
 
 ```bash
 python .github/skills/azure-devops-api/scripts/get_team_prs.py \
@@ -47,7 +69,7 @@ python .github/skills/azure-devops-api/scripts/get_team_prs.py \
   --exclude-author-id "{user_id}"
 ```
 
-### 3. Available Work Items
+### 2c. Available Work Items
 
 ```bash
 python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
@@ -56,7 +78,7 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
 
 **Show only the first 5 items.** If more exist, mention the total count and offer to show more.
 
-## Output Format
+## Step 3: Output Format
 
 ```markdown
 ## Your Current Work
@@ -81,7 +103,7 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
 What would you like to do?
 ```
 
-**PR Status column:** Show "Draft" for draft PRs, "Ready" for non-draft PRs ready for review.
+**PR Status column:** Show "Draft" for draft PRs, "Ready" for non-draft PRs.
 
 ## Handoffs
 
