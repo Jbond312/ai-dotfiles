@@ -5,7 +5,13 @@ description: "Scripts for Azure DevOps REST API. Use instead of MCP when you nee
 
 # Azure DevOps API Scripts
 
-Use these scripts when the MCP doesn't provide the data you need.
+**Use these scripts instead of MCP** for team-filtered queries. The Azure DevOps MCP cannot:
+
+- Filter work items by team Area Path
+- Filter work items by current iteration (`@CurrentIteration`)
+- Filter PRs by team reviewer
+
+Use MCP only for: fetching individual items by ID, creating/updating work items, creating PRs.
 
 ## Prerequisites
 
@@ -22,7 +28,7 @@ Configure in `.vscode/settings.json` (add to `.gitignore`):
 
 ## get_sprint_work_items.py
 
-Query work items from current sprint for a team.
+Query work items from current sprint for a team using WIQL with `@CurrentIteration` macro.
 
 ```bash
 # Unassigned items (for picking up work)
@@ -40,7 +46,7 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py \
 
 **Arguments:** `--org`, `--project`, `--team` (required), `--state`, `--unassigned`, `--assigned-to`, `--type`
 
-**Why use this?** MCP doesn't expose WIQL queries for filtering by Area Path AND current iteration.
+**Note:** Team name must be exact (case-sensitive) — it's used to resolve `@CurrentIteration` and construct the Area Path filter.
 
 ## get_team_prs.py
 
@@ -62,4 +68,4 @@ python .github/skills/azure-devops-api/scripts/get_team_prs.py \
 | PR metadata, work item by ID        | MCP    |
 | Creating/updating work items or PRs | MCP    |
 
-Read org/project/team from `.github/project-context.md`.
+Read org/project/team from `.github/team-context.md`.

@@ -21,9 +21,13 @@ handoffs:
 
 Helps developers decide what to work on. Shows options without making decisions for them.
 
+## Important: Use Scripts, Not MCP
+
+**Do not use MCP for these queries.** The Azure DevOps MCP cannot filter by team Area Path or current iteration. Use the Python scripts in `.github/skills/azure-devops-api/scripts/` instead.
+
 ## What to Show
 
-Read `.github/project-context.md` for org, project, and team details.
+Read `.github/team-context.md` for org, project, and team details. Check `project-context.md` (repo root) for repository-specific context.
 
 ### 1. In-Progress Work
 

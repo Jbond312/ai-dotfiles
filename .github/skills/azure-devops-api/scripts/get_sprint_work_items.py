@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Query work items from the current sprint board for a team.
-Uses Azure DevOps REST API to filter by Area Path and Iteration Path.
+Uses WIQL with @CurrentIteration macro.
 """
 
 import argparse
@@ -22,35 +22,17 @@ def get_auth_header():
     return {"Authorization": f"Basic {token}"}, None
 
 
-def api_request(url, headers):
-    try:
-        req = Request(url, headers=headers)
-        with urlopen(req) as response:
-            return json.loads(response.read().decode()), None
-    except HTTPError as e:
-        return None, {"error": True, "status": e.code, "message": e.reason}
-
-
-def get_current_iteration(org, project, team, headers):
-    url = f"https://dev.azure.com/{org}/{project}/{team}/_apis/work/teamsettings/iterations?$timeframe=current&api-version=7.1"
-    data, err = api_request(url, headers)
-    if err:
-        return None, err
-    iterations = data.get("value", [])
-    if not iterations:
-        return None, {"error": True, "message": "No current iteration found"}
-    return iterations[0], None
-
-
-def query_work_items(org, project, wiql, headers):
-    url = f"https://dev.azure.com/{org}/{project}/_apis/wit/wiql?api-version=7.1"
+def query_work_items(org, project, team, wiql, headers):
+    """Execute WIQL query. Team is required for @CurrentIteration to resolve."""
+    url = f"https://dev.azure.com/{org}/{project}/{team}/_apis/wit/wiql?api-version=7.1"
     body = json.dumps({"query": wiql}).encode()
     try:
         req = Request(url, data=body, headers={**headers, "Content-Type": "application/json"})
         with urlopen(req) as response:
             return json.loads(response.read().decode()), None
     except HTTPError as e:
-        return None, {"error": True, "status": e.code, "message": e.reason}
+        body = e.read().decode() if e.fp else ""
+        return None, {"error": True, "status": e.code, "message": e.reason, "details": body}
 
 
 def get_work_items_batch(org, project, ids, headers):
@@ -79,8 +61,8 @@ def main():
     parser.add_argument("--state", action="append", help="Filter by state (can repeat)")
     parser.add_argument("--unassigned", action="store_true", help="Only unassigned items")
     parser.add_argument("--assigned-to", help="Filter by assignee (@me or email)")
-    parser.add_argument("--type", action="append", default=["Product Backlog Item", "Spike"],
-                        help="Work item types")
+    parser.add_argument("--type", action="append", default=None,
+                        help="Work item types (default: Product Backlog Item, Spike)")
     args = parser.parse_args()
 
     headers, err = get_auth_header()
@@ -88,22 +70,19 @@ def main():
         print(json.dumps({"error": True, "message": err}))
         sys.exit(1)
 
-    iteration, err = get_current_iteration(args.org, args.project, args.team, headers)
-    if err:
-        print(json.dumps(err))
-        sys.exit(1)
-
+    # Default work item types
+    types = args.type if args.type else ["Product Backlog Item", "Spike"]
+    
+    # Build WIQL query using @CurrentIteration macro
     area_path = f"{args.project}\\{args.team}"
-    iteration_path = iteration["path"]
-
-    # Build WIQL query
-    type_filter = " OR ".join([f"[System.WorkItemType] = '{t}'" for t in args.type])
+    type_filter = " OR ".join([f"[System.WorkItemType] = '{t}'" for t in types])
+    
     wiql = f"""
     SELECT [System.Id]
     FROM WorkItems
     WHERE ({type_filter})
       AND [System.AreaPath] UNDER '{area_path}'
-      AND [System.IterationPath] = '{iteration_path}'
+      AND [System.IterationPath] = @CurrentIteration
     """
 
     if args.unassigned:
@@ -120,7 +99,7 @@ def main():
 
     wiql += " ORDER BY [Microsoft.VSTS.Common.Priority] ASC, [System.ChangedDate] DESC"
 
-    result, err = query_work_items(args.org, args.project, wiql, headers)
+    result, err = query_work_items(args.org, args.project, args.team, wiql, headers)
     if err:
         print(json.dumps(err))
         sys.exit(1)
@@ -133,7 +112,6 @@ def main():
 
     now = datetime.utcnow()
     output = {
-        "iteration": {"name": iteration["name"], "path": iteration_path},
         "team": args.team,
         "areaPath": area_path,
         "count": len(work_items),
