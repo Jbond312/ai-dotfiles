@@ -11,6 +11,7 @@ import sys
 from datetime import datetime
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+from urllib.parse import quote
 import base64
 
 
@@ -24,7 +25,9 @@ def get_auth_header():
 
 def query_work_items(org, project, team, wiql, headers):
     """Execute WIQL query. Team is required for @CurrentIteration to resolve."""
-    url = f"https://dev.azure.com/{org}/{project}/{team}/_apis/wit/wiql?api-version=7.1"
+    # URL encode team name for the API path (spaces become %20, etc.)
+    team_encoded = quote(team, safe='')
+    url = f"https://dev.azure.com/{org}/{project}/{team_encoded}/_apis/wit/wiql?api-version=7.1"
     body = json.dumps({"query": wiql}).encode()
     try:
         req = Request(url, data=body, headers={**headers, "Content-Type": "application/json"})
