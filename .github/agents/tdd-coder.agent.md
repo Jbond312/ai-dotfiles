@@ -62,9 +62,21 @@ Create failing test per plan. Follow existing patterns. Run to confirm failure.
 
 Minimum code to make test pass. Run to confirm pass.
 
-### 5. Run Full Suite
+### 5. Verify Build and Tests
 
-Check for regressions. Refer to `dotnet-testing` skill. All tests must pass.
+**Before handing off, the solution MUST compile and all tests MUST pass.**
+
+```bash
+# Build must succeed
+dotnet build --no-restore
+
+# All tests must pass
+dotnet test --no-build
+```
+
+**If build fails:** Fix compilation errors before proceeding.
+
+**If tests fail:** You should be at GREEN (test passing). If not, continue implementing until the new test passes and no existing tests are broken.
 
 ### 6. Mark Items Complete
 
@@ -75,7 +87,7 @@ Check for regressions. Refer to `dotnet-testing` skill. All tests must pass.
 
 ### 7. Hand Off for Review
 
-Update status to "Ready for review". Report files changed.
+**Only hand off when build succeeds and all tests pass.** Update status to "Ready for review". Report files changed.
 
 ### 8. After Review
 

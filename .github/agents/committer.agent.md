@@ -14,7 +14,7 @@ handoffs:
   - label: Create Pull Request
     agent: PR Creator
     prompt: "All items complete. Create a pull request."
-    send: false
+    send: true
 ---
 
 # Committer Agent

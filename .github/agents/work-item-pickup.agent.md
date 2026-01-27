@@ -97,7 +97,7 @@ mkdir -p .planning
 
 ### 7. Analyse Conventions
 
-**If `.planning/CONVENTIONS.md` doesn't exist, create it automatically** using the `repo-analyzer` skill. Do not ask — just run the analysis.
+**If `.planning/CONVENTIONS.md` doesn't exist, create it by following the `repo-analyzer` skill.** This skill contains step-by-step instructions for analysing the codebase — follow those steps to generate the conventions file. Do not ask — just do the analysis.
 
 ### 8. Summary (End of Process)
 

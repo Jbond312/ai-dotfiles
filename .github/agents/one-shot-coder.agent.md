@@ -1,7 +1,7 @@
 ---
 name: One-Shot Coder
 description: "Implements all checklist items in a single pass, then hands off for review. Best for small, well-defined changes."
-model: Claude Opus 4.5 (copilot)
+model: Claude Sonnet 4 (copilot)
 tools:
   - "edit"
   - "read"
@@ -12,7 +12,7 @@ handoffs:
   - label: Review Implementation
     agent: Reviewer
     prompt: "Review the complete implementation of all checklist items."
-    send: false
+    send: true
 ---
 
 # One-Shot Coder Agent
@@ -54,9 +54,21 @@ Read `.planning/PLAN.md`. Understand all items before starting.
 
 For each checklist item: write tests, write production code, verify.
 
-### 5. Run Full Test Suite
+### 5. Verify Build and Tests
 
-All tests must pass. Refer to `dotnet-testing` skill.
+**Before handing off, the solution MUST compile and all tests MUST pass.**
+
+```bash
+# Build must succeed
+dotnet build --no-restore
+
+# All tests must pass
+dotnet test --no-build
+```
+
+**If build fails:** Fix compilation errors before proceeding. Do not hand off to reviewer with a broken build.
+
+**If tests fail:** Fix failing tests before proceeding. The reviewer should never receive code that doesn't compile or pass tests.
 
 ### 6. Mark All Items Complete
 
