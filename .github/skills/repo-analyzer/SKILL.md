@@ -1,215 +1,252 @@
 ---
 name: repo-analyzer
-description: 'Analyze repository structure and discover coding conventions. Use before starting work on a new repository, when conventions file is missing, or when asked to "discover conventions", "analyze repo", or "what patterns does this repo use". Generates .planning/CONVENTIONS.md.'
+description: 'Discover repository conventions and patterns. Use when conventions file is missing, before starting work on a new repository, or when asked to "discover conventions", "analyze repo", or "what patterns does this repo use". Generates .planning/CONVENTIONS.md.'
 ---
 
 # Repository Analyzer
 
-Discovers coding conventions, patterns, and structure from an existing codebase. Outputs findings to `.planning/CONVENTIONS.md` for other skills to reference.
+Discovers how a repository works — its architecture, patterns, conventions, and dependencies. The goal is to understand "how things are done here" so agents can follow existing practices.
+
+## Philosophy
+
+**Discover, don't assume.** Every repository has its own conventions. Rather than looking for specific frameworks, observe what patterns actually exist and document them. If something is unclear, note it as "unclear" rather than guessing.
 
 ## When to Run
 
 - First time working in a repository
 - When `.planning/CONVENTIONS.md` doesn't exist
 - When explicitly asked to refresh conventions
-- After major refactoring or architecture changes
 
-## Analysis Process
+## Discovery Process
 
-### Step 1: Project Structure
+Work through each section. For each, explore the codebase and document what you find.
 
-Examine the solution and project files:
-
-```bash
-# Find solution files
-find . -name "*.sln" -type f
-
-# Find project files and their types
-find . -name "*.csproj" -type f -exec grep -l "Sdk=" {} \;
-```
-
-Document:
-
-- Solution name and structure
-- Project types (Web API, Class Library, Test, etc.)
-- Layer organisation (if Clean Architecture, VSA, etc.)
-
-### Step 2: Test Framework Discovery
+### 1. Solution Overview
 
 ```bash
-# Check for test framework packages
-grep -r "xunit\|nunit\|mstest" --include="*.csproj" .
+# Find solution and understand structure
+find . -name "*.sln" -type f 2>/dev/null
+find . -name "*.csproj" -type f 2>/dev/null | head -20
 
-# Find test files to analyse naming patterns
-find . -name "*Tests.cs" -o -name "*Test.cs" | head -20
+# Check .NET version
+grep -h "<TargetFramework" $(find . -name "*.csproj" 2>/dev/null) | head -5
 ```
 
-Examine 3-5 test files to determine:
+**Document:**
 
-- Framework: xUnit / NUnit / MSTest
-- Naming convention: `MethodName_Condition_ExpectedResult` / `Should_X_When_Y` / other
-- Assertion library: FluentAssertions / Shouldly / framework built-in
-- Mocking library: Moq / NSubstitute / FakeItEasy / none
-- Test organisation: one class per SUT / feature-based / other
+- Solution name
+- Number and types of projects
+- .NET version(s) in use
 
-### Step 3: Handler/Mediator Pattern
+### 2. Architecture Pattern
+
+Examine the folder structure and project organisation to identify the architectural style.
 
 ```bash
-# Check for MediatR
-grep -r "MediatR\|IRequest\|IRequestHandler" --include="*.csproj" --include="*.cs" . | head -10
-
-# Check for custom handlers
-find . -name "*Handler.cs" -o -name "*CommandHandler.cs" -o -name "*QueryHandler.cs" | head -10
+# Look at top-level structure
+ls -la src/ 2>/dev/null || ls -la
+find . -type d -name "Domain" -o -name "Application" -o -name "Infrastructure" -o -name "Features" -o -name "Handlers" 2>/dev/null | head -10
 ```
 
-Document:
+**Look for signals:**
 
-- MediatR / custom handlers / direct service calls
-- Command/Query separation (CQRS) or combined
-- Handler location pattern
+| Pattern                          | Signals                                                                      |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| **Vertical Slice Architecture**  | `/Features/` folders, handlers grouped by feature, minimal layering          |
+| **Clean Architecture**           | `/Domain/`, `/Application/`, `/Infrastructure/`, `/Presentation/` separation |
+| **Hexagonal (Ports & Adapters)** | `/Ports/`, `/Adapters/`, clear interface boundaries                          |
+| **N-Tier / Layered**             | `/Services/`, `/Repositories/`, `/Controllers/` at same level                |
+| **Minimal / Simple**             | Flat structure, few abstractions                                             |
 
-### Step 4: Mapping Approach
+**Document:** The pattern you observe, or "unclear/mixed" if it doesn't fit neatly.
+
+### 3. External Dependencies
+
+Identify what external systems the codebase interacts with.
 
 ```bash
-# Check for mapping libraries
-grep -r "AutoMapper\|Mapster" --include="*.csproj" .
+# Check package references for common integrations
+grep -rh "PackageReference" $(find . -name "*.csproj" 2>/dev/null) | grep -i "entityframework\|dapper\|npgsql\|sqlclient\|azure\|rabbitmq\|masstransit\|kafka\|redis\|mongodb\|http" | sort -u
 
-# Check for static mapping methods
-grep -r "static.*Map\|ToDto\|ToEntity\|ToModel" --include="*.cs" . | head -10
+# Look for connection strings or configuration
+grep -rh "ConnectionString\|ServiceBus\|BlobStorage\|CosmosDb" $(find . -name "*.json" -o -name "*.cs" 2>/dev/null) | head -10
 ```
 
-Document:
+**Document:**
 
-- AutoMapper / Mapster / static extension methods / manual mapping
-- Mapping location (in handlers, separate classes, extensions)
+- Databases (SQL Server, PostgreSQL, CosmosDB, etc.)
+- Message brokers (Azure Service Bus, RabbitMQ, Kafka)
+- External APIs or services
+- Cloud services (Azure Storage, AWS S3, etc.)
 
-### Step 5: Error Handling Pattern
+### 4. Testing Approach
+
+Examine existing tests to understand how testing is done.
 
 ```bash
-# Check for Result types
-grep -r "Result<\|ErrorOr\|OneOf\|FluentResults" --include="*.cs" . | head -10
+# Find test projects
+find . -name "*Test*.csproj" -o -name "*Tests*.csproj" 2>/dev/null
 
-# Check exception patterns
-grep -r "throw new\|catch\s*(" --include="*.cs" . | head -20
+# Check test framework
+grep -rh "xunit\|nunit\|mstest" $(find . -name "*.csproj" 2>/dev/null) | head -3
+
+# Find test files and examine naming
+find . -name "*Tests.cs" -o -name "*Test.cs" 2>/dev/null | head -10
 ```
 
-Document:
+**Examine 3-5 actual test files** to understand:
 
-- Result/ErrorOr pattern vs exceptions
-- Custom exception types
-- Validation approach (FluentValidation, DataAnnotations, manual)
+- Test class naming (e.g., `{ClassName}Tests`, `{Feature}Tests`)
+- Test method naming (e.g., `MethodName_Condition_Result`, `Should_X_When_Y`)
+- Assertion style (FluentAssertions, Shouldly, built-in)
+- Mocking approach (Moq, NSubstitute, hand-written fakes)
+- Test organisation (one class per SUT, feature-based, behaviour-based)
 
-### Step 6: Logging and Observability
+**Document with actual examples** from the codebase.
+
+### 5. Code Patterns
+
+Examine production code to understand common patterns.
 
 ```bash
-# Check logging framework
-grep -r "Serilog\|NLog\|ILogger" --include="*.csproj" --include="*.cs" . | head -10
+# Look for handler patterns
+find . -name "*Handler.cs" -o -name "*Command.cs" -o -name "*Query.cs" 2>/dev/null | head -10
+
+# Check for common libraries
+grep -rh "MediatR\|Wolverine\|Result<\|ErrorOr\|FluentValidation\|AutoMapper\|Mapster" $(find . -name "*.cs" 2>/dev/null) | head -10
 ```
 
-Document:
+**Examine 3-5 representative files** to understand:
 
-- Logging framework
-- Structured logging patterns
-- Correlation ID usage
+| Aspect                   | What to Look For                                             |
+| ------------------------ | ------------------------------------------------------------ |
+| **Request handling**     | MediatR, Wolverine, custom handlers, direct controller logic |
+| **Validation**           | FluentValidation, DataAnnotations, manual checks             |
+| **Error handling**       | Result/ErrorOr types, exceptions, custom error types         |
+| **Mapping**              | AutoMapper, Mapster, manual mapping, extension methods       |
+| **Dependency injection** | Constructor injection, how dependencies are organised        |
 
-### Step 7: Code Style Patterns
+### 6. Code Style
 
-Examine 3-5 representative files to identify:
+Examine files to understand coding style preferences.
 
-- Nullable reference types enabled?
-- Primary constructors used?
-- File-scoped namespaces?
-- Record types for DTOs?
-- Expression-bodied members preference?
+```bash
+# Check for nullable, file-scoped namespaces, etc.
+head -50 $(find . -name "*.cs" -path "*/src/*" 2>/dev/null | head -3)
+```
+
+**Look for:**
+
+- Nullable reference types (`#nullable enable`, `?` on types)
+- File-scoped vs block-scoped namespaces
+- Primary constructors
+- Record types for DTOs
+- Expression-bodied members
+- Naming conventions (e.g., `_fieldName`, `FieldName`)
+
+### 7. Anything Else Notable
+
+Note anything unusual or project-specific:
+
+- Custom base classes or utilities
+- Domain-specific patterns
+- Unusual folder structures
+- Build or deployment conventions
 
 ## Output Format
 
-Create `.planning/CONVENTIONS.md` with this structure:
+Create `.planning/CONVENTIONS.md`:
 
 ````markdown
 # Repository Conventions
 
-> Auto-generated by repo-analyzer. Last updated: {date}
-> Re-run analysis if conventions have changed significantly.
+> Generated by repo-analyzer on {date}
+> Review and adjust if needed. Re-run if conventions change significantly.
 
-## Project Structure
+## Overview
 
-| Aspect        | Convention                                                      |
-| ------------- | --------------------------------------------------------------- |
-| Architecture  | {e.g., Vertical Slice Architecture, Clean Architecture, N-tier} |
-| Solution      | {solution name and key projects}                                |
-| Test Projects | {naming pattern, e.g., ProjectName.Tests}                       |
+| Aspect         | Value                  |
+| -------------- | ---------------------- |
+| Solution       | {name}                 |
+| .NET Version   | {version}              |
+| Architecture   | {pattern or "unclear"} |
+| Test Framework | {framework}            |
 
-## Testing Conventions
+## Architecture
 
-| Aspect       | Convention                               |
-| ------------ | ---------------------------------------- |
-| Framework    | {xUnit / NUnit / MSTest}                 |
-| Assertions   | {FluentAssertions / Shouldly / built-in} |
-| Mocking      | {Moq / NSubstitute / none}               |
-| Naming       | {pattern with example}                   |
-| Organisation | {one test class per SUT / feature-based} |
-
-### Test Naming Examples
-
-```csharp
-// From: {actual file path}
-{actual test method signature from repo}
-```
-````
-
-## Handler Pattern
-
-| Aspect   | Convention                                    |
-| -------- | --------------------------------------------- |
-| Style    | {MediatR / custom handlers / direct services} |
-| CQRS     | {yes / no}                                    |
-| Location | {where handlers live}                         |
-
-### Handler Example
-
-```csharp
-// From: {actual file path}
-{simplified handler structure}
-```
-
-## Mapping
-
-| Aspect   | Convention                                         |
-| -------- | -------------------------------------------------- |
-| Approach | {AutoMapper / Mapster / static methods / manual}   |
-| Location | {in handlers / extension methods / mapper classes} |
-
-## Error Handling
-
-| Aspect     | Convention                                    |
-| ---------- | --------------------------------------------- |
-| Style      | {Result<T> / exceptions / ErrorOr}            |
-| Validation | {FluentValidation / DataAnnotations / manual} |
-
-## Code Style
-
-| Aspect               | Convention                   |
-| -------------------- | ---------------------------- |
-| Nullable             | {enabled / disabled}         |
-| Namespaces           | {file-scoped / block-scoped} |
-| Records              | {used for DTOs / not used}   |
-| Primary Constructors | {used / not used}            |
+{Description of the architectural pattern observed, with folder structure examples}
 
 ## External Dependencies
 
-{List any external APIs, databases, message queues discovered}
+| Type      | Technology                     | Notes       |
+| --------- | ------------------------------ | ----------- |
+| Database  | {e.g., SQL Server via EF Core} | {any notes} |
+| Messaging | {e.g., Azure Service Bus}      | {any notes} |
+| ...       | ...                            | ...         |
+
+## Testing Conventions
+
+| Aspect       | Convention                           |
+| ------------ | ------------------------------------ |
+| Framework    | {xUnit/NUnit/MSTest}                 |
+| Assertions   | {FluentAssertions/Shouldly/built-in} |
+| Mocking      | {Moq/NSubstitute/none}               |
+| Test naming  | {pattern}                            |
+| Organisation | {description}                        |
+
+### Example Test
+
+```csharp
+// From: {actual file path}
+{actual test method showing naming and structure}
+```
+````
+
+## Code Patterns
+
+| Aspect           | Pattern                                   |
+| ---------------- | ----------------------------------------- |
+| Request handling | {MediatR/custom handlers/direct/etc.}     |
+| Validation       | {FluentValidation/DataAnnotations/manual} |
+| Error handling   | {Result type/exceptions/etc.}             |
+| Mapping          | {AutoMapper/Mapster/manual/extensions}    |
+
+### Example Handler/Service
+
+```csharp
+// From: {actual file path}
+{simplified example showing typical structure}
+```
+
+## Code Style
+
+| Aspect        | Convention                 |
+| ------------- | -------------------------- |
+| Nullable refs | {enabled/disabled}         |
+| Namespaces    | {file-scoped/block-scoped} |
+| Records       | {used for X/not used}      |
+| Field naming  | {\_camelCase/other}        |
 
 ## Notes
 
-{Any unusual patterns or deviations worth noting}
+{Anything unusual, unclear, or worth highlighting}
+
+---
+
+## For Agents
+
+When writing code in this repository:
+
+- Follow the patterns shown in examples above
+- Match existing test naming: `{pattern with placeholder}`
+- Use {error handling approach} for error handling
+- {Any other key guidance derived from discoveries}
 
 ```
 
-## Integration
+## After Generation
 
-After generating CONVENTIONS.md:
-1. Inform the user what was discovered
-2. Highlight any ambiguous patterns that need clarification
-3. Suggest the file be reviewed and committed if conventions are stable
+1. Briefly summarise what was discovered
+2. Highlight anything ambiguous that might need human clarification
+3. The file is ready for agents to reference
 ```

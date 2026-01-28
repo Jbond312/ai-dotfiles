@@ -29,11 +29,25 @@ Creates implementation plans that guide coding agents. Plans are saved to `.plan
 
 **Consult the `known-issues` skill** to avoid repeating past mistakes.
 
-## Before Starting
+## Step 0: Ensure Conventions Exist (CRITICAL)
 
-1. **Check for conventions:** If `.planning/CONVENTIONS.md` doesn't exist, follow the `repo-analyzer` skill instructions to create it (don't ask — just do it)
-2. **Read conventions:** Use patterns from CONVENTIONS.md for test naming, handler structure, etc.
-3. **Check architecture:** Read `project-context.md` (repo root) for architecture — if VSA, refer to `vertical-slice-architecture` skill
+**Before doing anything else, check for `.planning/CONVENTIONS.md`:**
+
+```bash
+mkdir -p .planning
+if [ ! -f ".planning/CONVENTIONS.md" ]; then
+    echo "CONVENTIONS.md not found - must generate"
+fi
+```
+
+**If the file doesn't exist:** Follow the `repo-analyzer` skill step-by-step to generate it. This is not optional — the plan quality depends on understanding the repository's patterns.
+
+**If the file exists:** Read it and note the patterns for use in planning.
+
+## Before Starting Implementation Plan
+
+1. **Read conventions:** Use patterns from CONVENTIONS.md for test naming, handler structure, etc.
+2. **Check architecture:** Read `project-context.md` (repo root) for architecture — if VSA, refer to `vertical-slice-architecture` skill
 
 ## Planning Process
 

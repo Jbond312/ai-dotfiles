@@ -4,16 +4,33 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.0] - 2025-01-27
+
+### Fixed
+- **Handoff agent references** now use the correct `name` field (e.g., `TDD Coder`) instead of filename (e.g., `tdd-coder`)
+- **Removed stale handoff** in PR Creator that referenced the deleted `pipeline-investigator` agent
+
+### Changed
+- **Handoffs now auto-send by default** (`send: true`) for seamless workflow progression
+  - Exceptions: `What Next → Work Item Pickup` and `Reviewer → TDD Coder` remain `send: false` (require user decision)
+- **repo-analyzer skill completely rewritten** with discovery-focused approach:
+  - Now explores and documents what patterns exist rather than looking for specific frameworks
+  - Structured discovery of: Architecture pattern, .NET version, external dependencies, testing approach, code patterns, code style
+  - Includes "For Agents" section summarising key guidance
+  - Handles unclear/mixed patterns gracefully
+- **Planner agent** now has explicit "Step 0" that verifies CONVENTIONS.md exists before planning
+- **Build verification** made more explicit in both coder agents — must run `dotnet build` and `dotnet test` before handoff
+
 ## [0.6.0] - 2025-01-26
 
 ### Added
-
 - **repo-analyzer skill** — Discovers coding conventions from existing codebase and generates `.planning/CONVENTIONS.md`:
   - Test framework and naming patterns
   - Handler/mediator patterns (MediatR, custom, direct services)
   - Mapping approach (AutoMapper, Mapster, static methods)
   - Error handling style (Result pattern, exceptions)
   - Code style preferences (nullability, namespaces, records)
+  
 - **csharp-coding skill** — C# coding standards with Must/Must Not rules:
   - Hard rules: Explicit null handling, DI patterns, input validation
   - Must Not: DateTime.Now, swallowing exceptions, magic strings, service locator
@@ -31,7 +48,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Prevents accidental commit of local settings and PATs
 
 ### Changed
-
 - **dotnet-testing skill significantly enriched:**
   - Complete TDD workflow (RED → GREEN → REFACTOR) with commands
   - Golden examples for test structure, naming patterns, parameterised tests
@@ -66,9 +82,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - References csharp-coding and dotnet-testing skills
 
 ### Philosophy
-
 This release follows the "Must / Must Not / Golden Example" pattern from community best practices:
-
 - Skills now contain detailed instructions, not just triggers
 - Convention discovery ensures portability across repositories
 - Verification checklists provide concrete quality gates
@@ -76,7 +90,6 @@ This release follows the "Must / Must Not / Golden Example" pattern from communi
 ## [0.5.0] - 2025-01-26
 
 ### Changed
-
 - **Azure DevOps configuration now uses environment variables** instead of team-context.md:
   - `AZURE_DEVOPS_PAT`, `AZURE_DEVOPS_ORG`, `AZURE_DEVOPS_PROJECT`, `AZURE_DEVOPS_TEAM`
   - Optional: `AZURE_DEVOPS_TEAM_ID`, `AZURE_DEVOPS_USER_ID`
@@ -87,17 +100,14 @@ This release follows the "Must / Must Not / Golden Example" pattern from communi
   - Added "Use when asked to..." phrases matching common user prompts
 
 ### Removed
-
 - **team-context.md** — replaced by environment variables
 
 ### Fixed
-
 - Agents should now be more reliable as configuration comes from environment variables rather than requiring file parsing
 
 ## [0.4.0] - 2025-01-25
 
 ### Changed
-
 - **what-next agent:**
   - PRs now show "Draft" or "Ready" status in output table
   - Available work items limited to first 5 (with total count shown)
@@ -108,13 +118,11 @@ This release follows the "Must / Must Not / Golden Example" pattern from communi
   - Does not offer to plan implementation until user confirms pickup
 
 ### Removed
-
 - **pipeline-investigator agent** — Removed as it didn't provide enough value yet
 
 ## [0.3.0] - 2025-01-25
 
 ### Changed
-
 - **Split context configuration into two files:**
   - `team-context.md` (in `.github/`) — Shared Azure DevOps settings (org, project, team name, team ID, user ID)
   - `project-context.md` (repo root) — Repo-specific settings (architecture, external dependencies, key directories)
@@ -122,13 +130,11 @@ This release follows the "Must / Must Not / Golden Example" pattern from communi
 - This enables sharing `.github/` across multiple repositories while keeping repo-specific config separate
 
 ### Fixed
-
 - Agents now look for `project-context.md` at repo root instead of inside `.github/`
 
 ## [0.2.0] - 2025-01-25
 
 ### Added
-
 - Pattern-specific instruction files using `applyTo` for targeted context loading:
   - `instructions/csharp.instructions.md` — C# conventions for all `.cs` files
   - `instructions/tests.instructions.md` — Testing conventions for test files
@@ -142,7 +148,6 @@ This release follows the "Must / Must Not / Golden Example" pattern from communi
   - `reference/code-review-checklist.md` — VSA-specific review criteria
 
 ### Changed
-
 - **68% reduction in agent line count** (2,451 → 775 lines) by:
   - Removing explanations of concepts Claude already knows (TDD, git basics, integration tests)
   - Extracting reusable content into skills
@@ -152,7 +157,6 @@ This release follows the "Must / Must Not / Golden Example" pattern from communi
 - VSA skill split into overview (71 lines) plus reference files for on-demand loading
 
 ### Removed
-
 - Duplicate commit message format (was in both `committer.agent.md` and `copilot-instructions.md`)
 - Duplicate banking constraints (was in both agents and instructions)
 - Duplicate testing patterns (was in both coder agents)
@@ -161,7 +165,6 @@ This release follows the "Must / Must Not / Golden Example" pattern from communi
 ## [0.1.0] - 2025-01-25
 
 ### Added
-
 - Initial agent workflow for Azure DevOps work item to PR pipeline:
   - `what-next.agent.md` — Shows available work, PRs needing review, in-progress items
   - `work-item-pickup.agent.md` — Assigns work item, creates branch, summarises scope
