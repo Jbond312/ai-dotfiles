@@ -5,7 +5,7 @@ description: "Write and run .NET tests following TDD principles. Use when writin
 
 # .NET Testing Standards
 
-**Before writing tests:** Read `.planning/CONVENTIONS.md` for repository-specific test patterns (framework, naming, mocking library). If it doesn't exist, ask to run the `repo-analyzer` skill first.
+**Before writing tests:** Read `.planning/CONVENTIONS.md` for repository-specific test patterns (framework, naming, mocking library). If it doesn't exist, the calling agent should invoke the `Repo Analyser` subagent first.
 
 ## Hard Rules
 

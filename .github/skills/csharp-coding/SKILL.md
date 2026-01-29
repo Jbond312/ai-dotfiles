@@ -5,7 +5,7 @@ description: "C# coding standards, patterns, and best practices for .NET develop
 
 # C# Coding Standards
 
-**Before writing code:** Read `.planning/CONVENTIONS.md` for repository-specific patterns. If it doesn't exist, ask to run the `repo-analyzer` skill first.
+**Before writing code:** Read `.planning/CONVENTIONS.md` for repository-specific patterns. If it doesn't exist, the calling agent should invoke the `Repo Analyser` subagent first.
 
 ## Hard Rules
 

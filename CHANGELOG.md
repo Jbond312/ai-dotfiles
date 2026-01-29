@@ -4,22 +4,34 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.7.0] - 2025-01-27
+## [0.7.0] - 2025-01-28
+
+### Added
+- **Repo Analyser agent** (`repo-analyser.agent.md`) — Dedicated agent for repository analysis, designed to be invoked as a subagent
+- **Subagent support** — Work Item Pickup and Planner now use `runSubagent` tool to invoke Repo Analyser in an isolated context
 
 ### Fixed
 - **Handoff agent references** now use the correct `name` field (e.g., `TDD Coder`) instead of filename (e.g., `tdd-coder`)
 - **Removed stale handoff** in PR Creator that referenced the deleted `pipeline-investigator` agent
+- **British spelling** — Renamed `repo-analyzer` to `repo-analyser` throughout
 
 ### Changed
 - **Handoffs now auto-send by default** (`send: true`) for seamless workflow progression
   - Exceptions: `What Next → Work Item Pickup` and `Reviewer → TDD Coder` remain `send: false` (require user decision)
-- **repo-analyzer skill completely rewritten** with discovery-focused approach:
+- **repo-analyser skill rewritten** with discovery-focused approach:
   - Now explores and documents what patterns exist rather than looking for specific frameworks
   - Structured discovery of: Architecture pattern, .NET version, external dependencies, testing approach, code patterns, code style
   - Includes "For Agents" section summarising key guidance
   - Handles unclear/mixed patterns gracefully
 - **Planner agent** now has explicit "Step 0" that verifies CONVENTIONS.md exists before planning
 - **Build verification** made more explicit in both coder agents — must run `dotnet build` and `dotnet test` before handoff
+
+### Why Subagents?
+
+The Repo Analyser runs many file searches and examinations that would otherwise pollute the main agent's context window. By running as a subagent:
+- The analysis context is discarded after completion
+- Only the summary is returned to the main conversation
+- The main agent stays focused on its primary task
 
 ## [0.6.0] - 2025-01-26
 

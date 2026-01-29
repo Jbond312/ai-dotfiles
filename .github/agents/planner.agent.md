@@ -10,6 +10,7 @@ tools:
   - "edit/createDirectory"
   - "edit/createFile"
   - "edit/editFiles"
+  - "agent"
 handoffs:
   - label: Start Coding (TDD)
     agent: TDD Coder
@@ -35,12 +36,15 @@ Creates implementation plans that guide coding agents. Plans are saved to `.plan
 
 ```bash
 mkdir -p .planning
-if [ ! -f ".planning/CONVENTIONS.md" ]; then
-    echo "CONVENTIONS.md not found - must generate"
-fi
+test -f .planning/CONVENTIONS.md && echo "exists" || echo "missing"
 ```
 
-**If the file doesn't exist:** Follow the `repo-analyzer` skill step-by-step to generate it. This is not optional — the plan quality depends on understanding the repository's patterns.
+**If the file doesn't exist**, use the `agent` tool to analyse the repository:
+
+- **agentName:** `Repo Analyser`
+- **prompt:** `Analyse this repository and generate .planning/CONVENTIONS.md with the discovered conventions and patterns.`
+
+The subagent runs in an isolated context, examines the codebase, and creates the conventions file. This keeps the planning conversation focused on the actual planning work.
 
 **If the file exists:** Read it and note the patterns for use in planning.
 

@@ -10,6 +10,7 @@ tools:
   - "edit/createDirectory"
   - "edit/createFile"
   - "edit/editFiles"
+  - "agent"
 handoffs:
   - label: Create Implementation Plan
     agent: Planner
@@ -95,9 +96,22 @@ fi
 mkdir -p .planning
 ```
 
-### 7. Analyse Conventions
+### 7. Analyse Conventions (Subagent)
 
-**If `.planning/CONVENTIONS.md` doesn't exist, create it by following the `repo-analyzer` skill.** This skill contains step-by-step instructions for analysing the codebase — follow those steps to generate the conventions file. Do not ask — just do the analysis.
+Check if `.planning/CONVENTIONS.md` exists:
+
+```bash
+test -f .planning/CONVENTIONS.md && echo "exists" || echo "missing"
+```
+
+**If the file doesn't exist**, use the `agent` tool to analyse the repository:
+
+- **agentName:** `Repo Analyser`
+- **prompt:** `Analyse this repository and generate .planning/CONVENTIONS.md with the discovered conventions and patterns.`
+
+The subagent will examine the codebase in an isolated context and create the conventions file. This keeps the main conversation focused.
+
+**If the file already exists**, skip this step.
 
 ### 8. Summary (End of Process)
 
@@ -130,5 +144,5 @@ Ready to plan implementation.
 | -------------------------------- | ------------------------------ |
 | Already assigned to someone else | Stop, ask if reassign          |
 | Branch already exists            | Reuse it, note in summary      |
-| Conventions file already exists  | Skip analysis, note in summary |
+| Conventions file already exists  | Skip subagent, note in summary |
 | Repository mismatch warning      | Note in summary, continue      |

@@ -1,11 +1,13 @@
 ---
-name: repo-analyzer
-description: 'Discover repository conventions and patterns. Use when conventions file is missing, before starting work on a new repository, or when asked to "discover conventions", "analyze repo", or "what patterns does this repo use". Generates .planning/CONVENTIONS.md.'
+name: repo-analyser
+description: 'Discover repository conventions and patterns. Use when conventions file is missing, before starting work on a new repository, or when asked to "discover conventions", "analyse repo", or "what patterns does this repo use". Generates .planning/CONVENTIONS.md.'
 ---
 
-# Repository Analyzer
+# Repository Analyser
 
 Discovers how a repository works — its architecture, patterns, conventions, and dependencies. The goal is to understand "how things are done here" so agents can follow existing practices.
+
+**Note:** This skill is primarily used via the `Repo Analyser` agent as a subagent. The content here serves as reference documentation.
 
 ## Philosophy
 
@@ -33,7 +35,6 @@ grep -h "<TargetFramework" $(find . -name "*.csproj" 2>/dev/null) | head -5
 ```
 
 **Document:**
-
 - Solution name
 - Number and types of projects
 - .NET version(s) in use
@@ -50,13 +51,13 @@ find . -type d -name "Domain" -o -name "Application" -o -name "Infrastructure" -
 
 **Look for signals:**
 
-| Pattern                          | Signals                                                                      |
-| -------------------------------- | ---------------------------------------------------------------------------- |
-| **Vertical Slice Architecture**  | `/Features/` folders, handlers grouped by feature, minimal layering          |
-| **Clean Architecture**           | `/Domain/`, `/Application/`, `/Infrastructure/`, `/Presentation/` separation |
-| **Hexagonal (Ports & Adapters)** | `/Ports/`, `/Adapters/`, clear interface boundaries                          |
-| **N-Tier / Layered**             | `/Services/`, `/Repositories/`, `/Controllers/` at same level                |
-| **Minimal / Simple**             | Flat structure, few abstractions                                             |
+| Pattern | Signals |
+|---------|---------|
+| **Vertical Slice Architecture** | `/Features/` folders, handlers grouped by feature, minimal layering |
+| **Clean Architecture** | `/Domain/`, `/Application/`, `/Infrastructure/`, `/Presentation/` separation |
+| **Hexagonal (Ports & Adapters)** | `/Ports/`, `/Adapters/`, clear interface boundaries |
+| **N-Tier / Layered** | `/Services/`, `/Repositories/`, `/Controllers/` at same level |
+| **Minimal / Simple** | Flat structure, few abstractions |
 
 **Document:** The pattern you observe, or "unclear/mixed" if it doesn't fit neatly.
 
@@ -73,7 +74,6 @@ grep -rh "ConnectionString\|ServiceBus\|BlobStorage\|CosmosDb" $(find . -name "*
 ```
 
 **Document:**
-
 - Databases (SQL Server, PostgreSQL, CosmosDB, etc.)
 - Message brokers (Azure Service Bus, RabbitMQ, Kafka)
 - External APIs or services
@@ -95,7 +95,6 @@ find . -name "*Tests.cs" -o -name "*Test.cs" 2>/dev/null | head -10
 ```
 
 **Examine 3-5 actual test files** to understand:
-
 - Test class naming (e.g., `{ClassName}Tests`, `{Feature}Tests`)
 - Test method naming (e.g., `MethodName_Condition_Result`, `Should_X_When_Y`)
 - Assertion style (FluentAssertions, Shouldly, built-in)
@@ -118,13 +117,13 @@ grep -rh "MediatR\|Wolverine\|Result<\|ErrorOr\|FluentValidation\|AutoMapper\|Ma
 
 **Examine 3-5 representative files** to understand:
 
-| Aspect                   | What to Look For                                             |
-| ------------------------ | ------------------------------------------------------------ |
-| **Request handling**     | MediatR, Wolverine, custom handlers, direct controller logic |
-| **Validation**           | FluentValidation, DataAnnotations, manual checks             |
-| **Error handling**       | Result/ErrorOr types, exceptions, custom error types         |
-| **Mapping**              | AutoMapper, Mapster, manual mapping, extension methods       |
-| **Dependency injection** | Constructor injection, how dependencies are organised        |
+| Aspect | What to Look For |
+|--------|------------------|
+| **Request handling** | MediatR, Wolverine, custom handlers, direct controller logic |
+| **Validation** | FluentValidation, DataAnnotations, manual checks |
+| **Error handling** | Result/ErrorOr types, exceptions, custom error types |
+| **Mapping** | AutoMapper, Mapster, manual mapping, extension methods |
+| **Dependency injection** | Constructor injection, how dependencies are organised |
 
 ### 6. Code Style
 
@@ -136,7 +135,6 @@ head -50 $(find . -name "*.cs" -path "*/src/*" 2>/dev/null | head -3)
 ```
 
 **Look for:**
-
 - Nullable reference types (`#nullable enable`, `?` on types)
 - File-scoped vs block-scoped namespaces
 - Primary constructors
@@ -147,7 +145,6 @@ head -50 $(find . -name "*.cs" -path "*/src/*" 2>/dev/null | head -3)
 ### 7. Anything Else Notable
 
 Note anything unusual or project-specific:
-
 - Custom base classes or utilities
 - Domain-specific patterns
 - Unusual folder structures
@@ -157,20 +154,20 @@ Note anything unusual or project-specific:
 
 Create `.planning/CONVENTIONS.md`:
 
-````markdown
+```markdown
 # Repository Conventions
 
-> Generated by repo-analyzer on {date}
+> Generated by repo-analyser on {date}
 > Review and adjust if needed. Re-run if conventions change significantly.
 
 ## Overview
 
-| Aspect         | Value                  |
-| -------------- | ---------------------- |
-| Solution       | {name}                 |
-| .NET Version   | {version}              |
-| Architecture   | {pattern or "unclear"} |
-| Test Framework | {framework}            |
+| Aspect | Value |
+|--------|-------|
+| Solution | {name} |
+| .NET Version | {version} |
+| Architecture | {pattern or "unclear"} |
+| Test Framework | {framework} |
 
 ## Architecture
 
@@ -178,21 +175,21 @@ Create `.planning/CONVENTIONS.md`:
 
 ## External Dependencies
 
-| Type      | Technology                     | Notes       |
-| --------- | ------------------------------ | ----------- |
-| Database  | {e.g., SQL Server via EF Core} | {any notes} |
-| Messaging | {e.g., Azure Service Bus}      | {any notes} |
-| ...       | ...                            | ...         |
+| Type | Technology | Notes |
+|------|------------|-------|
+| Database | {e.g., SQL Server via EF Core} | {any notes} |
+| Messaging | {e.g., Azure Service Bus} | {any notes} |
+| ... | ... | ... |
 
 ## Testing Conventions
 
-| Aspect       | Convention                           |
-| ------------ | ------------------------------------ |
-| Framework    | {xUnit/NUnit/MSTest}                 |
-| Assertions   | {FluentAssertions/Shouldly/built-in} |
-| Mocking      | {Moq/NSubstitute/none}               |
-| Test naming  | {pattern}                            |
-| Organisation | {description}                        |
+| Aspect | Convention |
+|--------|------------|
+| Framework | {xUnit/NUnit/MSTest} |
+| Assertions | {FluentAssertions/Shouldly/built-in} |
+| Mocking | {Moq/NSubstitute/none} |
+| Test naming | {pattern} |
+| Organisation | {description} |
 
 ### Example Test
 
@@ -200,16 +197,15 @@ Create `.planning/CONVENTIONS.md`:
 // From: {actual file path}
 {actual test method showing naming and structure}
 ```
-````
 
 ## Code Patterns
 
-| Aspect           | Pattern                                   |
-| ---------------- | ----------------------------------------- |
-| Request handling | {MediatR/custom handlers/direct/etc.}     |
-| Validation       | {FluentValidation/DataAnnotations/manual} |
-| Error handling   | {Result type/exceptions/etc.}             |
-| Mapping          | {AutoMapper/Mapster/manual/extensions}    |
+| Aspect | Pattern |
+|--------|---------|
+| Request handling | {MediatR/custom handlers/direct/etc.} |
+| Validation | {FluentValidation/DataAnnotations/manual} |
+| Error handling | {Result type/exceptions/etc.} |
+| Mapping | {AutoMapper/Mapster/manual/extensions} |
 
 ### Example Handler/Service
 
@@ -220,12 +216,12 @@ Create `.planning/CONVENTIONS.md`:
 
 ## Code Style
 
-| Aspect        | Convention                 |
-| ------------- | -------------------------- |
-| Nullable refs | {enabled/disabled}         |
-| Namespaces    | {file-scoped/block-scoped} |
-| Records       | {used for X/not used}      |
-| Field naming  | {\_camelCase/other}        |
+| Aspect | Convention |
+|--------|------------|
+| Nullable refs | {enabled/disabled} |
+| Namespaces | {file-scoped/block-scoped} |
+| Records | {used for X/not used} |
+| Field naming | {_camelCase/other} |
 
 ## Notes
 
@@ -236,12 +232,10 @@ Create `.planning/CONVENTIONS.md`:
 ## For Agents
 
 When writing code in this repository:
-
 - Follow the patterns shown in examples above
 - Match existing test naming: `{pattern with placeholder}`
 - Use {error handling approach} for error handling
 - {Any other key guidance derived from discoveries}
-
 ```
 
 ## After Generation
@@ -249,4 +243,3 @@ When writing code in this repository:
 1. Briefly summarise what was discovered
 2. Highlight anything ambiguous that might need human clarification
 3. The file is ready for agents to reference
-```
