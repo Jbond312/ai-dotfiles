@@ -4,11 +4,52 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.0] - 2025-01-29
+
+### Added
+
+- **Implementation Verifier agent** (`implementation-verifier.agent.md`) — Subagent that verifies implementation completeness:
+  - Compares implemented code against PLAN.md checklist
+  - Checks each item has corresponding code and tests
+  - Runs build and test verification
+  - Returns structured report with recommendations
+
+- **Clarification Phase in Planner** — Interactive questioning before finalising plans:
+  - Presents understanding summary with scope assumptions
+  - Asks clarifying questions about: edge cases, error handling, banking requirements, integrations
+  - Documents answers in the plan for coder context
+
+- **Examples folders for skills** — Following Agent Skills standard:
+  - `csharp-coding/examples/` — service-with-di.cs, result-pattern.cs, handler-pattern.cs
+
+### Changed
+
+- **Tool renamed from `runSubagent` to `agent`** — Updated all agents to use correct tool name
+- **Stronger subagent instructions** — Explicit "you MUST use the `agent` tool, do NOT do this yourself" language
+- **Planner simplified** — Removed redundant Verification Checklist (now handled by Implementation Verifier)
+- **Planner adds "Clarifications Received" section** — Documents user answers for coder context
+- **Coder agents use Implementation Verifier** before handoff:
+  - One-Shot Coder: Verifies before every handoff
+  - TDD Coder: Verifies after final item only
+- **Todo list encouragement** — Coders now prompted to create todo lists for tracking progress
+- **Skills aligned with Agent Skills standard**:
+  - Added `## When to Use This Skill` sections
+  - Cleaner structure following agentskills.io conventions
+  - Removed verbose trigger keywords from descriptions
+
+### Why These Changes?
+
+**Clarification Phase:** Surfaces ambiguity early, builds shared understanding, gives the AI more context for better code.
+
+**Implementation Verifier:** Catches gaps before human review. The coder might think it's done but miss edge cases or tests.
+
+**Agent Skills Standard:** Makes skills portable across VS Code, Copilot CLI, and Copilot coding agent. Cleaner structure improves discoverability.
+
 ## [0.7.0] - 2025-01-28
 
 ### Added
 - **Repo Analyser agent** (`repo-analyser.agent.md`) — Dedicated agent for repository analysis, designed to be invoked as a subagent
-- **Subagent support** — Work Item Pickup and Planner now use `runSubagent` tool to invoke Repo Analyser in an isolated context
+- **Subagent support** — Work Item Pickup and Planner now use `agent` tool to invoke Repo Analyser in an isolated context
 
 ### Fixed
 - **Handoff agent references** now use the correct `name` field (e.g., `TDD Coder`) instead of filename (e.g., `tdd-coder`)

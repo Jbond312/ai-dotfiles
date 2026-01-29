@@ -8,6 +8,7 @@ tools:
   - "search"
   - "execute/runInTerminal"
   - "execute/runTests"
+  - "agent"
 handoffs:
   - label: Review This Item
     agent: Reviewer
@@ -30,6 +31,8 @@ Implements work items one checklist item at a time. Write test, make it pass, ha
 ## Before Starting
 
 Check `project-context.md` (repo root) for architectural patterns. If VSA, refer to `vertical-slice-architecture` skill.
+
+Create a todo list to track your progress through the implementation checklist.
 
 ## Implementation Cycle
 
@@ -102,6 +105,18 @@ Return to step 1 with next item. When all complete:
 **Status:** Ready for PR
 ```
 
+### 10. Final Verification (Last Item Only)
+
+**When the last item is complete, you MUST use the `agent` tool to verify the full implementation.**
+
+```
+Tool: agent
+agentName: Implementation Verifier
+prompt: Verify that the implementation matches .planning/PLAN.md. Check all checklist items were addressed and tests exist. Return a verification report.
+```
+
+This provides a final check that nothing was missed across all items.
+
 ## Handling Problems
 
 - **Test won't pass:** Re-read test and plan. If blocked, ask developer.
@@ -113,3 +128,4 @@ Return to step 1 with next item. When all complete:
 "Starting item 1. Writing test first."
 "Test fails as expected. Implementing."
 "All tests passing. Ready for review."
+"Final item complete. Running verification..."

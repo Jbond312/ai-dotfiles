@@ -104,14 +104,17 @@ Check if `.planning/CONVENTIONS.md` exists:
 test -f .planning/CONVENTIONS.md && echo "exists" || echo "missing"
 ```
 
-**If the file doesn't exist**, use the `agent` tool to analyse the repository:
+**If missing — you MUST use the `agent` tool. Do NOT analyse the repository yourself.**
 
-- **agentName:** `Repo Analyser`
-- **prompt:** `Analyse this repository and generate .planning/CONVENTIONS.md with the discovered conventions and patterns.`
+```
+Tool: agent
+agentName: Repo Analyser
+prompt: Analyse this repository and generate .planning/CONVENTIONS.md with the discovered conventions and patterns.
+```
 
-The subagent will examine the codebase in an isolated context and create the conventions file. This keeps the main conversation focused.
+The subagent examines the codebase in isolation and returns a summary. This keeps the main conversation clean.
 
-**If the file already exists**, skip this step.
+**If exists:** Skip this step.
 
 ### 8. Summary (End of Process)
 

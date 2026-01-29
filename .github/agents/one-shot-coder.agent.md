@@ -8,6 +8,7 @@ tools:
   - "search"
   - "execute/runInTerminal"
   - "execute/runTests"
+  - "agent"
 handoffs:
   - label: Review Implementation
     agent: Reviewer
@@ -39,6 +40,8 @@ Before ANY changes, verify existing tests pass. Refer to `dotnet-testing` skill.
 
 Read `.planning/PLAN.md`. Understand all items before starting.
 
+Create a todo list to track your progress through the implementation checklist.
+
 ### 3. Update Work In Progress
 
 ```markdown
@@ -66,17 +69,39 @@ dotnet build --no-restore
 dotnet test --no-build
 ```
 
-**If build fails:** Fix compilation errors before proceeding. Do not hand off to reviewer with a broken build.
+**If build fails:** Fix compilation errors before proceeding.
 
-**If tests fail:** Fix failing tests before proceeding. The reviewer should never receive code that doesn't compile or pass tests.
+**If tests fail:** Fix failing tests before proceeding.
 
-### 6. Mark All Items Complete
+### 6. Verify Completeness (Subagent)
+
+**Before handing off, you MUST use the `agent` tool to verify the implementation is complete.**
+
+```
+Tool: agent
+agentName: Implementation Verifier
+prompt: Verify that the implementation matches .planning/PLAN.md. Check all checklist items were addressed and tests exist. Return a verification report.
+```
+
+The verifier will check:
+
+- Each planned item has corresponding code
+- Each planned item has corresponding tests
+- Build passes, all tests pass
+
+**If the verifier reports issues:**
+
+- ❌ **Incomplete items:** Address them before proceeding
+- ⚠️ **Minor gaps:** Consider addressing, or note in handoff to reviewer
+- ✅ **Ready:** Proceed to handoff
+
+### 7. Mark All Items Complete
 
 Check off all items in the plan.
 
-### 7. Hand Off for Review
+### 8. Hand Off for Review
 
-Update status to "Ready for review". Report files changed.
+Update status to "Ready for review". Include the verification report summary.
 
 ## When to Use
 
@@ -87,4 +112,5 @@ Update status to "Ready for review". Report files changed.
 ## Communication
 
 "Implementing all {N} items..."
-"All tests passing. Ready for review."
+"Running verification check..."
+"Verification passed. All tests passing. Ready for review."

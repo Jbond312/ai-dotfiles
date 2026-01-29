@@ -1,9 +1,20 @@
 ---
 name: csharp-coding
-description: "C# coding standards, patterns, and best practices for .NET development. Use when writing C# code, implementing features, creating classes, or reviewing code quality. Triggers on: C#, .NET, implement, create class, add method, handler, service, write code."
+description: "C# coding standards, patterns, and best practices for .NET development. Use when writing C# code, implementing features, creating classes, or reviewing code quality."
 ---
 
 # C# Coding Standards
+
+## When to Use This Skill
+
+Use this skill when you need to:
+
+- Write new C# classes, methods, or handlers
+- Implement features in a .NET codebase
+- Review C# code for quality and consistency
+- Understand C# best practices for banking applications
+
+## Prerequisites
 
 **Before writing code:** Read `.planning/CONVENTIONS.md` for repository-specific patterns. If it doesn't exist, the calling agent should invoke the `Repo Analyser` subagent first.
 
@@ -27,7 +38,7 @@ description: "C# coding standards, patterns, and best practices for .NET develop
 5. **Static state** — Avoid static mutable state; use DI scopes instead
 6. **Hardcoded connection strings or secrets** — Use configuration/secrets management
 
-## Soft Rules (Prefer / Avoid)
+## Guidelines
 
 ### Prefer
 
@@ -46,9 +57,15 @@ description: "C# coding standards, patterns, and best practices for .NET develop
 - Overuse of extension methods — they're hard to mock
 - Comments that explain _what_ — code should be self-documenting; comments explain _why_
 
-## Golden Examples
+## Examples
 
-### Constructor Injection (Correct)
+See the `examples/` folder for complete patterns:
+
+- `examples/service-with-di.cs` — Constructor injection pattern
+- `examples/result-pattern.cs` — Error handling with Result types
+- `examples/handler-pattern.cs` — MediatR/CQRS handler structure
+
+### Constructor Injection
 
 ```csharp
 public sealed class OrderService
@@ -98,21 +115,7 @@ public void ProcessPayment(Payment payment, decimal amount)
 }
 ```
 
-### Async Method Structure
-
-```csharp
-public async Task<CustomerDto> GetCustomerAsync(CustomerId id, CancellationToken ct)
-{
-    ct.ThrowIfCancellationRequested();
-
-    var customer = await _repository.FindByIdAsync(id, ct)
-        ?? throw new CustomerNotFoundException(id);
-
-    return customer.ToDto();
-}
-```
-
-## Anti-Patterns (Don't Do This)
+## Anti-Patterns
 
 ### ❌ Service Locator
 
@@ -125,23 +128,17 @@ public void Process()
 }
 ```
 
-**Why it's bad:** Dependencies are hidden, testing requires static setup, violations of DI principles.
+**Why:** Dependencies are hidden, testing requires static setup.
 
 ### ❌ Swallowing Exceptions
 
 ```csharp
 // BAD: Errors disappear silently
-try
-{
-    await ProcessPaymentAsync();
-}
-catch (Exception)
-{
-    // Swallowed - we'll never know it failed
-}
+try { await ProcessPaymentAsync(); }
+catch (Exception) { /* Swallowed */ }
 ```
 
-**Why it's bad:** Failures go undetected, debugging becomes impossible, data integrity at risk.
+**Why:** Failures go undetected, debugging becomes impossible.
 
 ### ❌ DateTime.Now in Business Logic
 
@@ -150,17 +147,7 @@ catch (Exception)
 public bool IsExpired() => ExpiryDate < DateTime.Now;
 ```
 
-**Why it's bad:** Can't write reliable tests, time zone issues, non-deterministic behaviour.
-
-### ❌ Stringly-Typed Code
-
-```csharp
-// BAD: No compile-time safety
-var status = order.GetProperty("Status");
-if (status == "completed") { ... }
-```
-
-**Why it's bad:** Typos cause runtime errors, no refactoring support, no IntelliSense.
+**Why:** Can't write reliable tests, time zone issues.
 
 ## Banking-Specific Rules
 
@@ -181,15 +168,3 @@ if (status == "completed") { ... }
 - State changes on sensitive entities should be logged
 - Include correlation IDs in all log entries
 - Never log sensitive data (account numbers, PII) in plain text
-
-## Verification Checklist
-
-Before considering code complete:
-
-- [ ] Follows patterns in `.planning/CONVENTIONS.md`
-- [ ] No compiler warnings introduced
-- [ ] Null handling is explicit
-- [ ] All public methods have XML docs (if repo convention)
-- [ ] No magic numbers or strings
-- [ ] Async methods accept `CancellationToken`
-- [ ] Dependencies are injected, not resolved

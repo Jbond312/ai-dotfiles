@@ -39,65 +39,123 @@ mkdir -p .planning
 test -f .planning/CONVENTIONS.md && echo "exists" || echo "missing"
 ```
 
-**If the file doesn't exist**, use the `agent` tool to analyse the repository:
+**If missing — you MUST use the `agent` tool to analyse the repository. Do NOT do this yourself.**
 
-- **agentName:** `Repo Analyser`
-- **prompt:** `Analyse this repository and generate .planning/CONVENTIONS.md with the discovered conventions and patterns.`
+```
+Tool: agent
+agentName: Repo Analyser
+prompt: Analyse this repository and generate .planning/CONVENTIONS.md with the discovered conventions and patterns.
+```
 
-The subagent runs in an isolated context, examines the codebase, and creates the conventions file. This keeps the planning conversation focused on the actual planning work.
+The subagent runs in an isolated context and returns a summary. This keeps the planning conversation focused.
 
-**If the file exists:** Read it and note the patterns for use in planning.
-
-## Before Starting Implementation Plan
-
-1. **Read conventions:** Use patterns from CONVENTIONS.md for test naming, handler structure, etc.
-2. **Check architecture:** Read `project-context.md` (repo root) for architecture — if VSA, refer to `vertical-slice-architecture` skill
+**If exists:** Read it and note the patterns for use in planning.
 
 ## Planning Process
 
-### 1. Gather Context
+### Phase 1: Gather Context
 
-Review work item description and acceptance criteria. Note linked items.
+1. **Read conventions** from CONVENTIONS.md
+2. **Check architecture** in `project-context.md` — if VSA, refer to `vertical-slice-architecture` skill
+3. **Review work item** description and acceptance criteria
+4. **Explore codebase** to understand:
+   - Existing patterns in the feature area
+   - Entry points for this change
+   - Test structure and naming
 
-### 2. Explore Codebase
+### Phase 2: Clarify Requirements (INTERACTIVE)
 
-**Essential.** Search and read to understand:
+**Before designing the implementation, present your understanding and ask clarifying questions.**
 
-- Existing patterns in the feature area
-- Entry points for this change
-- Test structure and patterns (compare to CONVENTIONS.md)
+This phase is critical — it surfaces ambiguity early and ensures the plan addresses the right problems.
 
-### 3. Design Checklist
+#### Present Your Understanding
 
-Break work into logical units (15-60 min each). Each unit:
+```markdown
+## My Understanding
 
-- Cohesive, testable, ordered by dependencies
+{2-3 sentences summarising what you believe needs to be built}
 
-For each: **What**, **How**, **Done when**.
+**Scope includes:**
 
-### 4. Define Test Scenarios
+- {thing 1}
+- {thing 2}
 
-Each implementation task needs test(s). Focus on behaviour. Use test naming pattern from CONVENTIONS.md.
+**Scope excludes (my assumption):**
 
-### 5. Ensure Local Folders Are Gitignored
+- {thing you're assuming is out of scope}
+```
+
+#### Ask Clarifying Questions
+
+Consider these categories and ask relevant questions:
+
+**Scope & Boundaries**
+
+- "Is my understanding correct that this involves X but not Y?"
+- "Are there areas explicitly out of scope?"
+
+**Edge Cases**
+
+- "What should happen when {specific edge case}?"
+- "How should empty/null/zero values be handled?"
+- "What's the expected behaviour if {dependency} is unavailable?"
+
+**Error Handling**
+
+- "Should failures be retried? How many times?"
+- "How should errors be surfaced — exceptions, Result types, logging?"
+
+**Banking-Specific**
+
+- "Are there idempotency requirements beyond what I've identified?"
+- "Does this affect reconciliation or audit trails?"
+- "Should this be behind a feature flag?"
+- "Are there batch window timing constraints?"
+
+**Data & State**
+
+- "What's the expected data volume?"
+- "Are there existing records that need migration or handling?"
+
+**Integration**
+
+- "Are there downstream consumers that depend on current behaviour?"
+- "Any external APIs or services involved?"
+
+**Testing**
+
+- "Are there specific scenarios you want covered?"
+- "Should I include integration tests or just unit tests?"
+
+#### Wait for Answers
+
+**STOP and wait for user responses before proceeding to Phase 3.**
+
+Present questions clearly and give the user opportunity to provide context. Their answers should be incorporated into the final plan.
+
+### Phase 3: Design Implementation
+
+After clarification, break work into logical units (15-60 min each):
+
+- Cohesive and testable
+- Ordered by dependencies
+- Each has: **What**, **How**, **Done when**
+
+### Phase 4: Save Plan
+
+Ensure gitignore is configured:
 
 ```bash
-# Ensure .vscode is gitignored (local MCP config)
 if ! git check-ignore -q .vscode/ 2>/dev/null; then
     echo ".vscode/" >> .gitignore
 fi
-
-# Ensure .planning is gitignored (planning artifacts)
 if ! git check-ignore -q .planning/ 2>/dev/null; then
     echo ".planning/" >> .gitignore
 fi
-
-mkdir -p .planning
 ```
 
-### 6. Save Plan
-
-**Critical:** Write to `.planning/PLAN.md`.
+Write to `.planning/PLAN.md` using the structure below.
 
 ## Plan Structure
 
@@ -107,11 +165,17 @@ mkdir -p .planning
 **Work Item:** #{id}
 **Branch:** {branch}
 **Created:** {timestamp}
-**Workflow:** {TDD | One-shot}
 
 ## Summary
 
-{2-3 sentence overview}
+{2-3 sentence overview, incorporating clarifications received}
+
+## Clarifications Received
+
+{Document key answers from the user — this provides context for coders}
+
+- **Q:** {question}
+  **A:** {answer}
 
 ## Implementation Checklist
 
@@ -121,52 +185,41 @@ mkdir -p .planning
 **How:** {Approach, files, patterns from CONVENTIONS.md}
 **Done when:** {Observable outcome}
 
-- [ ] **Test:** {scenario using naming from CONVENTIONS.md}
-- [ ] **Implement:** {task}
+**Tests:**
+
+- [ ] {Test scenario 1 using naming from CONVENTIONS.md}
+- [ ] {Test scenario 2}
+
+**Tasks:**
+
+- [ ] {Implementation task}
 
 ---
 
-## Verification Checklist
+### 2. {Next unit}
 
-### Before Implementation
+...
 
-- [ ] Test baseline passes (`dotnet test`)
-- [ ] Branch created from latest main
-- [ ] CONVENTIONS.md reviewed for patterns
+---
 
-### Per Item (mark as you complete each)
-
-- [ ] Failing test written first (TDD RED)
-- [ ] Implementation passes test (TDD GREEN)
-- [ ] Refactoring complete (TDD REFACTOR)
-- [ ] No new warnings introduced
-
-### Before PR
-
-- [ ] All tests pass
-- [ ] No new compiler warnings
-- [ ] Code follows patterns in CONVENTIONS.md
-- [ ] External dependencies flagged for review
-
-### External Dependencies Detected
+## External Dependencies
 
 {None | List any stored procs, APIs, or services that need human verification}
 
----
+## Assumptions & Risks
 
-## Work In Progress
-
-**Current step:** None
-**Status:** Ready for implementation
+- {Assumption made during planning}
+- {Risk or uncertainty to monitor}
 
 ## Notes
 
-{Assumptions, risks, decisions}
+{Any additional context for the coder}
 ```
 
 ## Guidelines
 
-- Be specific: "Add `ValidateBalance` to `PaymentProcessor`"
-- Reference patterns: "Follow approach in CONVENTIONS.md"
-- Reference similar code: "Follow `AccountService.ValidateWithdrawal`"
-- Don't over-plan: Note uncertainty as decision points
+- **Be specific:** "Add `ValidateBalance` method to `PaymentProcessor`"
+- **Reference patterns:** "Follow approach in CONVENTIONS.md"
+- **Reference similar code:** "Follow `AccountService.ValidateWithdrawal`"
+- **Don't over-plan:** Note uncertainty as decision points
+- **Document clarifications:** The coder needs this context too

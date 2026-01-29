@@ -1,9 +1,21 @@
 ---
 name: dotnet-testing
-description: "Write and run .NET tests following TDD principles. Use when writing tests, implementing TDD workflow, verifying test coverage, debugging test failures, or reviewing test quality. Triggers on: test, TDD, red-green-refactor, unit test, integration test, xUnit, NUnit, write test, failing test."
+description: "Write and run .NET tests following TDD principles. Use when writing tests, implementing TDD workflow, verifying test coverage, or debugging test failures."
 ---
 
 # .NET Testing Standards
+
+## When to Use This Skill
+
+Use this skill when you need to:
+
+- Write unit tests for new functionality
+- Follow TDD (Test-Driven Development) workflow
+- Debug failing tests
+- Review test quality and coverage
+- Understand test naming conventions
+
+## Prerequisites
 
 **Before writing tests:** Read `.planning/CONVENTIONS.md` for repository-specific test patterns (framework, naming, mocking library). If it doesn't exist, the calling agent should invoke the `Repo Analyser` subagent first.
 
