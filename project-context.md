@@ -9,16 +9,16 @@ Repository-specific configuration. This file lives at the root of each repositor
 
 ## Architecture
 
-- **Pattern:** Vertical Slice Architecture
+- **Pattern:** {discovered by Repo Analyser — see CONVENTIONS.md}
 - **Framework:** .NET 9, ASP.NET Core Minimal APIs
 
-If not using VSA, remove or update this section and the `vertical-slice-architecture` skill won't apply.
+Update this section to match your repository's architecture. The Repo Analyser will discover patterns and document them in CONVENTIONS.md.
 
 ## Key Directories
 
 ```
 src/
-├── Features/          # Vertical slices
+├── {feature-area}/    # Feature organisation (varies by architecture)
 ├── Domain/            # Entities, value objects
 └── Infrastructure/    # Persistence, external services
 
@@ -37,7 +37,7 @@ tests/
 
 - Handlers return `Result<T>` (FluentResults)
 - Inject `ISender`, not `IMediator`
-- Response DTOs co-located with slices (not shared)
+- Response DTOs co-located with their feature (not shared)
 
 ## External Dependencies
 

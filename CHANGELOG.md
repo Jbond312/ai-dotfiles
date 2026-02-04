@@ -4,6 +4,23 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.10.0] - 2025-02-04
+
+### Removed
+
+- **`vertical-slice-architecture` skill** — Deleted entirely. Architecture is now a discovered property, not a hardcoded skill. The Repo Analyser already identifies architecture patterns (VSA, Clean, Hexagonal, N-Tier) and documents them in CONVENTIONS.md. Agents now read from CONVENTIONS.md instead of referencing a specific skill.
+
+### Changed
+
+- **Agent architecture references genericised** — Planner, TDD Coder, One-Shot Coder, and Reviewer agents now reference CONVENTIONS.md for architectural patterns instead of the deleted VSA skill.
+- **`project-context.md` template genericised** — Architecture pattern is now a placeholder discovered by Repo Analyser. Directory structure template uses generic feature organisation instead of VSA-specific "Vertical slices".
+- **`DEVELOPER_SETUP.md` updated** — Removed VSA skill from directory tree listing and VSA parenthetical from architecture pattern description.
+- **`WORKFLOW.md` genericised** — Removed all VSA-specific references from the scenario walkthrough, skills consulted lists, and skills reference table. Architecture references now point to CONVENTIONS.md.
+
+### Why This Change?
+
+Architecture should be discovered, not assumed. The Repo Analyser already handles this — it identifies the architecture pattern during convention discovery and documents it in CONVENTIONS.md. Having a separate hardcoded VSA skill created a false dependency and limited the workflow to a single architecture style.
+
 ## [0.9.0] - 2025-02-04
 
 ### Added

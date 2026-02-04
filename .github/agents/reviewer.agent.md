@@ -73,9 +73,9 @@ All tests must pass. This is a blocker.
 
 Check against `security-review` skill checklist. Focus on injection, sensitive data exposure, input validation, and financial integrity.
 
-### 6. VSA Check (If Applicable)
+### 6. Architecture Pattern Check
 
-If VSA repo, also check `vertical-slice-architecture` skill's code review checklist.
+Verify the implementation follows the architectural patterns documented in CONVENTIONS.md.
 
 ### 7. Report
 

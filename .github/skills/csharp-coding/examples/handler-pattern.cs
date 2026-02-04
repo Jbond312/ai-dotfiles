@@ -1,5 +1,5 @@
 // Example: CQRS Handler Pattern (MediatR style)
-// Use this structure for command/query handlers in VSA repositories.
+// Use this structure for command/query handlers with CQRS and MediatR.
 
 // --- Command Definition ---
 public sealed record ProcessInterestCommand(

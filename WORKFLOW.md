@@ -53,7 +53,7 @@ We'll follow a single PBI through the entire pipeline:
 > - Each rejection returns a specific error code
 > - All validations run before any side effects
 
-The repository is a .NET 8 payments API using Vertical Slice Architecture and MediatR.
+The repository is a .NET 8 payments API using MediatR.
 
 ---
 
@@ -149,7 +149,7 @@ What would you like to do?
 
 Runs in an isolated context. Discovers:
 - Solution structure (`dotnet sln list`, reads `.csproj` files)
-- Architecture pattern (finds `/Features/` folders — identifies VSA)
+- Architecture pattern (examines folder structure and conventions)
 - External dependencies (finds EF Core, SQL Server packages)
 - Testing approach (finds xUnit, FluentAssertions, Moq)
 - Code patterns (MediatR, FluentValidation, Result types)
@@ -202,10 +202,10 @@ Ready to plan implementation.
 1. **Verifies conventions exist** — reads `.planning/CONVENTIONS.md` (found — subagent already created it)
 2. **Ensures `.planning/` is gitignored** — already done by Work Item Pickup
 3. **Gathers context:**
-   - Reads CONVENTIONS.md — notes VSA patterns, MediatR, FluentValidation
-   - Checks `project-context.md` — confirms VSA, refers to `vertical-slice-architecture` skill
+   - Reads CONVENTIONS.md — notes discovered architecture patterns, MediatR, FluentValidation
+   - Checks `project-context.md` — confirms architecture, refers to CONVENTIONS.md
    - Reviews work item acceptance criteria
-   - Explores codebase: finds existing `ProcessPayment/` slice, existing validators, existing `Result<T>` usage
+   - Explores codebase: finds existing `ProcessPayment/` feature, existing validators, existing `Result<T>` usage
 
 4. **Clarifies requirements (interactive):**
 
@@ -257,7 +257,7 @@ Ready to plan implementation.
 
 **Files created:** `.planning/PLAN.md`
 
-**Skills consulted:** `known-issues`, `vertical-slice-architecture`, `quality-gates`
+**Skills consulted:** `known-issues`, `quality-gates`
 
 **Handoff:** Developer confirms TDD → TDD Coder (`send: true`)
 
@@ -268,7 +268,7 @@ Ready to plan implementation.
 The TDD Coder works through each checklist item in a cycle: test → implement → review → commit → next.
 
 **Before starting:**
-- Reads `project-context.md` — confirms VSA, refers to `vertical-slice-architecture` skill
+- Reads `project-context.md` — confirms architecture, refers to CONVENTIONS.md
 - Creates a todo list to track progress
 - Verifies baseline: `dotnet build --no-restore` and `dotnet test --no-build` — all pass
 
@@ -380,7 +380,7 @@ Runs in isolated context:
 
 **Files written/modified:** Production code, test files, PLAN.md (status updates, item check-offs)
 
-**Skills consulted:** `known-issues`, `csharp-coding`, `dotnet-testing`, `vertical-slice-architecture`, `quality-gates`
+**Skills consulted:** `known-issues`, `csharp-coding`, `dotnet-testing`, `quality-gates`
 
 ---
 
@@ -390,11 +390,11 @@ Runs in isolated context:
 
 1. **Understands context** — reads PLAN.md, notes the Implementation Verifier report (PASS)
 2. **Reviews all changed files** using `code-reviewing` skill checklist:
-   - Pattern adherence — matches CONVENTIONS.md (FluentValidation, Result types, VSA structure)
+   - Pattern adherence — matches CONVENTIONS.md (FluentValidation, Result types, architectural patterns)
    - Security — runs `security-review` skill checklist (input validation present, no PII in logs)
    - Banking domain — idempotency not applicable (read-only validation), decimal used for amounts
    - Error handling — structured error codes, no swallowed exceptions
-3. **Checks for VSA compliance** — runs `vertical-slice-architecture` code review checklist
+3. **Checks architecture compliance** — verifies implementation follows patterns documented in CONVENTIONS.md
 4. **Verifies tests pass:** `dotnet test --no-build` — all pass
 5. **Checks external dependencies** — none detected
 
@@ -430,7 +430,7 @@ None detected.
 - Tests pass: PASS
 ```
 
-**Skills consulted:** `known-issues`, `code-reviewing`, `security-review`, `vertical-slice-architecture`, `quality-gates`
+**Skills consulted:** `known-issues`, `code-reviewing`, `security-review`, `quality-gates`
 
 **Handoff:** Approved → Committer (`send: true`)
 
@@ -608,7 +608,6 @@ Which skills are consulted, when, and by whom.
 | `known-issues` | All agents | Before taking any action (pre-action check) |
 | `azure-devops-api` | Orchestrator | Querying sprint work items and team PRs |
 | `azure-devops-workflow` | Work Item Pickup | State transitions, branch naming, predecessor validation |
-| `vertical-slice-architecture` | Planner, Coders, Reviewer | When repo uses VSA (checked via `project-context.md`) |
 | `csharp-coding` | Coders | Writing production code |
 | `dotnet-testing` | Coders | Writing tests, TDD workflow |
 | `code-reviewing` | Reviewer | Review checklist, issue categorisation, report format |

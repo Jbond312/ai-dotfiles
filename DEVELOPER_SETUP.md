@@ -55,13 +55,8 @@ my-repo/
         │   └── SKILL.md
         ├── known-issues/
         │   └── SKILL.md
-        ├── repo-analyzer/
-        │   └── SKILL.md
-        └── vertical-slice-architecture/
-            ├── SKILL.md
-            └── reference/
-                ├── code-review-checklist.md
-                └── slice-components.md
+        └── repo-analyzer/
+            └── SKILL.md
 
 .vscode/
 ├── mcp.json
@@ -151,7 +146,7 @@ Create `project-context.md` at the **repository root** (not in `.github/`). This
 | Field                 | Purpose                                          |
 | --------------------- | ------------------------------------------------ |
 | Repository name       | Display purposes                                 |
-| Architecture pattern  | Enables pattern-specific guidance (e.g., VSA)    |
+| Architecture pattern  | Enables pattern-specific guidance                |
 | Key directories       | Helps agents navigate the codebase               |
 | External dependencies | Documents stored procs, APIs for review flagging |
 

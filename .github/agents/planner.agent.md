@@ -113,7 +113,7 @@ The subagent runs in an isolated context and returns a summary. This keeps the p
 ### Phase 1: Gather Context
 
 1. **Read conventions** from CONVENTIONS.md
-2. **Check architecture** in `project-context.md` — if VSA, refer to `vertical-slice-architecture` skill
+2. **Check architecture** in `project-context.md` — follow the architectural patterns in CONVENTIONS.md
 3. **Review work item** description and acceptance criteria
 4. **Explore codebase** to understand:
    - Existing patterns in the feature area
