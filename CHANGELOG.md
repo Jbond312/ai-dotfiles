@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **WORKFLOW.md walkthrough document** — Narrative walkthrough of the complete agent workflow using a concrete "Add payment validation" scenario. Covers every phase from Orchestrator entry through PR creation, including alternate paths (One-Shot, Spike, Debug, Changes Requested, Context Loss Recovery). Includes Mermaid flow diagram, skills reference table, file artifacts table, and observations on gaps and trade-offs.
+
 - **Retrospective feedback loop in Committer agent** — Prompts "anything to record in known-issues?" after all checklist items are complete (final commit only). Skipped for intermediate TDD commits. Zero-friction opt-out: say "nothing" and move on immediately.
 
 - **Retrospective check in Orchestrator agent** — When returning to main with no plan, checks `git log` for recently completed work and offers the same known-issues prompt before showing work options. Skipped when git log shows no recent activity.
