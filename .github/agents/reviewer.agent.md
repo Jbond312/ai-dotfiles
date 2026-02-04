@@ -103,6 +103,18 @@ Use format from `code-reviewing` skill:
 {Positive observations}
 ```
 
+After the review report, append the quality gate summary. Refer to `quality-gates` skill (Gate: Reviewer → Committer):
+
+```markdown
+## Quality Gate: {PASS | WARN}
+
+- No critical issues: {PASS/WARN}
+- No security blockers: {PASS/WARN}
+- Important issues resolved: {PASS/WARN}
+- External deps flagged: {PASS/WARN}
+- Tests pass: {PASS/WARN}
+```
+
 ## Handoff
 
 **Approved:** Hand off to committer.

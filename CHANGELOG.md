@@ -4,6 +4,28 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.0] - 2025-02-04
+
+### Added
+
+- **Retrospective feedback loop in Committer agent** — Prompts "anything to record in known-issues?" after all checklist items are complete (final commit only). Skipped for intermediate TDD commits. Zero-friction opt-out: say "nothing" and move on immediately.
+
+- **Retrospective check in Orchestrator agent** — When returning to main with no plan, checks `git log` for recently completed work and offers the same known-issues prompt before showing work options. Skipped when git log shows no recent activity.
+
+- **Orchestrator gains `edit` tool** — Narrowly scoped to allow writing known-issues entries from the retrospective prompt.
+
+### Changed
+
+- **Quality gates at agent handoffs** — Structured self-checks at three handoff points (Planner→Coder, Coder→Reviewer, Reviewer→Committer). New `quality-gates` skill defines centralised criteria. PASS/WARN format — flags concerns without hard-blocking (existing hard blocks unchanged). Implementation Verifier now collects code coverage via `--collect:"XPlat Code Coverage"` (best-effort, works without coverlet).
+
+- **Plan checklist items checked off earlier** — Coders now mark items complete during implementation (not batched at the end). One-Shot Coder checks off each item as it's completed. Committer no longer redundantly re-checks items — only updates Work In Progress status.
+
+- **Planner checklist item cap softened** — Hard cap of 8 items replaced with "aim for 3-6, suggest splitting if approaching 10". Allows flexibility for legitimately larger work items.
+
+### Why These Changes?
+
+Captures gotchas and learnings at natural completion points — right after finishing work (Committer) and right before starting new work (Orchestrator). Feeds directly into the known-issues skill so future cycles avoid the same mistakes. Designed to be zero-friction: one question, instant skip if nothing to report.
+
 ## [0.8.0] - 2025-01-29
 
 ### Added

@@ -47,7 +47,7 @@ Check:
 
 ```bash
 dotnet build --no-restore
-dotnet test --no-build --verbosity normal
+dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage"
 ```
 
 Capture:
@@ -55,6 +55,9 @@ Capture:
 - Build success/failure
 - Test count (passed/failed/skipped)
 - Any warnings
+- Line coverage percentage (if coverage data produced — requires `coverlet.collector` NuGet package)
+
+If no coverage data is produced, note "Coverage: not available" — this is not a failure.
 
 ### 5. Generate Verification Report
 
@@ -68,6 +71,7 @@ Return a structured report:
 - **Build:** ✅ Succeeded | ❌ Failed
 - **Tests:** X passed, Y failed, Z skipped
 - **Warnings:** N new warnings
+- **Coverage:** {X% line coverage | Not available}
 
 ### Checklist Verification
 
@@ -91,6 +95,16 @@ Return a structured report:
 - ✅ **Ready for review** — All items verified, build passes, tests pass
 - ⚠️ **Minor gaps** — Mostly complete, {specific gaps}. Consider addressing before review.
 - ❌ **Incomplete** — Significant items missing: {list}. Should complete before proceeding.
+
+### Quality Gate: {PASS | WARN}
+
+- Build passes: {PASS/WARN}
+- All tests pass: {PASS/WARN}
+- Plan items addressed: {PASS/WARN}
+- Plan items have tests: {PASS/WARN}
+- Coverage: {X% | Not available}
+
+Refer to `quality-gates` skill for criteria.
 ```
 
 ## Important Notes

@@ -33,7 +33,7 @@ Commits reviewed code and updates the plan. Refer to `git-committing` skill for 
 4. **Stage:** `git add -u` (tracked files only — never use `git add -A`)
 5. **Commit:** Message per `git-committing` skill
 6. **Verify:** `git log -1 --oneline`
-7. **Update plan:** Check off items, update Work In Progress
+7. **Update plan:** Update Work In Progress status
 
 ## Pre-Commit Checks (Step 3)
 
@@ -66,14 +66,7 @@ Hand back to the coder to resolve. Do not commit with known issues.
 
 ## Plan Updates (Critical)
 
-**A. Check off completed items:**
-
-```markdown
-- [x] **Test:** Payment with insufficient funds returns declined
-- [x] **Implement:** Add balance validation to PaymentProcessor
-```
-
-**B. Update Work In Progress:**
+**Items are checked off by coders during implementation.** Update the Work In Progress status:
 
 More items (TDD):
 
@@ -88,6 +81,24 @@ All complete:
 **Current step:** All items complete
 **Status:** Ready for PR
 ```
+
+## Quick Retrospective (Final Item Only)
+
+**Skip this step if more checklist items remain.** Only run when all items are marked complete.
+
+Before handing off to PR Creator, ask:
+
+> All items complete and committed. Before we create the PR —
+> **anything to record in known-issues?**
+> (Gotchas, misleading errors, tool quirks, patterns you had to look up — or "nothing" to skip)
+
+**If the engineer provides an issue:**
+1. Determine the correct section in the `known-issues` skill (Scripts & CLI, MCP & Azure DevOps, Coding & Implementation, Testing, Code Review, or Git & Commits)
+2. Read `.github/skills/known-issues/SKILL.md` to find the next available number in that section
+3. Add a new table row: `| {next #} | {What went wrong} | {What should happen instead} |`
+4. Confirm: "Added to known-issues under {section}."
+
+**If "nothing" or similar:** Proceed immediately to Handoff. Do not press further.
 
 ## Handoff
 

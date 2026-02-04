@@ -85,7 +85,7 @@ Use `search` to find test projects matching `*.Tests*/*.csproj`.
 - Skip the clarification phase — ambiguity causes rework
 - Analyse the repository yourself — always delegate to Repo Analyser subagent
 - Plan implementation details for external dependencies you cannot verify
-- Create plans with more than 8 checklist items — split the work item instead
+- Create plans with more than 10 checklist items — suggest splitting the work item instead
 - Assume scope that isn't explicitly stated in the work item
 
 ## Before Taking Action
@@ -199,7 +199,7 @@ After clarification, break work into logical units (15-60 min each):
 - Ordered by dependencies
 - Each has: **What**, **How**, **Done when**
 
-**Aim for 3-6 checklist items.** If you have more than 8, the work item should be split.
+**Aim for 3-6 checklist items.** If you're approaching 10, suggest splitting the work item.
 
 ### Phase 4: Save Plan
 
@@ -280,3 +280,31 @@ Write to `.planning/PLAN.md` using the structure below.
 - Well-understood patterns with clear examples
 - Fewer than 4 checklist items
 - Straightforward mapping/transformation logic
+
+## Phase 5: Quality Gate Self-Check
+
+**After saving the plan, validate against the `quality-gates` skill (Gate: Planner → Coder).**
+
+Re-read `.planning/PLAN.md` and check:
+
+1. Every checklist item has ≥1 test scenario
+2. External Dependencies section exists (write "None" if absent)
+3. Assumptions & Risks section exists
+4. Clarifications Received section has content (if clarification phase ran)
+5. Each item has What, How, and Done criteria
+6. Item count is between 3 and 10
+
+**If any fail:** Fix the plan immediately before offering handoff.
+
+**Include in handoff message:**
+
+```markdown
+## Quality Gate: PASS
+
+- Test scenarios per item: PASS
+- External Dependencies: PASS
+- Assumptions & Risks: PASS
+- Clarifications documented: PASS
+- Item structure: PASS
+- Item count (N items): PASS
+```

@@ -9,6 +9,10 @@ tools:
   - "execute/runInTerminal"
   - "execute/runTests"
 handoffs:
+  - label: Return to Orchestrator
+    agent: Orchestrator
+    prompt: "Issue resolved. Determine the correct agent to resume."
+    send: true
   - label: Resume Coding (TDD)
     agent: TDD Coder
     prompt: "Issue resolved. Resume implementing the plan."

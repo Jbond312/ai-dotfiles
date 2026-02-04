@@ -6,6 +6,11 @@ tools:
   - "microsoft/azure-devops-mcp/*"
   - "read"
   - "execute/runInTerminal"
+handoffs:
+  - label: Return to Orchestrator
+    agent: Orchestrator
+    prompt: "PR created. Determine what to do next."
+    send: false
 ---
 
 # PR Creator Agent

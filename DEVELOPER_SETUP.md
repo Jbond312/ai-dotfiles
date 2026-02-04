@@ -29,7 +29,7 @@ my-repo/
     │   ├── csharp.instructions.md  # → All .cs files
     │   └── tests.instructions.md   # → Test files
     ├── agents/
-    │   ├── what-next.agent.md      # Entry point
+    │   ├── orchestrator.agent.md   # Entry point
     │   ├── work-item-pickup.agent.md
     │   ├── planner.agent.md
     │   ├── tdd-coder.agent.md
@@ -191,23 +191,23 @@ az login
 
 ## Using the Workflow
 
-### Starting Your Day: What's Next?
+### Starting Your Day: Orchestrator
 
-The workflow starts with the **What's Next** agent, which helps you prioritise:
+The workflow starts with the **Orchestrator** agent, which detects your pipeline state and routes you:
 
 1. Open GitHub Copilot Chat in VS Code
-2. Select the **What's Next** agent from the agents dropdown
+2. Select the **Orchestrator** agent from the agents dropdown
 3. Ask what you should work on:
 
    ```
    What should I work on next?
    ```
 
-The agent checks (in priority order):
+The agent reads PLAN.md and git state to determine where you are:
 
-- PRs awaiting your team's review (with links to review manually)
-- Your own in-progress work
-- New work items to pick up (shows top 5)
+- If you have an in-flight plan, it routes you to the correct agent automatically
+- If you have uncommitted changes, it asks whether to continue or commit
+- If no plan exists, it shows available work (PRs, in-progress items, new items)
 
 ### Picking Up a Work Item
 
@@ -450,19 +450,24 @@ When rolling out to your team:
 ### Agent Workflow
 
 ```
-what-next (entry point)
-    ├── PRs awaiting review → (review manually in Azure DevOps)
-    ├── Your in-progress work → planner / coder (resume)
-    └── Available work → work-item-pickup
+orchestrator (entry point — reads PLAN.md + git state)
+    ├── No plan, main branch → show work options → work-item-pickup
+    ├── Plan exists → auto-route to correct agent (coder / reviewer / pr-creator)
+    ├── Uncommitted changes → ask: continue coding or commit?
+    └── Spike findings → offer: convert to plan or create PR
 
-work-item-pickup → planner → [coder → reviewer → committer] → pr-creator
+work-item-pickup → planner → [coder → reviewer → committer] → pr-creator → orchestrator
 ```
 
 ### Handoff Shortcuts
 
 | From             | To               | When                           |
 | ---------------- | ---------------- | ------------------------------ |
-| what-next        | work-item-pickup | Ready for new work             |
+| orchestrator     | work-item-pickup | Ready for new work             |
+| orchestrator     | tdd-coder        | Plan exists, TDD workflow      |
+| orchestrator     | one-shot-coder   | Plan exists, one-shot workflow |
+| orchestrator     | reviewer         | Ready for review               |
+| orchestrator     | pr-creator       | Ready for PR                   |
 | work-item-pickup | planner          | After branch created           |
 | planner          | tdd-coder        | Ready to implement (iterative) |
 | planner          | one-shot-coder   | Ready to implement (batch)     |
@@ -473,6 +478,9 @@ work-item-pickup → planner → [coder → reviewer → committer] → pr-creat
 | reviewer         | committer        | Approved                       |
 | committer        | tdd-coder        | Next item (TDD only)           |
 | committer        | pr-creator       | All items complete             |
+| pr-creator       | orchestrator     | PR created, cycle complete     |
+| debug            | orchestrator     | Issue resolved, auto-resume    |
+| spike            | orchestrator     | Spike complete                 |
 
 ### Model Configuration
 
@@ -480,7 +488,7 @@ Agents are configured with appropriate models to balance capability and cost:
 
 | Agent            | Model            | Rationale                             |
 | ---------------- | ---------------- | ------------------------------------- |
-| what-next        | claude-3-5-haiku | Light orchestration, simple decisions |
+| orchestrator     | claude-3-5-haiku | Stateless routing, simple decisions   |
 | work-item-pickup | claude-sonnet-4  | Predecessor checks, context gathering |
 | planner          | claude-sonnet-4  | Codebase analysis, plan structuring   |
 | tdd-coder        | claude-sonnet-4  | Code generation, test writing         |
@@ -491,7 +499,7 @@ Agents are configured with appropriate models to balance capability and cost:
 
 **To change a model:** Edit the `model:` field in the agent's YAML frontmatter. Leave blank to use the model selected in the Copilot dropdown.
 
-**Cost considerations:** Using Haiku for simple agents (committer, pr-creator, what-next) significantly reduces token usage without affecting quality, since these agents perform straightforward, template-based tasks.
+**Cost considerations:** Using Haiku for simple agents (committer, pr-creator, orchestrator) significantly reduces token usage without affecting quality, since these agents perform straightforward, template-based tasks.
 
 ### Branch Naming
 

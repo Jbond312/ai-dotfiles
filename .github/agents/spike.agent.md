@@ -11,6 +11,10 @@ tools:
   - "edit/editFiles"
   - "agent"
 handoffs:
+  - label: Return to Orchestrator
+    agent: Orchestrator
+    prompt: "Spike complete. Determine what to do next."
+    send: false
   - label: Convert to Implementation
     agent: Planner
     prompt: "Create an implementation plan based on the spike findings and chosen approach."

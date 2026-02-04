@@ -45,7 +45,7 @@ Conventional Commits format. Refer to `git-committing` skill.
 
 Custom agents guide development:
 
-1. **What Next** → Show options
+1. **Orchestrator** → Detect pipeline state, route to correct agent
 2. **Work Item Pickup** → Assign, branch, summarise
 3. **Planner** → Create `.planning/PLAN.md`
 4. **Coder** → Implement (TDD or one-shot)

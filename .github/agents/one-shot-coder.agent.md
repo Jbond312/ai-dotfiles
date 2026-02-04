@@ -59,7 +59,7 @@ Create a todo list to track your progress through the implementation checklist.
 
 ### 4. Implement All Items
 
-For each checklist item: write tests, write production code, verify.
+For each checklist item: write tests, write production code, verify. **Check off each item's tasks in PLAN.md as you complete them** — don't wait until the end.
 
 ### 5. Verify Build and Tests
 
@@ -99,13 +99,15 @@ The verifier will check:
 - ⚠️ **Minor gaps:** Consider addressing, or note in handoff to reviewer
 - ✅ **Ready:** Proceed to handoff
 
-### 7. Mark All Items Complete
+### 7. Verify All Items Checked Off
 
-Check off all items in the plan.
+Re-read PLAN.md and confirm all items are marked `[x]`. Fix any missed during implementation.
 
 ### 8. Hand Off for Review
 
 Update status to "Ready for review". Include the verification report summary.
+
+Include the Quality Gate summary from the verification report. Refer to `quality-gates` skill (Gate: Coder → Reviewer).
 
 ## When to Use
 

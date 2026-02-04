@@ -118,6 +118,8 @@ This catches any gaps before they're reviewed and committed. Include the verific
 
 For the final item, include the verification report summary.
 
+Include the Quality Gate summary from the verification report. Refer to `quality-gates` skill (Gate: Coder → Reviewer).
+
 ### 9. After Review
 
 Apply feedback. Re-run tests. Hand off to committer.
