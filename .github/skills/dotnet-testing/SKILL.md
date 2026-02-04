@@ -52,7 +52,7 @@ Use this skill when you need to:
 
 **Command:**
 
-```bash
+```
 dotnet test --filter "FullyQualifiedName~{TestClassName}.{TestMethodName}"
 ```
 
@@ -76,7 +76,7 @@ dotnet test --filter "FullyQualifiedName~{TestClassName}.{TestMethodName}"
 
 **Command:**
 
-```bash
+```
 dotnet test --no-build --verbosity minimal
 ```
 
@@ -258,23 +258,14 @@ tests/
 
 ## Commands Reference
 
-```bash
-# Run all tests
+All `dotnet` commands work identically across all shells.
+
+```
 dotnet test
-
-# Run specific test project
 dotnet test ./tests/MyProject.UnitTests/
-
-# Run tests matching filter
 dotnet test --filter "FullyQualifiedName~OrderServiceTests"
-
-# Run tests by trait/category
 dotnet test --filter "Category=Unit"
-
-# List tests without running
 dotnet test --list-tests
-
-# Run with coverage (requires coverlet)
 dotnet test --collect:"XPlat Code Coverage"
 ```
 

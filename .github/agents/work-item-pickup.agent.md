@@ -16,6 +16,10 @@ handoffs:
     agent: Planner
     prompt: "Create an implementation plan for this work item."
     send: true
+  - label: Start Investigation
+    agent: Spike
+    prompt: "Investigate this spike work item and produce findings."
+    send: true
 ---
 
 # Work Item Pickup Agent
@@ -140,6 +144,14 @@ After ALL steps complete, present summary and offer handoff:
 
 Ready to plan implementation.
 ```
+
+**If the work item type is `Spike`**, change the summary ending to:
+
+```markdown
+Ready to investigate.
+```
+
+And hand off to the **Spike** agent instead of the **Planner**.
 
 ## Edge Cases
 

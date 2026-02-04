@@ -2,12 +2,34 @@
 
 .NET 9 banking application using Azure DevOps for work items and CI/CD.
 
+## Shell Compatibility
+
+Team members use different shells (PowerShell, bash, zsh, cmd). When executing terminal commands:
+
+1. **Detect the user's shell** from the terminal context and adapt syntax accordingly
+2. **Prefer cross-platform commands** where they exist:
+   - `dotnet` CLI commands work identically everywhere
+   - `git` commands work identically everywhere
+   - File operations vary — adapt `mkdir`, `test -f`, `find` etc. to the user's shell
+3. **Focus on intent over syntax** — if instructions say "check if file exists", use the appropriate method for the current shell
+
+Common adaptations:
+
+| Intent            | Bash                  | PowerShell                                 |
+| ----------------- | --------------------- | ------------------------------------------ |
+| Check file exists | `test -f path`        | `Test-Path path`                           |
+| Create directory  | `mkdir -p path`       | `New-Item -ItemType Directory -Force path` |
+| Find files        | `find . -name "*.cs"` | `Get-ChildItem -Recurse -Filter *.cs`      |
+| Check in git      | `git ls-files "*.cs"` | `git ls-files "*.cs"` (same)               |
+
+When in doubt, use `dotnet` and `git` commands — they're consistent across all platforms.
+
 ## Pattern-Specific Instructions
 
 Additional instructions auto-apply based on file type:
+
 - `instructions/csharp.instructions.md` → All `.cs` files
 - `instructions/tests.instructions.md` → Test files
-- `instructions/banking.instructions.md` → Features, Domain, Infrastructure
 
 ## Branch Naming
 

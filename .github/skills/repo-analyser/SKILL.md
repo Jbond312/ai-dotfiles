@@ -19,19 +19,20 @@ Discovers how a repository works — its architecture, patterns, conventions, an
 - When `.planning/CONVENTIONS.md` doesn't exist
 - When explicitly asked to refresh conventions
 
+## Cross-Platform Commands
+
+**Use your `search` and `read` tools** for all codebase exploration. Only use the terminal for `dotnet` and `git` commands — these work identically across all shells.
+
 ## Discovery Process
 
 Work through each section. For each, explore the codebase and document what you find.
 
 ### 1. Solution Overview
 
-```bash
-# Find solution and understand structure
-find . -name "*.sln" -type f 2>/dev/null
-find . -name "*.csproj" -type f 2>/dev/null | head -20
+Use `search` to find `*.sln` and `*.csproj` files. Use `read` to examine project files for `<TargetFramework>` values.
 
-# Check .NET version
-grep -h "<TargetFramework" $(find . -name "*.csproj" 2>/dev/null) | head -5
+```
+dotnet sln list
 ```
 
 **Document:**
@@ -41,13 +42,7 @@ grep -h "<TargetFramework" $(find . -name "*.csproj" 2>/dev/null) | head -5
 
 ### 2. Architecture Pattern
 
-Examine the folder structure and project organisation to identify the architectural style.
-
-```bash
-# Look at top-level structure
-ls -la src/ 2>/dev/null || ls -la
-find . -type d -name "Domain" -o -name "Application" -o -name "Infrastructure" -o -name "Features" -o -name "Handlers" 2>/dev/null | head -10
-```
+Use `search` to explore the folder structure and find directories named `Domain`, `Application`, `Infrastructure`, `Features`, `Handlers`, `Ports`, `Adapters`, `Services`, `Repositories`, `Controllers`.
 
 **Look for signals:**
 
@@ -63,15 +58,9 @@ find . -type d -name "Domain" -o -name "Application" -o -name "Infrastructure" -
 
 ### 3. External Dependencies
 
-Identify what external systems the codebase interacts with.
+Use `search` to find `*.csproj` files, then `read` them and look for `PackageReference` entries related to: EntityFramework, Dapper, Npgsql, SqlClient, Azure, RabbitMQ, MassTransit, Kafka, Redis, MongoDB.
 
-```bash
-# Check package references for common integrations
-grep -rh "PackageReference" $(find . -name "*.csproj" 2>/dev/null) | grep -i "entityframework\|dapper\|npgsql\|sqlclient\|azure\|rabbitmq\|masstransit\|kafka\|redis\|mongodb\|http" | sort -u
-
-# Look for connection strings or configuration
-grep -rh "ConnectionString\|ServiceBus\|BlobStorage\|CosmosDb" $(find . -name "*.json" -o -name "*.cs" 2>/dev/null) | head -10
-```
+Also use `search` to look for references to `ConnectionString`, `ServiceBus`, `BlobStorage`, `CosmosDb` in `.json` and `.cs` files.
 
 **Document:**
 - Databases (SQL Server, PostgreSQL, CosmosDB, etc.)
@@ -81,20 +70,9 @@ grep -rh "ConnectionString\|ServiceBus\|BlobStorage\|CosmosDb" $(find . -name "*
 
 ### 4. Testing Approach
 
-Examine existing tests to understand how testing is done.
+Use `search` to find test projects (`*Tests*.csproj`, `*Test*.csproj`) and test files (`*Tests.cs`, `*Test.cs`).
 
-```bash
-# Find test projects
-find . -name "*Test*.csproj" -o -name "*Tests*.csproj" 2>/dev/null
-
-# Check test framework
-grep -rh "xunit\|nunit\|mstest" $(find . -name "*.csproj" 2>/dev/null) | head -3
-
-# Find test files and examine naming
-find . -name "*Tests.cs" -o -name "*Test.cs" 2>/dev/null | head -10
-```
-
-**Examine 3-5 actual test files** to understand:
+**Use `read` to examine 3-5 actual test files** and understand:
 - Test class naming (e.g., `{ClassName}Tests`, `{Feature}Tests`)
 - Test method naming (e.g., `MethodName_Condition_Result`, `Should_X_When_Y`)
 - Assertion style (FluentAssertions, Shouldly, built-in)
@@ -105,17 +83,9 @@ find . -name "*Tests.cs" -o -name "*Test.cs" 2>/dev/null | head -10
 
 ### 5. Code Patterns
 
-Examine production code to understand common patterns.
+Use `search` to find `*Handler.cs`, `*Command.cs`, `*Query.cs` files. Use `search` to look for references to `MediatR`, `Wolverine`, `Result<`, `ErrorOr`, `FluentValidation`, `AutoMapper`, `Mapster`.
 
-```bash
-# Look for handler patterns
-find . -name "*Handler.cs" -o -name "*Command.cs" -o -name "*Query.cs" 2>/dev/null | head -10
-
-# Check for common libraries
-grep -rh "MediatR\|Wolverine\|Result<\|ErrorOr\|FluentValidation\|AutoMapper\|Mapster" $(find . -name "*.cs" 2>/dev/null) | head -10
-```
-
-**Examine 3-5 representative files** to understand:
+**Use `read` to examine 3-5 representative files** and understand:
 
 | Aspect | What to Look For |
 |--------|------------------|
@@ -127,14 +97,7 @@ grep -rh "MediatR\|Wolverine\|Result<\|ErrorOr\|FluentValidation\|AutoMapper\|Ma
 
 ### 6. Code Style
 
-Examine files to understand coding style preferences.
-
-```bash
-# Check for nullable, file-scoped namespaces, etc.
-head -50 $(find . -name "*.cs" -path "*/src/*" 2>/dev/null | head -3)
-```
-
-**Look for:**
+Use `read` to examine a few production `.cs` files (in `src/`) for:
 - Nullable reference types (`#nullable enable`, `?` on types)
 - File-scoped vs block-scoped namespaces
 - Primary constructors

@@ -14,6 +14,10 @@ handoffs:
     agent: Reviewer
     prompt: "Review the complete implementation of all checklist items."
     send: true
+  - label: Debug Issue
+    agent: Debug
+    prompt: "Build or tests are failing. Diagnose and fix the issue."
+    send: true
 ---
 
 # One-Shot Coder Agent

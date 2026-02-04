@@ -18,26 +18,27 @@ Discovers how a repository works — its architecture, patterns, conventions, an
 
 **Discover, don't assume.** Every repository has its own conventions. Rather than looking for specific frameworks, observe what patterns actually exist and document them. If something is unclear, note it as "unclear" rather than guessing.
 
+## Cross-Platform Commands
+
+**Use your `search` and `read` tools** for all codebase exploration. Only use the terminal for `dotnet` and `git` commands — these work identically across all shells.
+
 ## Process
 
 Work through each section, then create the conventions file.
 
 ### 1. Solution Overview
 
-```bash
-find . -name "*.sln" -type f 2>/dev/null
-find . -name "*.csproj" -type f 2>/dev/null | head -20
-grep -h "<TargetFramework" $(find . -name "*.csproj" 2>/dev/null) | head -5
+Use `search` to find `*.sln` and `*.csproj` files. Use `read` to examine project files for `<TargetFramework>` values.
+
+```
+dotnet sln list
 ```
 
 Document: Solution name, project types, .NET version(s).
 
 ### 2. Architecture Pattern
 
-```bash
-ls -la src/ 2>/dev/null || ls -la
-find . -type d \( -name "Domain" -o -name "Application" -o -name "Infrastructure" -o -name "Features" -o -name "Handlers" \) 2>/dev/null | head -10
-```
+Use `search` to find directories and files. Look for folders named `Domain`, `Application`, `Infrastructure`, `Features`, `Handlers`, `Ports`, `Adapters`, `Services`, `Repositories`, `Controllers`.
 
 Look for signals:
 
@@ -50,32 +51,21 @@ Look for signals:
 
 ### 3. External Dependencies
 
-```bash
-grep -rh "PackageReference" $(find . -name "*.csproj" 2>/dev/null) | grep -i "entityframework\|dapper\|npgsql\|sqlclient\|azure\|rabbitmq\|masstransit\|redis" | sort -u
-```
+Use `search` to find `*.csproj` files, then `read` them and look for `PackageReference` entries related to: EntityFramework, Dapper, Npgsql, SqlClient, Azure, RabbitMQ, MassTransit, Redis, MongoDB.
 
 Document: Databases, message brokers, cloud services.
 
 ### 4. Testing Approach
 
-```bash
-find . -name "*Test*.csproj" -o -name "*Tests*.csproj" 2>/dev/null
-grep -rh "xunit\|nunit\|mstest" $(find . -name "*.csproj" 2>/dev/null) | head -3
-find . -name "*Tests.cs" -o -name "*Test.cs" 2>/dev/null | head -5
-```
-
-Examine 2-3 test files to understand naming, assertions, mocking.
+Use `search` to find test projects (`*Tests*.csproj`, `*Test*.csproj`) and test files (`*Tests.cs`, `*Test.cs`). Use `read` to examine 2-3 test files for naming, assertions, mocking patterns.
 
 ### 5. Code Patterns
 
-```bash
-find . -name "*Handler.cs" -o -name "*Command.cs" -o -name "*Query.cs" 2>/dev/null | head -5
-grep -rh "MediatR\|Result<\|ErrorOr\|FluentValidation\|AutoMapper" $(find . -name "*.cs" 2>/dev/null) | head -5
-```
+Use `search` to find `*Handler.cs`, `*Command.cs`, `*Query.cs` files. Use `search` to look for references to `MediatR`, `Result<`, `ErrorOr`, `FluentValidation`, `AutoMapper`, `Mapster`. Use `read` to examine representative files.
 
 ### 6. Code Style
 
-Examine a few files for: nullable refs, file-scoped namespaces, records, field naming.
+Use `read` to examine a few production `.cs` files for: nullable refs, file-scoped namespaces, records, field naming.
 
 ## Output
 

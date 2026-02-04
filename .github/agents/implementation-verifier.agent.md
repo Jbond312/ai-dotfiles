@@ -35,12 +35,7 @@ Extract from PLAN.md:
 
 ### 3. Verify Each Item
 
-For each planned item:
-
-```bash
-# Search for evidence of implementation
-grep -rn "relevant_term" src/
-```
+For each planned item, use the `search` tool to find evidence of implementation (search for relevant class names, method names, or terms in `src/` and test directories).
 
 Check:
 

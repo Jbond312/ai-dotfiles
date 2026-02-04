@@ -1,47 +1,45 @@
 ---
-applyTo: "**/*.Tests/**/*.cs,**/*.Tests.Integration/**/*.cs,**/tests/**/*.cs"
-description: "Testing conventions for test files"
+applyTo: "**/*[Tt]ests*/**/*.cs"
+description: "Testing conventions for C# test files. Applied automatically to any .cs file in a folder containing 'Tests' or 'tests'."
 ---
 
 # Testing Conventions
 
-Integration tests first (honeycomb model). A feature is not complete without passing tests.
+Follow existing patterns in the test project — consistency trumps personal preference.
 
-## When to Unit Test
+Refer to `dotnet-testing` skill for TDD workflow, golden examples, anti-patterns, and advanced scenarios.
 
-Complex algorithms, pure functions, domain invariants.
+## Critical Rules
 
-## Test Naming
+- **Check CONVENTIONS.md first** — match the repo's test naming, assertions, and mocking patterns
+- **Integration tests first** (honeycomb model) — a feature is not complete without passing tests
+- **AAA pattern** — Arrange, Act, Assert with clear visual separation
+- **One behaviour per test** — multiple asserts on the same object is fine
+- **Tests must be deterministic** — no dependency on time, random, or external state
+- **Test behaviour, not implementation** — tests should survive refactoring
 
-Describe behaviour: `Should_return_declined_result_when_balance_insufficient`
+## Test Discovery (CRITICAL)
 
-Or class-per-scenario: class `WhenProcessingPaymentWithInsufficientFunds`, method `Should_return_declined_result`.
+After running `dotnet test`, check for `Total: N` where N > 0. If `Total: 0`, tests were not discovered — do not proceed.
 
-Match existing conventions in the test project.
-
-## Structure
-
-```csharp
-// Arrange
-var account = await CreateAccountWithBalance(0m);
-
-// Act
-var result = await Sut.ProcessAsync(payment);
-
-// Assert
-result.Should().BeOfType<DeclinedResult>();
+```
+dotnet test --verbosity minimal
 ```
 
-## Assertions
+**Always run from solution root.** Use `dotnet sln list` to confirm.
 
-Be specific. Assert on observable outcomes, not implementation details. Use FluentAssertions.
+## Boundaries
 
-## External Services
+### Never Do
 
-Use WireMock for external APIs. Don't call real third-party services.
+- Trust a test run showing `Total: 0`
+- Use `Thread.Sleep` or arbitrary delays
+- Share mutable state between tests
+- Test private methods directly
+- Mock internal collaborators — mock at boundaries only
 
-## Determinism
+### Ask First
 
-No flaky tests. Control time, isolate state, clean up after.
-
-Refer to `dotnet-testing` skill for execution patterns.
+- Before adding new test utility classes or base classes
+- Before changing shared test fixtures
+- Before adding new external service mocks

@@ -29,10 +29,40 @@ Commits reviewed code and updates the plan. Refer to `git-committing` skill for 
 
 1. **Verify state:** `git status` — modified files ready
 2. **Read context:** `.planning/PLAN.md` for current item and workflow
-3. **Stage:** `git add -A`
-4. **Commit:** Message per `git-committing` skill
-5. **Verify:** `git log -1 --oneline`
-6. **Update plan:** Check off items, update Work In Progress
+3. **Pre-commit checks:** Scan staged changes for issues (see below)
+4. **Stage:** `git add -u` (tracked files only — never use `git add -A`)
+5. **Commit:** Message per `git-committing` skill
+6. **Verify:** `git log -1 --oneline`
+7. **Update plan:** Check off items, update Work In Progress
+
+## Pre-Commit Checks (Step 3)
+
+Before staging, review the diff for common issues that should not be committed. Use `git diff` to inspect changes.
+
+**Block the commit if any of these are found:**
+
+| Check | What to Look For |
+|---|---|
+| Debug code | `Console.WriteLine`, `Debug.WriteLine`, `System.Diagnostics.Debugger.Launch()` |
+| Incomplete markers | `TODO`, `HACK`, `FIXME`, `XXX` in new or changed lines |
+| Commented-out code | Blocks of commented-out production code (not explanatory comments) |
+| Test-only changes | `[Fact(Skip = ...)]`, `[Ignore]`, `.Skip()` left on tests |
+| Secrets | Hardcoded connection strings, API keys, passwords, tokens |
+| Temporary files | `.planning/` files, `.tmp`, scratch files accidentally modified |
+
+**If issues are found:**
+
+```markdown
+## Pre-Commit Issues
+
+The following issues were found in staged changes:
+
+1. **{file}:{line}** — {description}
+
+Please fix these before committing. Handing back to coder.
+```
+
+Hand back to the coder to resolve. Do not commit with known issues.
 
 ## Plan Updates (Critical)
 

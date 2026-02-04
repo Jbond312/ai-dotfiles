@@ -1,7 +1,7 @@
 ---
 name: TDD Coder
 description: "Implements checklist items iteratively—test first, then production code, then handoff for review. One item at a time."
-model: Claude Opus 4.5 (copilot)
+model: Claude Sonnet 4.5 (copilot)
 tools:
   - "edit"
   - "read"
@@ -17,6 +17,10 @@ handoffs:
   - label: Commit This Item
     agent: Committer
     prompt: "Commit the current checklist item. Code has been reviewed."
+    send: true
+  - label: Debug Issue
+    agent: Debug
+    prompt: "Build or tests are failing. Diagnose and fix the issue."
     send: true
 ---
 
@@ -88,26 +92,9 @@ dotnet test --no-build
 - [x] **Implement:** {description}
 ```
 
-### 7. Hand Off for Review
+### 7. Final Verification (Last Item Only)
 
-**Only hand off when build succeeds and all tests pass.** Update status to "Ready for review". Report files changed.
-
-### 8. After Review
-
-Apply feedback. Re-run tests. Hand off to committer.
-
-### 9. After Commit
-
-Return to step 1 with next item. When all complete:
-
-```markdown
-**Current step:** All items complete
-**Status:** Ready for PR
-```
-
-### 10. Final Verification (Last Item Only)
-
-**When the last item is complete, you MUST use the `agent` tool to verify the full implementation.**
+**Before the final review, you MUST use the `agent` tool to verify the full implementation.**
 
 ```
 Tool: agent
@@ -115,7 +102,34 @@ agentName: Implementation Verifier
 prompt: Verify that the implementation matches .planning/PLAN.md. Check all checklist items were addressed and tests exist. Return a verification report.
 ```
 
-This provides a final check that nothing was missed across all items.
+This catches any gaps before they're reviewed and committed. Include the verification status in your handoff.
+
+**If the verifier reports issues:**
+
+- ❌ **Incomplete items:** Address them before proceeding to review
+- ⚠️ **Minor gaps:** Note them in handoff to reviewer
+- ✅ **Ready:** Proceed to review
+
+**Skip this step for non-final items** — per-item TDD reviews don't need full verification.
+
+### 8. Hand Off for Review
+
+**Only hand off when build succeeds and all tests pass.** Update status to "Ready for review". Report files changed.
+
+For the final item, include the verification report summary.
+
+### 9. After Review
+
+Apply feedback. Re-run tests. Hand off to committer.
+
+### 10. After Commit
+
+Return to step 1 with next item. When all complete:
+
+```markdown
+**Current step:** All items complete
+**Status:** Ready for PR
+```
 
 ## Handling Problems
 
@@ -128,4 +142,5 @@ This provides a final check that nothing was missed across all items.
 "Starting item 1. Writing test first."
 "Test fails as expected. Implementing."
 "All tests passing. Ready for review."
-"Final item complete. Running verification..."
+"Final item complete. Running full verification before review..."
+"Verification passed. Handing off for final review."

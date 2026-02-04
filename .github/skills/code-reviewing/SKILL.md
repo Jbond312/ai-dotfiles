@@ -193,13 +193,17 @@ When external dependencies are detected, use this format:
 
 **Verdict:** {Approved ✅ | Changes Requested 🔄}
 
-### PLAN.md Verification
+### Completeness
 
-- Implementation items: {X of Y complete}
-- TDD compliance: {Yes/No/Partial}
-- Verification checklist: {Complete/Incomplete}
+{Reference the Implementation Verifier report if available, e.g.:}
 
-### Issues Found
+- Verifier status: ✅ All items addressed (see verification report)
+
+{If no verifier report exists — for per-item TDD reviews:}
+
+- Current item: {item name} — implementation complete
+
+### Quality Issues
 
 **Critical (must fix):**
 {None | Numbered list with file:line references}
@@ -218,6 +222,19 @@ When external dependencies are detected, use this format:
 
 {Positive observations - what the code does well}
 ```
+
+## Division of Responsibility
+
+The **Implementation Verifier** checks completeness: "Did we implement what the plan said?"
+
+The **Reviewer** checks quality: "Is the implementation good?"
+
+Don't re-verify completeness if the verifier has already run. Focus your review effort on:
+
+- Code quality and patterns
+- Security and data integrity
+- Banking domain concerns
+- External dependency flagging
 
 ## Post-Review Actions
 

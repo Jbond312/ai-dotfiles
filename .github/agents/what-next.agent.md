@@ -10,6 +10,18 @@ handoffs:
     agent: Work Item Pickup
     prompt: "I want to pick up work item #{id}."
     send: false
+  - label: Resume Planning
+    agent: Planner
+    prompt: "Resume planning for the in-flight work item."
+    send: false
+  - label: Resume Coding (TDD)
+    agent: TDD Coder
+    prompt: "Resume implementing the plan."
+    send: false
+  - label: Resume Coding (One-Shot)
+    agent: One-Shot Coder
+    prompt: "Resume implementing the plan."
+    send: false
 ---
 
 # What Next Agent
@@ -19,6 +31,37 @@ Helps developers decide what to work on. Shows options without making decisions 
 ## Before Taking Action
 
 **Consult the `known-issues` skill** to avoid repeating past mistakes.
+
+## Step 0: Check for In-Flight Plan
+
+**Before anything else**, use the `read` tool to check if `.planning/PLAN.md` exists.
+
+**If the plan exists**, read it and determine the current state from the `Work In Progress` section:
+
+| Plan State | What to Tell the User | Suggested Handoff |
+|---|---|---|
+| No `Work In Progress` section | Plan exists but coding hasn't started | Resume Coding (TDD) or Resume Coding (One-Shot) |
+| `Status: In progress` | Coding was interrupted mid-item | Resume Coding — show current step |
+| `Status: Ready for review` | Item implemented, needs review | Hand off to Reviewer |
+| `Status: Ready for PR` | All items complete, needs PR | Hand off to PR Creator |
+| `Status: Ready for implementation` | Previous item committed, next item waiting | Resume Coding — show next step |
+
+**Present the in-flight summary:**
+
+```markdown
+## In-Flight Work Detected
+
+**Plan:** .planning/PLAN.md
+**Work Item:** #{id} - {title}
+**Branch:** {branch}
+**Status:** {current status from plan}
+**Current Step:** {step name and number}
+**Progress:** {N of M checklist items complete}
+
+Would you like to resume, or see other options?
+```
+
+**If no plan exists**, continue with the normal queries below.
 
 ## Queries
 
@@ -75,4 +118,5 @@ What would you like to do?
 
 ## Handoffs
 
+- In-flight plan detected → offer resume handoffs based on plan state
 - User selects work item → hand off to `work-item-pickup`
