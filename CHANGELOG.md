@@ -8,14 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 
+- **`project-context.md` template** — Deleted entirely. All useful content (architecture pattern, framework version, key directories, dependencies, conventions) is already auto-discovered by the Repo Analyser and documented in `.planning/CONVENTIONS.md`. Agents now reference CONVENTIONS.md directly. Eliminates manual maintenance and drift risk.
+
 - **`vertical-slice-architecture` skill** — Deleted entirely. Architecture is now a discovered property, not a hardcoded skill. The Repo Analyser already identifies architecture patterns (VSA, Clean, Hexagonal, N-Tier) and documents them in CONVENTIONS.md. Agents now read from CONVENTIONS.md instead of referencing a specific skill.
 
 ### Changed
 
 - **Agent architecture references genericised** — Planner, TDD Coder, One-Shot Coder, and Reviewer agents now reference CONVENTIONS.md for architectural patterns instead of the deleted VSA skill.
-- **`project-context.md` template genericised** — Architecture pattern is now a placeholder discovered by Repo Analyser. Directory structure template uses generic feature organisation instead of VSA-specific "Vertical slices".
-- **`DEVELOPER_SETUP.md` updated** — Removed VSA skill from directory tree listing and VSA parenthetical from architecture pattern description.
-- **`WORKFLOW.md` genericised** — Removed all VSA-specific references from the scenario walkthrough, skills consulted lists, and skills reference table. Architecture references now point to CONVENTIONS.md.
+- **Agent `project-context.md` references removed** — Planner, TDD Coder, One-Shot Coder, and PR Creator agents now reference `.planning/CONVENTIONS.md` directly. PR Creator reviewer assignment changed from "Team from project-context.md" to "Assign appropriate team reviewers".
+- **`DEVELOPER_SETUP.md` updated** — Removed `project-context.md` from directory tree, file locations table, and team rollout checklist. Removed "Configure Project Context" setup section.
+- **`WORKFLOW.md` updated** — Removed all `project-context.md` references from walkthrough phases, files read lists, file artifacts table, and PR Creator section.
 
 ### Why This Change?
 

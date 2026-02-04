@@ -20,7 +20,6 @@ Copy the following directories and files to your repository:
 
 ```
 my-repo/
-├── project-context.md              # Repo-specific (architecture, external deps)
 └── .github/
     ├── CHANGELOG.md                # Version history
     ├── copilot-instructions.md     # Global workflow overview
@@ -139,27 +138,14 @@ If you want to share some VS Code settings with your team while keeping secrets 
 echo ".vscode/settings.json" >> .gitignore
 ```
 
-### 5. Configure Project Context (Per-Repo)
-
-Create `project-context.md` at the **repository root** (not in `.github/`). This file is specific to each repository.
-
-| Field                 | Purpose                                          |
-| --------------------- | ------------------------------------------------ |
-| Repository name       | Display purposes                                 |
-| Architecture pattern  | Enables pattern-specific guidance                |
-| Key directories       | Helps agents navigate the codebase               |
-| External dependencies | Documents stored procs, APIs for review flagging |
-
-See the template in `project-context.md` for all available options.
-
-### 6. Configure the MCP Server (Optional)
+### 5. Configure the MCP Server (Optional)
 
 If you need Azure DevOps MCP for individual work item lookups:
 
 1. Edit `.vscode/mcp.json` if you need to adjust the Azure DevOps organisation name
 2. The server will prompt for this when it starts
 
-### 7. Verify Setup
+### 6. Verify Setup
 
 1. Open a new terminal in VS Code
 2. Run a test query:
@@ -170,7 +156,7 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py --unassi
 
 If configured correctly, you'll see JSON output with work items. If not, you'll see an error indicating which environment variable is missing.
 
-### 8. Verify Azure CLI Authentication
+### 7. Verify Azure CLI Authentication
 
 The MCP server uses your Azure CLI credentials:
 
@@ -291,7 +277,6 @@ Choose TDD when in doubt—the overhead is small compared to catching issues lat
 
 | File/Directory                             | Purpose                                                            |
 | ------------------------------------------ | ------------------------------------------------------------------ |
-| `project-context.md`                       | Repo-specific config (architecture, external deps) — **repo root** |
 | `.github/CHANGELOG.md`                     | Version history for the agent configuration                        |
 | `.github/copilot-instructions.md`          | Global workflow overview, applied to all agents                    |
 | `.github/instructions/*.instructions.md`   | Pattern-specific instructions (auto-apply based on `applyTo`)      |
@@ -431,7 +416,6 @@ When rolling out to your team:
 
 - [ ] Copy `.github/` directory to shared repositories (agents, skills, instructions)
 - [ ] Each developer configures `.vscode/settings.json` with Azure DevOps environment variables
-- [ ] Create `project-context.md` at root of each repository
 - [ ] Enable `chat.useAgentSkills` in VS Code settings
 - [ ] Review pattern-specific instructions in `.github/instructions/` for your team's conventions
 - [ ] Add `.planning/` and `.vscode/` to `.gitignore` (agents will also auto-add if missing)

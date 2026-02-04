@@ -47,7 +47,7 @@ Using MCP, create draft PR with:
 - **Description:** Structured format below
 - **Target:** `main` (or `master`)
 - **Work item link:** `AB#{id}`
-- **Reviewers:** Team from project-context.md
+- **Reviewers:** Assign appropriate team reviewers
 
 ### PR Description Template
 

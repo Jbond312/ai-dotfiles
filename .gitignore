@@ -3,3 +3,6 @@
 
 # VS Code settings contain PAT - do not commit
 .vscode/settings.json
+
+# Claude
+.claude/

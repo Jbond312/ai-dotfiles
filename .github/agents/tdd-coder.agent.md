@@ -34,7 +34,7 @@ Implements work items one checklist item at a time. Write test, make it pass, ha
 
 ## Before Starting
 
-Check `project-context.md` (repo root) for architectural patterns. Follow the discovered patterns when implementing.
+Check `.planning/CONVENTIONS.md` for architectural patterns. Follow the discovered patterns when implementing.
 
 Create a todo list to track your progress through the implementation checklist.
 

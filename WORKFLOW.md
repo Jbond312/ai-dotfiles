@@ -203,7 +203,6 @@ Ready to plan implementation.
 2. **Ensures `.planning/` is gitignored** — already done by Work Item Pickup
 3. **Gathers context:**
    - Reads CONVENTIONS.md — notes discovered architecture patterns, MediatR, FluentValidation
-   - Checks `project-context.md` — confirms architecture, refers to CONVENTIONS.md
    - Reviews work item acceptance criteria
    - Explores codebase: finds existing `ProcessPayment/` feature, existing validators, existing `Result<T>` usage
 
@@ -268,7 +267,7 @@ Ready to plan implementation.
 The TDD Coder works through each checklist item in a cycle: test → implement → review → commit → next.
 
 **Before starting:**
-- Reads `project-context.md` — confirms architecture, refers to CONVENTIONS.md
+- Reads `.planning/CONVENTIONS.md` — confirms architecture and patterns
 - Creates a todo list to track progress
 - Verifies baseline: `dotnet build --no-restore` and `dotnet test --no-build` — all pass
 
@@ -376,7 +375,7 @@ Runs in isolated context:
 
 3. **Hands off for final review** — includes verification report summary and Quality Gate (Coder → Reviewer).
 
-**Files read:** `.planning/PLAN.md`, `.planning/CONVENTIONS.md`, `project-context.md`
+**Files read:** `.planning/PLAN.md`, `.planning/CONVENTIONS.md`
 
 **Files written/modified:** Production code, test files, PLAN.md (status updates, item check-offs)
 
@@ -483,7 +482,7 @@ None detected.
    - Description: Structured template with summary, changes, testing checklist
    - Target: `main`
    - Work item link: `AB#4521`
-   - Reviewers: Team from `project-context.md`
+   - Reviewers: Assign appropriate team reviewers
 5. **Updates work item** — moves #4521 to `Awaiting Merge`
 
 **What the developer sees:**
@@ -500,7 +499,7 @@ Work item #4521 moved to Awaiting Merge.
 
 **Skills consulted:** `known-issues`
 
-**Files read:** `.planning/PLAN.md`, `project-context.md`
+**Files read:** `.planning/PLAN.md`
 
 **Handoff:** Return to Orchestrator (`send: false` — developer decides next action)
 
@@ -627,7 +626,6 @@ What files are created, read, or updated throughout the workflow.
 | `.planning/CONVENTIONS.md` | Repo Analyser (subagent) | Planner, Coders, Reviewer, Impl. Verifier | — | Repository conventions and patterns |
 | `.planning/PLAN.md` | Planner | Coders, Reviewer, Committer, Impl. Verifier, PR Creator | Coders (check off items), Committer (WIP status) | Implementation plan and progress tracker |
 | `.planning/SPIKE-FINDINGS.md` | Spike | Orchestrator, Planner | — | Spike investigation results |
-| `project-context.md` | Developer (manual) | Planner, Coders, PR Creator | — | Repo-specific config (architecture, team, dependencies) |
 | `.github/skills/known-issues/SKILL.md` | Initial setup | All agents | Orchestrator, Committer (retrospective entries) | Accumulated gotchas and lessons learned |
 | `.gitignore` | Work Item Pickup | — | Work Item Pickup (adds `.planning/`, `.vscode/`) | Prevents committing local files |
 | Production `.cs` files | Coders | Reviewer, Impl. Verifier | Debug (fixes) | Feature implementation |

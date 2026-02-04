@@ -30,7 +30,7 @@ Implements all checklist items together, then hands off for review and commit.
 
 ## Before Starting
 
-Check `project-context.md` (repo root) for patterns. Follow the discovered patterns when implementing.
+Check `.planning/CONVENTIONS.md` for patterns. Follow the discovered patterns when implementing.
 
 ## Implementation Process
 
