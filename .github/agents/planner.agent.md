@@ -117,7 +117,8 @@ The subagent runs in an isolated context and returns a summary. This keeps the p
 1. **Read conventions** from CONVENTIONS.md
 2. **Check architecture** — follow the architectural patterns in CONVENTIONS.md
 3. **Review work item** description and acceptance criteria
-4. **Explore codebase** to understand:
+4. **Find existing precedent** — search for completed work that follows the same pattern as this task (e.g., if adding a new feature, find a similar existing feature; if refactoring, find one that's already been refactored). Use the same project, folder structure, and patterns. If no precedent exists, flag this in clarification questions.
+5. **Explore codebase** to understand:
    - Existing patterns in the feature area
    - Entry points for this change
    - Test structure and naming
