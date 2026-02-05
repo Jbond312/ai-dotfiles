@@ -19,6 +19,10 @@ handoffs:
     agent: One-Shot Coder
     prompt: "Please address the review feedback."
     send: false
+  - label: Request Changes (Bug Fix)
+    agent: Bug Fix Coder
+    prompt: "Please address the review feedback."
+    send: false
 ---
 
 # Reviewer Agent
@@ -47,6 +51,16 @@ If you're reviewing a single TDD item, completeness of that item is implicit —
 Read `.planning/PLAN.md`: What was the item? What does "done" look like?
 
 If a verification report exists, note its status.
+
+### 1b. Determine Workflow Mode
+
+Read the `Workflow:` field from PLAN.md. Apply the workflow-specific review focus from the `code-reviewing` skill:
+
+- **Bug-fix:** Focus on regression test quality, fix minimality, root cause correctness, side effects
+- **Hotfix:** Expedited review — security + regression test only, skip style/pattern suggestions
+- **Refactoring:** Focus on behaviour preservation — flag as Critical if behaviour changed
+- **Chore:** Lightweight review — build passes, no regressions, correctness, security for dep updates
+- **TDD / One-shot:** Standard review (default)
 
 ### 2. Review Changed Files
 
@@ -93,6 +107,8 @@ Use format from `code-reviewing` skill:
 ## Review Summary
 
 **Verdict:** {Approved | Changes Requested}
+**Workflow:** {TDD | One-shot | Bug-fix | Hotfix | Refactoring | Chore}
+**Review mode:** {Standard | Regression + minimality | Behaviour preservation | Lightweight | Expedited}
 
 ### Issues Found
 
@@ -126,7 +142,10 @@ After the review report, append the quality gate summary. Refer to `quality-gate
 ## Handoff
 
 **Approved:** Hand off to committer.
-**Changes Requested:** Hand back to coder with feedback.
+**Changes Requested:** Hand back to the appropriate coder based on `Workflow:` field:
+- Bug-fix / Hotfix → Bug Fix Coder
+- TDD → TDD Coder
+- One-shot / Refactoring / Chore → One-Shot Coder
 
 ## Principles
 

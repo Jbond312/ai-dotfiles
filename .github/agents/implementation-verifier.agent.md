@@ -34,6 +34,15 @@ Extract from PLAN.md:
 - Associated test scenarios
 - Any noted edge cases or requirements
 
+### 2b. Determine Verification Mode
+
+Read the `Workflow:` field from PLAN.md and adapt verification accordingly:
+
+- **Bug-fix / Hotfix:** Check that a regression test exists and fails before the fix (or document that it was verified to fail). Check that the fix is minimal — flag unnecessary changes beyond the root cause fix.
+- **Refactoring:** Verify no new tests were added and no existing test assertions were modified. Check that the structural changes match plan items.
+- **Chore:** Minimal verification — confirm tasks are complete and build passes. Skip detailed item-by-item verification.
+- **TDD / One-shot:** Standard verification (default).
+
 ### 3. Verify Each Item
 
 For each planned item, use the `search` tool to find evidence of implementation (search for relevant class names, method names, or terms in `src/` and test directories).

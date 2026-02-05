@@ -33,6 +33,7 @@ my-repo/
     │   ├── planner.agent.md
     │   ├── tdd-coder.agent.md
     │   ├── one-shot-coder.agent.md
+    │   ├── bug-fix-coder.agent.md  # Bug fix & hotfix diagnosis
     │   ├── reviewer.agent.md
     │   ├── committer.agent.md
     │   └── pr-creator.agent.md
@@ -274,12 +275,16 @@ The agent will:
 
 ## Workflow Modes
 
-| Mode         | Best For                                        | Commits            | Review Cycles |
-| ------------ | ----------------------------------------------- | ------------------ | ------------- |
-| **TDD**      | Complex changes, risky areas, learning new code | Per checklist item | Per item      |
-| **One-Shot** | Small changes, well-understood scope            | Single commit      | Once at end   |
+| Mode            | Best For                                        | Coder Agent    | Commits            | Review Cycles       |
+| --------------- | ----------------------------------------------- | -------------- | ------------------ | ------------------- |
+| **TDD**         | Complex changes, risky areas, learning new code | TDD Coder      | Per checklist item | Per item            |
+| **One-Shot**    | Small changes, well-understood scope            | One-Shot Coder | Single commit      | Once at end         |
+| **Bug-fix**     | Defects, incorrect behaviour                    | Bug Fix Coder  | Single commit      | Regression + minimality |
+| **Refactoring** | Behaviour-preserving restructuring              | One-Shot Coder | Single commit      | Behaviour preservation  |
+| **Chore**       | Maintenance, config, dependency updates         | One-Shot Coder | Single commit      | Lightweight         |
+| **Hotfix**      | Production emergencies (user-explicit only)      | Bug Fix Coder  | Single commit      | Expedited           |
 
-Choose TDD when in doubt—the overhead is small compared to catching issues late.
+Choose TDD when in doubt—the overhead is small compared to catching issues late. The Planner recommends a workflow based on the work item's nature.
 
 ## File Locations
 
@@ -442,6 +447,9 @@ When rolling out to your team:
 orchestrator (entry point — reads PLAN.md + git state)
     ├── No plan, main branch → show work options → work-item-pickup
     ├── Plan exists → auto-route to correct agent (coder / reviewer / pr-creator)
+    │   ├── TDD / One-shot → TDD Coder or One-Shot Coder
+    │   ├── Bug-fix / Hotfix → Bug Fix Coder
+    │   └── Refactoring / Chore → One-Shot Coder
     ├── Uncommitted changes → ask: continue coding or commit?
     └── Spike findings → offer: convert to plan or create PR
 
@@ -452,41 +460,47 @@ work-item-pickup → planner → [coder → reviewer → committer] → pr-creat
 
 ### Handoff Shortcuts
 
-| From             | To               | When                           |
-| ---------------- | ---------------- | ------------------------------ |
-| orchestrator     | work-item-pickup | Ready for new work             |
-| orchestrator     | tdd-coder        | Plan exists, TDD workflow      |
-| orchestrator     | one-shot-coder   | Plan exists, one-shot workflow |
-| orchestrator     | reviewer         | Ready for review               |
-| orchestrator     | pr-creator       | Ready for PR                   |
-| work-item-pickup | planner          | After branch created           |
-| planner          | tdd-coder        | Ready to implement (iterative) |
-| planner          | one-shot-coder   | Ready to implement (batch)     |
-| tdd-coder        | reviewer         | Item implemented               |
-| one-shot-coder   | reviewer         | All items implemented          |
-| reviewer         | tdd-coder        | Feedback to address            |
-| reviewer         | one-shot-coder   | Feedback to address            |
-| reviewer         | committer        | Approved                       |
-| committer        | tdd-coder        | Next item (TDD only)           |
-| committer        | pr-creator       | All items complete             |
-| pr-creator       | orchestrator     | PR created, cycle complete     |
-| debug            | orchestrator     | Issue resolved, auto-resume    |
-| spike            | orchestrator     | Spike complete                 |
+| From             | To               | When                              |
+| ---------------- | ---------------- | --------------------------------- |
+| orchestrator     | work-item-pickup | Ready for new work                |
+| orchestrator     | tdd-coder        | Plan exists, TDD workflow         |
+| orchestrator     | one-shot-coder   | Plan exists, one-shot/refactoring/chore workflow |
+| orchestrator     | bug-fix-coder    | Plan exists, bug-fix/hotfix workflow |
+| orchestrator     | reviewer         | Ready for review                  |
+| orchestrator     | pr-creator       | Ready for PR                      |
+| work-item-pickup | planner          | After branch created              |
+| planner          | tdd-coder        | Ready to implement (iterative)    |
+| planner          | one-shot-coder   | Ready to implement (batch/refactoring/chore) |
+| planner          | bug-fix-coder    | Ready to diagnose (bug-fix/hotfix) |
+| tdd-coder        | reviewer         | Item implemented                  |
+| one-shot-coder   | reviewer         | All items implemented             |
+| bug-fix-coder    | reviewer         | Bug fix ready for review          |
+| reviewer         | tdd-coder        | Feedback (TDD)                    |
+| reviewer         | one-shot-coder   | Feedback (one-shot/refactoring/chore) |
+| reviewer         | bug-fix-coder    | Feedback (bug-fix/hotfix)         |
+| reviewer         | committer        | Approved                          |
+| committer        | tdd-coder        | Next item (TDD only)              |
+| committer        | pr-creator       | All items complete                |
+| pr-creator       | orchestrator     | PR created, cycle complete        |
+| debug            | orchestrator     | Issue resolved, auto-resume       |
+| debug            | bug-fix-coder    | Issue resolved, resume bug fix    |
+| spike            | orchestrator     | Spike complete                    |
 
 ### Model Configuration
 
 Agents are configured with appropriate models to balance capability and cost:
 
-| Agent            | Model            | Rationale                             |
-| ---------------- | ---------------- | ------------------------------------- |
-| orchestrator     | claude-3-5-haiku | Stateless routing, simple decisions   |
-| work-item-pickup | claude-sonnet-4  | Predecessor checks, context gathering |
-| planner          | claude-sonnet-4  | Codebase analysis, plan structuring   |
-| tdd-coder        | claude-sonnet-4  | Code generation, test writing         |
-| one-shot-coder   | claude-sonnet-4  | Code generation, test writing         |
-| reviewer         | claude-sonnet-4  | Code review requires judgment         |
-| committer        | claude-3-5-haiku | Template-based, simple task           |
-| pr-creator       | claude-3-5-haiku | Template-based, simple task           |
+| Agent            | Model              | Rationale                               |
+| ---------------- | ------------------ | --------------------------------------- |
+| orchestrator     | claude-3-5-haiku   | Stateless routing, simple decisions     |
+| work-item-pickup | claude-sonnet-4    | Predecessor checks, context gathering   |
+| planner          | claude-sonnet-4    | Codebase analysis, plan structuring     |
+| tdd-coder        | claude-sonnet-4-5  | Code generation, test writing           |
+| one-shot-coder   | claude-sonnet-4    | Code generation, test writing           |
+| bug-fix-coder    | claude-sonnet-4-5  | Root cause analysis requires deep reasoning |
+| reviewer         | claude-sonnet-4    | Code review requires judgment           |
+| committer        | claude-3-5-haiku   | Template-based, simple task             |
+| pr-creator       | claude-3-5-haiku   | Template-based, simple task             |
 
 **To change a model:** Edit the `model:` field in the agent's YAML frontmatter. Leave blank to use the model selected in the Copilot dropdown.
 

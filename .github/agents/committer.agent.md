@@ -28,7 +28,7 @@ Commits reviewed code and updates the plan. Refer to `git-committing` skill for 
 3. **If no changes to commit:** Skip steps 4-8, go straight to **Build & Test Gate**.
 4. **Pre-commit checks:** Scan staged changes for issues (see below)
 5. **Stage:** `git add -u` (tracked files only — never use `git add -A`)
-6. **Commit:** Message per `git-committing` skill
+6. **Commit:** Message per `git-committing` skill (use workflow-aware type selection — see skill for defaults per workflow)
 7. **Verify:** `git log -1 --oneline`
 8. **Build & Test Gate:** Run build and tests before proceeding (see below)
 9. **Update plan:** Update Work In Progress status
@@ -100,6 +100,8 @@ All complete:
 ## Quick Retrospective (Final Item Only)
 
 **Skip this step if more checklist items remain.** Only run when all items are marked complete.
+
+**Skip for Chore workflow** — too lightweight to warrant a retrospective.
 
 Before handing off to PR Creator, ask:
 

@@ -89,6 +89,8 @@ git pull origin $DEFAULT
 git checkout -b backlog/{id}-{short-description}
 ```
 
+**Hotfix branching:** If the user explicitly requested a hotfix (e.g., "this is a hotfix", "production emergency"), use `hotfix/{id}-{short-description}` instead of `backlog/`. Branch from `main`. Hotfix is **never auto-detected** from Azure DevOps fields — always user-explicit.
+
 ### 6. Configure Environment
 
 ```bash

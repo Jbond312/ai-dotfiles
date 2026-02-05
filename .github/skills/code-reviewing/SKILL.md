@@ -63,6 +63,36 @@ description: "Review code for quality, correctness, and pattern adherence. Use w
 - [ ] Any new database tables/columns?
 - [ ] Any new message queue interactions?
 
+## Workflow-Specific Review Focus
+
+### Bug-fix
+
+- **Regression test quality** — Does the regression test reproduce the original bug? Would it catch a reintroduction?
+- **Fix minimality** — Is the fix the smallest change that resolves the defect? Flag unnecessary refactoring bundled with the fix.
+- **Root cause correctness** — Does the fix address the actual root cause, not just the symptom?
+- **Side effects** — Could the fix introduce new issues in adjacent code paths?
+
+### Hotfix (Expedited Review)
+
+- **Security check** — Verify no security vulnerabilities introduced (Critical only)
+- **Regression test** — Confirm regression test exists and reproduces the original issue
+- Skip style suggestions, pattern improvements, and minor code quality items — speed is paramount
+- Focus exclusively on: does it fix the problem safely?
+
+### Refactoring
+
+- **Behaviour preservation** — Flag as Critical if any observable behaviour changed. No new behaviour should be introduced.
+- **No new tests expected** — Existing tests should pass unchanged. New tests are a signal that behaviour was accidentally changed.
+- **Structural improvement** — Does the refactoring achieve its stated goal (clarity, decoupling, performance)?
+
+### Chore (Lightweight Review)
+
+- **Build passes** — Hard block
+- **No regressions** — All existing tests still pass
+- **Correctness** — Config/dependency changes are correct
+- **Security** — For dependency updates, check for known vulnerabilities
+- Skip in-depth code quality review — chores are maintenance, not feature work
+
 ## Issue Severity
 
 | Severity       | Description                                      | Examples                                            | Action                  |
@@ -244,7 +274,7 @@ If **Approved:**
 
 If **Changes Requested:**
 
-- Return to `tdd-coder` or `one-shot-coder` with specific issues
+- Return to `tdd-coder`, `one-shot-coder`, or `bug-fix-coder` with specific issues (based on `Workflow:` field in PLAN.md)
 - Re-review after changes are made
 
 If **External Dependencies Flagged:**

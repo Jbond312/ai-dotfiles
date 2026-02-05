@@ -26,6 +26,17 @@ Commit messages follow Conventional Commits format.
 | `docs`     | Documentation only                        |
 | `chore`    | Maintenance, dependencies                 |
 
+## Workflow-Aware Type Selection
+
+When a `Workflow:` field exists in PLAN.md, use the default type for that workflow unless the change clearly warrants a different type:
+
+| Workflow | Default Type |
+|----------|-------------|
+| TDD / One-shot | `feat` |
+| Bug-fix / Hotfix | `fix` |
+| Refactoring | `refactor` |
+| Chore | `chore` |
+
 ## Scope
 
 Derive from:

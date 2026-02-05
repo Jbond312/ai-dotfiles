@@ -22,6 +22,10 @@ handoffs:
     agent: One-Shot Coder
     prompt: "Resume implementing the plan."
     send: true
+  - label: Resume Coding (Bug Fix)
+    agent: Bug Fix Coder
+    prompt: "Resume diagnosing and fixing the bug."
+    send: true
   - label: Review Implementation
     agent: Reviewer
     prompt: "Review the implementation before committing."
@@ -98,6 +102,10 @@ When routing to a coder, read the `Workflow:` field from PLAN.md's `Work In Prog
 
 - `Workflow: TDD` → hand off to **TDD Coder**
 - `Workflow: One-shot` → hand off to **One-Shot Coder**
+- `Workflow: Bug-fix` → hand off to **Bug Fix Coder**
+- `Workflow: Hotfix` → hand off to **Bug Fix Coder**
+- `Workflow: Refactoring` → hand off to **One-Shot Coder**
+- `Workflow: Chore` → hand off to **One-Shot Coder**
 - If no workflow specified → ask the user which approach they prefer
 
 ## Step 3: Present Status Before Routing

@@ -21,6 +21,10 @@ handoffs:
     agent: One-Shot Coder
     prompt: "Issue resolved. Resume implementing the plan."
     send: false
+  - label: Resume Coding (Bug Fix)
+    agent: Bug Fix Coder
+    prompt: "Issue resolved. Resume diagnosing and fixing the bug."
+    send: false
   - label: Review Fix
     agent: Reviewer
     prompt: "Review the debug fix before committing."

@@ -47,6 +47,26 @@ Format: `backlog/{workitem_id}-{short-description}`
 - Lowercase, hyphen-separated, 3-5 words
 - Remove repository hints: `[interest_accrual] Add X` → `backlog/12345-add-x`
 
+### Hotfix Branch Naming
+
+Format: `hotfix/{workitem_id}-{short-description}`
+
+- Same naming rules as backlog branches
+- Branch from `main` (not from a feature branch)
+- Used only when user explicitly requests a hotfix (e.g., "this is a hotfix", "production emergency")
+- Never auto-detected from Azure DevOps fields
+
+## Workflow Types
+
+| Workflow | Coder Agent | Review Mode | Branch Prefix | Default Commit Type |
+|----------|-------------|-------------|---------------|---------------------|
+| TDD | TDD Coder | Standard | `backlog/` | `feat` |
+| One-shot | One-Shot Coder | Standard | `backlog/` | `feat` |
+| Bug-fix | Bug Fix Coder | Regression + minimality | `backlog/` | `fix` |
+| Refactoring | One-Shot Coder | Behaviour preservation | `backlog/` | `refactor` |
+| Chore | One-Shot Coder | Lightweight | `backlog/` | `chore` |
+| Hotfix | Bug Fix Coder | Expedited (security + regression) | `hotfix/` | `fix` |
+
 ## Repository Hints
 
 Work item titles may include `[repository_name]` prefix. Verify current working directory matches before starting.

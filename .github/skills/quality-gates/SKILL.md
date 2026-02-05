@@ -40,6 +40,14 @@ After saving PLAN.md, verify:
 
 **On failure:** Fix the plan before offering handoff.
 
+### Workflow-Specific Adjustments
+
+**Bug-fix:** Criteria 1 becomes "Reproduction steps documented" and add "Root cause hypothesis exists". Criterion 4 (clarifications) focuses on reproduction environment and observed vs expected behaviour.
+
+**Refactoring:** Add criterion "Behaviour preservation statement exists in Summary". Criterion 1 becomes "Safety checks documented per item" (existing tests that must remain green, not new test scenarios).
+
+**Chore:** Criterion 6 (item count) minimum lowered to 1. Criteria 1 (test scenarios) and 4 (clarifications) are optional — skip if genuinely unnecessary. Criterion 7 (scope) is optional.
+
 ## Gate: Coder → Reviewer
 
 After Implementation Verifier runs:
@@ -53,6 +61,14 @@ After Implementation Verifier runs:
 | 5 | Coverage collected | Report line coverage % if available |
 
 Criteria 1-2 are hard blocks. Criteria 3-5 are soft (WARN if gaps).
+
+### Workflow-Specific Adjustments
+
+**Bug-fix:** Add criterion "Regression test exists" (hard block — a bug fix without a regression test is incomplete). Criterion 4 checks regression test, not general test coverage.
+
+**Refactoring:** Criterion 4 becomes "Existing tests pass unchanged" — no new tests expected. Criterion 3 checks structural changes match plan items.
+
+**Chore:** Criteria 3-4 (verifier checks) are skipped — chores are too lightweight for verification.
 
 ## Gate: Reviewer → Committer
 
@@ -101,6 +117,6 @@ Both are hard blocks. Do not push or create a PR if either fails. This is the la
 
 **Gate checks** (Reviewer, Committer, PR Creator, PR Reviewer, Planner) use `-v q` (quiet) to minimise context window usage. Errors and failures still appear in quiet mode — only the success noise is suppressed.
 
-**Implementation agents** (TDD Coder, One-Shot Coder, Debug, Implementation Verifier) use default or normal verbosity because they need to see test names, assertion details, and coverage data.
+**Implementation agents** (TDD Coder, One-Shot Coder, Bug Fix Coder, Debug, Implementation Verifier) use default or normal verbosity because they need to see test names, assertion details, and coverage data.
 
 **On failure at a gate:** Re-run without `-v q` to get full diagnostic output before handing back to the coder or reporting to the user.

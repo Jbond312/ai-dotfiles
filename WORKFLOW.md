@@ -20,6 +20,7 @@ flowchart TD
         direction TB
         TDD[TDD Coder]
         OneShot[One-Shot Coder]
+        BugFix[Bug Fix Coder]
     end
 
     Coder -->|Per-item cycle| Review1[Reviewer]
@@ -578,6 +579,75 @@ The handoff back to the coder uses `send: false` — the developer must confirm,
 
 > **Observation:** When the Committer's pre-commit checks find issues (debug code, TODOs, secrets), it hands back to the Coder to fix, then the Coder returns to Committer. This skip re-review is by design — pre-commit fixes are trivially small (removing a `Console.WriteLine`, etc.).
 
+### Bug Fix Flow
+
+When the Planner determines the work item describes a defect (incorrect behaviour, something broken):
+
+```
+Orchestrator → Work Item Pickup → Planner (Bug Diagnosis plan) → Bug Fix Coder → Reviewer → Committer → PR Creator
+```
+
+The Bug Fix Coder follows a diagnosis-first cycle:
+1. **Verify baseline** — build and tests pass before any changes
+2. **Reproduce the bug** — follow reproduction steps, confirm the defect exists
+3. **Root cause analysis** — trace code, identify the defect, log in Decision Log
+4. **Write regression test** — must fail before fix (RED)
+5. **Apply minimal fix** — minimum code to make regression test pass (GREEN)
+6. **Verify** — all tests pass including regression test
+7. **Hand off for review** — includes root cause, regression test name, files changed
+
+Key differences from TDD/One-Shot:
+- Diagnosis-first mental model (reproduce→diagnose→test→fix) vs design-first (plan→implement→test)
+- Progress tracks diagnosis phases (diagnosing → reproduced → regression test written → fix applied)
+- Handles "cannot reproduce" and "fix larger than expected" as explicit problem states
+- Reviewer uses "Regression + minimality" review mode
+
+### Refactoring Flow
+
+When the Planner determines the work item is behaviour-preserving restructuring:
+
+```
+Orchestrator → Work Item Pickup → Planner (Refactoring plan) → One-Shot Coder → Reviewer → Committer → PR Creator
+```
+
+Key differences:
+- Plan includes "behaviour-preserving" statement and `Safety check:` instead of `Tests:` per item
+- One-Shot Coder implements all refactoring steps in a single pass
+- Reviewer uses "Behaviour preservation" review mode — flags as Critical if observable behaviour changed
+- Implementation Verifier checks no new tests were added and no assertions were modified
+- No new tests expected — existing tests serve as the safety net
+
+### Chore Flow
+
+When the Planner determines the work item is maintenance (dependency bump, config change, CI update):
+
+```
+Orchestrator → Work Item Pickup → Planner (Chore plan) → One-Shot Coder → Reviewer → Committer → PR Creator
+```
+
+Key differences:
+- Planner skips clarification phase — chores are self-evident
+- Minimal plan template (Summary, Tasks, Assumptions — no Scope, Clarifications, or Tests)
+- Item count minimum is 1 (vs 3 for standard plans)
+- Reviewer uses "Lightweight" review mode — build, regressions, correctness, security for dep updates
+- Implementation Verifier uses minimal verification — confirms tasks complete and build passes
+- Committer skips retrospective — too lightweight to warrant it
+
+### Hotfix Flow
+
+When the user explicitly requests a hotfix (production emergency):
+
+```
+Orchestrator → Work Item Pickup (hotfix/ branch) → Planner (Hotfix plan) → Bug Fix Coder → Reviewer → Committer → PR Creator (non-draft PR)
+```
+
+Key differences:
+- Branch uses `hotfix/{id}-{description}` prefix instead of `backlog/`
+- Same diagnosis cycle as Bug-fix — Bug Fix Coder handles both workflows
+- Reviewer uses "Expedited" review mode — security + regression test only, skip style suggestions
+- PR Creator creates non-draft PR with `[HOTFIX]` title prefix and urgency-focused description
+- Hotfix is **never auto-detected** — always user-explicit ("this is a hotfix", "production emergency")
+
 ### Context Loss Recovery
 
 If the developer's VS Code session ends mid-workflow (context lost, new conversation):
@@ -606,13 +676,13 @@ Which skills are consulted, when, and by whom.
 |-------|---------|------|
 | `known-issues` | All agents | Before taking any action (pre-action check) |
 | `azure-devops-api` | Orchestrator | Querying sprint work items and team PRs |
-| `azure-devops-workflow` | Work Item Pickup | State transitions, branch naming, predecessor validation |
-| `csharp-coding` | Coders | Writing production code |
-| `dotnet-testing` | Coders | Writing tests, TDD workflow |
-| `code-reviewing` | Reviewer | Review checklist, issue categorisation, report format |
+| `azure-devops-workflow` | Work Item Pickup | State transitions, branch naming (incl. hotfix), predecessor validation |
+| `csharp-coding` | Coders (TDD, One-Shot, Bug Fix) | Writing production code |
+| `dotnet-testing` | Coders (TDD, One-Shot, Bug Fix) | Writing tests, TDD workflow |
+| `code-reviewing` | Reviewer | Review checklist, workflow-specific review focus, report format |
 | `security-review` | Reviewer | Security checklist (injection, auth, data exposure, financial integrity) |
-| `git-committing` | Committer | Commit message format (conventional commits) |
-| `quality-gates` | Planner, Coders, Reviewer | Self-check criteria at each handoff point |
+| `git-committing` | Committer | Commit message format, workflow-aware type selection |
+| `quality-gates` | Planner, Coders, Reviewer | Self-check criteria at each handoff point (workflow-adjusted) |
 | `repo-analyser` | Repo Analyser agent | Reference documentation for convention discovery |
 
 ---

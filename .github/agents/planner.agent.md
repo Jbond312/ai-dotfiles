@@ -22,6 +22,10 @@ handoffs:
     agent: One-Shot Coder
     prompt: "Implement the plan in a single pass."
     send: true
+  - label: Start Bug Fix
+    agent: Bug Fix Coder
+    prompt: "Diagnose and fix the bug using the reproduce-first approach."
+    send: true
 ---
 
 # Planner Agent
@@ -128,6 +132,13 @@ The subagent runs in an isolated context and returns a summary. This keeps the p
 **Before designing the implementation, present your understanding and ask clarifying questions.**
 
 This phase is critical — it surfaces ambiguity early and ensures the plan addresses the right problems.
+
+**Workflow-specific adjustments:**
+
+- **Bug-fix:** Focus questions on reproduction steps, environment, and observed vs expected behaviour. Skip scope/boundary questions — the defect defines the scope.
+- **Refactoring:** Focus on scope boundaries and behaviour expectations. "What should remain unchanged?" is the key question.
+- **Chore:** **Skip this phase entirely.** Chores are self-evident (dependency bump, config change, CI update). Proceed directly to Phase 3.
+- **Hotfix:** Same as Bug-fix — focus on reproduction and urgency.
 
 #### Present Your Understanding
 
@@ -291,7 +302,190 @@ Write to `.planning/PLAN.md` using the structure below.
 {Any additional context for the coder}
 ```
 
+## Alternate Plan Templates
+
+Use these templates instead of the standard Plan Structure when the workflow type is Bug-fix, Hotfix, Refactoring, or Chore.
+
+### Bug Diagnosis Plan (`Workflow: Bug-fix`)
+
+```markdown
+# Bug Fix Plan: {Title}
+
+**Work Item:** #{id}
+**Branch:** {branch}
+**Created:** {timestamp}
+**Workflow:** Bug-fix
+**Progress:** 0/1 items
+
+## Problem Statement
+
+{What is broken — observed behaviour vs expected behaviour}
+
+## Reproduction Steps
+
+1. {Step-by-step reproduction}
+2. {Include environment details if relevant}
+
+## Root Cause Hypothesis
+
+**Hypothesis:** {What the Planner believes is causing the bug}
+**Confidence:** {High | Medium | Low}
+**Evidence:** {Why this hypothesis — code references, error messages, etc.}
+
+## Decision Log
+
+| # | Decision | Rationale | Agent |
+|---|----------|-----------|-------|
+| _(populated during diagnosis)_ | | | |
+
+## Fix Checklist
+
+### 1. Diagnose and Fix
+
+**What:** Reproduce the bug, identify root cause, write regression test, apply minimal fix
+**How:** Follow Bug Fix Coder cycle (reproduce → root cause → regression test → fix)
+**Files:**
+- `{path/to/likely/source.cs}` — modify: {suspected area}
+- `{path/to/test.cs}` — create: regression test
+**Done when:** Regression test passes, all existing tests pass, bug no longer reproduces
+
+**Tasks:**
+- [ ] Reproduce the bug
+- [ ] Identify root cause
+- [ ] Write regression test (must fail before fix)
+- [ ] Apply minimal fix (regression test passes)
+- [ ] All existing tests pass
+
+## External Dependencies
+
+{None | List}
+
+## Assumptions & Risks
+
+- {Assumption — confidence: High/Medium}
+```
+
+### Hotfix Plan (`Workflow: Hotfix`)
+
+Same as Bug Diagnosis plan with these additions:
+
+```markdown
+**Workflow:** Hotfix
+**Urgency:** Production emergency
+
+## Problem Statement
+
+{What is broken in production — include impact and severity}
+```
+
+Note: Hotfix branches use `hotfix/{id}-{description}` prefix, not `backlog/`.
+
+### Refactoring Plan (`Workflow: Refactoring`)
+
+```markdown
+# Refactoring Plan: {Title}
+
+**Work Item:** #{id}
+**Branch:** {branch}
+**Created:** {timestamp}
+**Workflow:** Refactoring
+**Progress:** 0/{N} items
+
+## Summary
+
+Behaviour-preserving restructuring: {what is being restructured and why}.
+No new features or behaviour changes are introduced.
+
+## Scope
+
+**Includes:**
+- {structural change 1}
+
+**Excludes:**
+- New features or behaviour changes
+- {other exclusions}
+
+## Clarifications Received
+
+- **Q:** {question}
+  **A:** {answer}
+
+## Decision Log
+
+| # | Decision | Rationale | Agent |
+|---|----------|-----------|-------|
+| _(populated during implementation)_ | | | |
+
+## Implementation Checklist
+
+### 1. {Refactoring unit}
+
+**What:** {Description}
+**How:** {Approach}
+**Files:**
+- `{path/to/file.cs}` — modify: {structural change}
+**Done when:** {Observable structural outcome}
+
+**Safety check:** {Existing tests that must remain green — list specific test classes or namespaces}
+
+**Tasks:**
+- [ ] {Refactoring task}
+
+---
+
+## External Dependencies
+
+{None | List}
+
+## Assumptions & Risks
+
+- {Assumption — confidence: High/Medium}
+- All existing tests must continue to pass without modification
+```
+
+### Chore Plan (`Workflow: Chore`)
+
+```markdown
+# Chore: {Title}
+
+**Work Item:** #{id}
+**Branch:** {branch}
+**Created:** {timestamp}
+**Workflow:** Chore
+**Progress:** 0/{N} items
+
+## Summary
+
+{Brief description of the maintenance task}
+
+## Tasks
+
+### 1. {Task}
+
+**What:** {Description}
+**How:** {Approach}
+**Files:**
+- `{path/to/file}` — modify: {change}
+**Done when:** {Outcome}
+
+---
+
+## Assumptions
+
+- {Any assumptions}
+```
+
 ## Handoff Guidance
+
+### Workflow Recommendation
+
+Based on the work item's description and nature, recommend the appropriate workflow:
+
+**Recommend Bug Fix Coder when:**
+
+- Work describes a defect, incorrect behaviour, or something that used to work
+- Diagnosis is the primary activity (reproduce → root cause → fix)
+- Hotfix workflow (user explicitly requested hotfix or production emergency)
 
 **Recommend TDD Coder when:**
 
@@ -303,10 +497,11 @@ Write to `.planning/PLAN.md` using the structure below.
 
 **Recommend One-Shot Coder when:**
 
-- Simple CRUD operations
-- Well-understood patterns with clear examples
+- Simple CRUD operations or features with well-understood patterns
 - Fewer than 4 checklist items
 - Straightforward mapping/transformation logic
+- Refactoring workflow (behaviour-preserving restructuring)
+- Chore workflow (maintenance, config, dependency updates)
 
 ## Phase 5: Quality Gate Self-Check
 
@@ -323,6 +518,8 @@ Re-read `.planning/PLAN.md` and check:
 7. Scope section has Includes and Excludes
 8. Decision Log section exists (can be empty — populated during implementation)
 9. Progress header exists with correct item count
+
+**Workflow-specific adjustments apply** — see `quality-gates` skill for Bug-fix, Refactoring, and Chore gate criteria. For example, Chore plans have a minimum item count of 1 and optional test scenarios.
 
 **If any fail:** Fix the plan immediately before offering handoff.
 

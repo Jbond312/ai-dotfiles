@@ -4,6 +4,50 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.13.0] - 2026-02-05
+
+### Added
+
+- **Bug Fix Coder agent** (`bug-fix-coder.agent.md`) — Diagnosis-first coder for bug fixes and hotfixes. Follows a reproduce→root cause→regression test→minimal fix cycle. Tracks diagnosis phases (diagnosing, reproduced, regression test written, fix applied). Handles "cannot reproduce" and "fix larger than expected" as explicit problem states.
+
+- **Four new workflow types** — `Bug-fix`, `Refactoring`, `Chore`, `Hotfix`. Driven by the Planner's recommendation based on work item description and nature (not Azure DevOps work item types). Each workflow has tailored plan templates, review modes, and quality gate adjustments.
+
+- **Workflow-specific plan templates in Planner** — Bug Diagnosis (reproduction steps, root cause hypothesis, fix checklist), Hotfix (same as Bug Diagnosis + urgency), Refactoring (behaviour-preserving statement, safety checks instead of tests), Chore (minimal: summary, tasks, assumptions).
+
+- **Workflow-specific review focus in `code-reviewing` skill** — Bug-fix (regression test quality, fix minimality, root cause correctness), Hotfix (expedited: security + regression only), Refactoring (behaviour preservation), Chore (lightweight: build, regressions, correctness).
+
+- **Hotfix branching** — `hotfix/{id}-{description}` branch prefix, always user-explicit (never auto-detected from Azure DevOps fields). PR Creator creates non-draft PRs with `[HOTFIX]` title prefix.
+
+- **Workflow-aware commit type selection in `git-committing` skill** — Default commit types per workflow: TDD/One-shot→`feat`, Bug-fix/Hotfix→`fix`, Refactoring→`refactor`, Chore→`chore`.
+
+- **Workflow types reference table in `azure-devops-workflow` skill** — Maps all 6 workflows to coder agent, review mode, branch prefix, and default commit type.
+
+### Changed
+
+- **Planner agent** — Gains `Start Bug Fix` handoff to Bug Fix Coder. Recommends workflow based on work item characteristics. Phase 2 (Clarify Requirements) is now conditional: skipped for Chore, focused on reproduction for Bug-fix, focused on scope/behaviour for Refactoring. Quality gate self-check notes workflow-specific adjustments.
+
+- **Orchestrator agent** — Gains `Resume Coding (Bug Fix)` handoff. Coder type determination expanded from 2 to 6 workflow types: Bug-fix/Hotfix→Bug Fix Coder, Refactoring/Chore→One-Shot Coder.
+
+- **Reviewer agent** — Gains `Request Changes (Bug Fix)` handoff. New Step 1b determines workflow mode from PLAN.md and applies workflow-specific review focus. Review report includes Workflow and Review mode fields. Handoff routes to appropriate coder based on workflow.
+
+- **Committer agent** — References workflow-aware commit type selection. Retrospective skipped for Chore workflow.
+
+- **Debug agent** — Gains `Resume Coding (Bug Fix)` handoff to Bug Fix Coder.
+
+- **Implementation Verifier agent** — New Step 2b determines verification mode: Bug-fix checks regression test and fix minimality, Refactoring checks no new/modified tests, Chore uses minimal verification.
+
+- **PR Creator agent** — Hotfix workflow creates non-draft PR with `[HOTFIX]` title prefix and urgency-focused description template.
+
+- **Work Item Pickup agent** — Hotfix branching: `hotfix/{id}-{description}` when user explicitly requests hotfix.
+
+- **`quality-gates` skill** — Workflow-specific adjustments for Planner→Coder gate (Bug-fix requires reproduction steps, Refactoring requires behaviour preservation statement, Chore lowers minimums) and Coder→Reviewer gate (Bug-fix adds regression test criterion, Refactoring replaces new tests with existing tests, Chore skips verifier checks). Bug Fix Coder added to implementation agents verbosity list.
+
+### Why These Changes?
+
+TDD and One-Shot cover approximately 35-50% of real-world engineering work (new features only). Bug fixes (~25%), refactoring (~15%), chores (~8%), and hotfixes (~3%) were forced through workflows that didn't match their mental model, creating friction. A bug fix doesn't start with design — it starts with diagnosis. A refactoring doesn't need new tests — existing tests are the safety net. A chore doesn't need clarification questions — it's self-evident.
+
+One new agent (Bug Fix Coder) serves both Bug-fix and Hotfix — the diagnosis cycle is identical, with differences handled by other agents (branching, review strictness, PR status). Refactoring and Chore reuse One-Shot Coder with different plan templates and review modes, avoiding agent proliferation.
+
 ## [0.12.0] - 2026-02-05
 
 ### Added

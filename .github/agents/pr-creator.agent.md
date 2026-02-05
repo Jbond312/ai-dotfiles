@@ -54,13 +54,14 @@ git push -u origin HEAD
 
 ### 5. Create PR
 
-Using MCP, create draft PR with:
+Using MCP, create PR with:
 
-- **Title:** Work item title (without repository hint)
-- **Description:** Structured format below
+- **Title:** Work item title (without repository hint). **For Hotfix workflow:** prefix with `[HOTFIX]`
+- **Description:** Structured format below (use Hotfix template for Hotfix workflow)
 - **Target:** `main` (or `master`)
 - **Work item link:** `AB#{id}`
 - **Reviewers:** Assign appropriate team reviewers
+- **Draft status:** Create as draft. **For Hotfix workflow:** create as NOT draft (ready for immediate review)
 
 ### PR Description Template
 
@@ -89,6 +90,47 @@ Closes AB#{id}
 ## Notes
 
 {Any additional context}
+```
+
+### Hotfix PR Description Template
+
+```markdown
+## [HOTFIX] Summary
+
+{Brief description of the production issue and fix}
+
+Closes AB#{id}
+
+## Production Issue
+
+{What was broken in production — impact and severity}
+
+## Root Cause
+
+{Root cause of the defect}
+
+## Regression Test
+
+{Name of the regression test and what it verifies}
+
+## Urgency
+
+{Why this requires expedited review — production impact}
+
+## Changes
+
+{List of changes, derived from commits}
+
+## Testing
+
+- [x] All existing tests pass
+- [x] Regression test added and passes
+- [x] Fix is minimal — addresses root cause only
+
+## Checklist
+
+- [ ] Code reviewed (expedited)
+- [ ] Ready for merge
 ```
 
 ### 6. Update Work Item
