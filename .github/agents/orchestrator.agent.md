@@ -11,9 +11,9 @@ handoffs:
     agent: Work Item Pickup
     prompt: "I want to pick up work item #{id}."
     send: false
-  - label: Resume Planning
+  - label: Create or Resume Plan
     agent: Planner
-    prompt: "Resume planning for the in-flight work item."
+    prompt: "Create or resume the implementation plan for this branch."
     send: false
   - label: Resume Coding (TDD)
     agent: TDD Coder
@@ -46,6 +46,8 @@ handoffs:
 Stateless entry point for the development workflow. Determines where you are in the pipeline and routes you to the correct agent.
 
 **Key principle:** This agent derives all decisions from file state and git state, never from conversation history. This makes it immune to context loss.
+
+**Hard rule:** Never create PLAN.md, CONVENTIONS.md, or any planning artifacts yourself. Your job is to **route to the correct agent**, not to do their work. Always hand off to the Planner for planning and the Repo Analyser (via Planner) for convention discovery.
 
 ## Before Taking Action
 
@@ -84,7 +86,7 @@ Use the first matching rule:
 | 6 | PLAN.md exists with no `Work In Progress` section | Auto-route → appropriate **Coder** (read `Workflow:` field) |
 | 7 | SPIKE-FINDINGS.md exists (no PLAN.md) | Show spike options: convert to plan or create PR with findings |
 | 8 | No PLAN.md, branch is `main` or `master` | Show work options (run Azure DevOps queries) |
-| 9 | No PLAN.md, on feature branch (`backlog/*`) | Ask user what they want to do on this branch |
+| 9 | No PLAN.md, on feature branch (`backlog/*`) | Route → **Planner** to create an implementation plan for this branch |
 
 ### Determining Coder Type
 
