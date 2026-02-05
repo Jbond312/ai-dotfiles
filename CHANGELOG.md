@@ -4,6 +4,42 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.0] - 2026-02-05
+
+### Changed
+
+- **Agent consolidation (14 → 11 agents)**
+  - Merged `tdd-coder.agent.md`, `one-shot-coder.agent.md`, `bug-fix-coder.agent.md` into unified `coder.agent.md`. The Coder reads the `Workflow:` field from PLAN.md to determine mode (TDD, One-shot, Bug-fix, Hotfix, Refactoring, Chore).
+  - Merged `pr-creator.agent.md` into `committer.agent.md` (Part 3: Create Pull Request).
+  - Updated all handoff references across orchestrator, planner, reviewer, debug, spike agents.
+
+- **Skill trimming (12 skills condensed)** — Removed general knowledge Claude already has, kept hard rules, banking-domain patterns, and review checklists:
+  - `architecture-patterns`: 422 → 46 lines
+  - `conventional-comments`: 205 → 72 lines
+  - `git-committing`: 97 → 56 lines
+  - `repo-analyser`: 238 → 138 lines (template moved to skill)
+  - `mssql-stored-procedures`: 613 → 327 lines
+  - `tsqlt-testing`: 674 → 230 lines
+  - `dapper-data-access`: 390 → 128 lines
+  - `aspnet-middleware`: 426 → 140 lines
+  - `azure-service-bus`: 446 → 259 lines
+  - `error-handling`: 283 → 124 lines
+  - `csharp-coding`: 170 → 59 lines
+  - `dotnet-testing`: 286 → 74 lines
+
+- **Documentation updates**
+  - `copilot-instructions.md`: Updated agent list, removed shell compatibility table
+  - `WORKFLOW.md`: Updated mermaid diagrams and agent references
+  - `DEVELOPER_SETUP.md`: Updated agent references, handoff tables, model assignments
+  - `repo-analyser.agent.md`: Condensed from 194 → 82 lines (template now in skill)
+  - `known-issues/SKILL.md`: Removed empty placeholder sections
+
+### Why This Change?
+
+Context window efficiency. Skills contained tutorial content that Claude already knows — removing it reduces token usage without losing capability. Agent consolidation simplifies the workflow (fewer handoffs, less routing logic) while preserving all six workflow modes via the `Workflow:` field.
+
+---
+
 ## [0.13.0] - 2026-02-05
 
 ### Added

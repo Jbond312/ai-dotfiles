@@ -4,25 +4,7 @@
 
 ## Shell Compatibility
 
-Team members use different shells (PowerShell, bash, zsh, cmd). When executing terminal commands:
-
-1. **Detect the user's shell** from the terminal context and adapt syntax accordingly
-2. **Prefer cross-platform commands** where they exist:
-   - `dotnet` CLI commands work identically everywhere
-   - `git` commands work identically everywhere
-   - File operations vary — adapt `mkdir`, `test -f`, `find` etc. to the user's shell
-3. **Focus on intent over syntax** — if instructions say "check if file exists", use the appropriate method for the current shell
-
-Common adaptations:
-
-| Intent            | Bash                  | PowerShell                                 |
-| ----------------- | --------------------- | ------------------------------------------ |
-| Check file exists | `test -f path`        | `Test-Path path`                           |
-| Create directory  | `mkdir -p path`       | `New-Item -ItemType Directory -Force path` |
-| Find files        | `find . -name "*.cs"` | `Get-ChildItem -Recurse -Filter *.cs`      |
-| Check in git      | `git ls-files "*.cs"` | `git ls-files "*.cs"` (same)               |
-
-When in doubt, use `dotnet` and `git` commands — they're consistent across all platforms.
+Use `dotnet` and `git` commands — they work identically across all shells. For file operations, use your `search` and `read` tools instead of shell-specific commands.
 
 ## Pattern-Specific Instructions
 
@@ -48,10 +30,9 @@ Custom agents guide development:
 1. **Orchestrator** → Detect pipeline state, route to correct agent
 2. **Work Item Pickup** → Assign, branch, summarise
 3. **Planner** → Create `.planning/PLAN.md`
-4. **Coder** → Implement (TDD or one-shot)
+4. **Coder** → Implement (TDD, One-shot, Bug-fix, Hotfix, Refactoring, Chore)
 5. **Reviewer** → Review before commit
-6. **Committer** → Commit with message
-7. **PR Creator** → Draft PR, link work item
+6. **Committer** → Commit, create PR, link work item
 
 Plans in `.planning/` should be gitignored.
 

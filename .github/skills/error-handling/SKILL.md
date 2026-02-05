@@ -34,79 +34,12 @@ description: "Error handling patterns for .NET applications. Use when writing, r
 3. **Inconsistent error types** — Using different error representations in the same bounded context
 4. **Missing CancellationToken** — Async error-prone operations that don't accept or propagate CancellationToken
 
-## Exception + Middleware Pattern
-
-```csharp
-// Domain exception hierarchy
-public abstract class DomainException : Exception
-{
-    public string Code { get; }
-    protected DomainException(string code, string message) : base(message) => Code = code;
-}
-
-public class InsufficientFundsException : DomainException
-{
-    public InsufficientFundsException(decimal requested, decimal available)
-        : base("INSUFFICIENT_FUNDS", $"Requested {requested:C} but only {available:C} available") { }
-}
-
-public class AccountNotFoundException : DomainException
-{
-    public AccountNotFoundException(long accountId)
-        : base("ACCOUNT_NOT_FOUND", $"Account {accountId} not found") { }
-}
-```
-
-```csharp
-// Exception handling middleware (see aspnet-middleware skill for full pipeline setup)
-app.UseExceptionHandler(appBuilder =>
-{
-    appBuilder.Run(async context =>
-    {
-        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-        var correlationId = context.TraceIdentifier;
-
-        var problemDetails = exception switch
-        {
-            DomainException domain => new ProblemDetails
-            {
-                Status = domain switch
-                {
-                    AccountNotFoundException => StatusCodes.Status404NotFound,
-                    InsufficientFundsException => StatusCodes.Status409Conflict,
-                    _ => StatusCodes.Status422UnprocessableEntity
-                },
-                Title = domain.Code,
-                Detail = domain.Message,
-                Extensions = { ["correlationId"] = correlationId }
-            },
-            OperationCanceledException => new ProblemDetails
-            {
-                Status = StatusCodes.Status499ClientClosedRequest,
-                Title = "REQUEST_CANCELLED"
-            },
-            _ => new ProblemDetails
-            {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "INTERNAL_ERROR",
-                Detail = "An unexpected error occurred.",
-                Extensions = { ["correlationId"] = correlationId }
-            }
-        };
-
-        context.Response.StatusCode = problemDetails.Status ?? 500;
-        await context.Response.WriteAsJsonAsync(problemDetails);
-    });
-});
-```
-
 ## Result\<T\> Pattern (OneOf / ErrorOr / Custom)
 
 ```csharp
-// Using ErrorOr<T> as example — same principle applies to OneOf or custom Result
+// Using ErrorOr<T> — same principle applies to OneOf or custom Result
 public async Task<ErrorOr<TransferResult>> TransferFunds(
-    TransferCommand command,
-    CancellationToken cancellationToken)
+    TransferCommand command, CancellationToken cancellationToken)
 {
     var sourceAccount = await _repository.GetByIdAsync(command.SourceAccountId, cancellationToken);
     if (sourceAccount is null)
@@ -115,8 +48,6 @@ public async Task<ErrorOr<TransferResult>> TransferFunds(
     if (sourceAccount.Balance < command.Amount)
         return Error.Conflict("INSUFFICIENT_FUNDS", "Insufficient funds for transfer");
 
-    // Business logic...
-
     return new TransferResult(sourceAccount.Id, command.Amount);
 }
 ```
@@ -124,9 +55,7 @@ public async Task<ErrorOr<TransferResult>> TransferFunds(
 ```csharp
 // Controller mapping Result to HTTP response
 [HttpPost("transfers")]
-public async Task<IActionResult> Transfer(
-    TransferRequest request,
-    CancellationToken cancellationToken)
+public async Task<IActionResult> Transfer(TransferRequest request, CancellationToken cancellationToken)
 {
     var result = await _handler.TransferFunds(request.ToCommand(), cancellationToken);
 
@@ -155,94 +84,6 @@ public async Task<IActionResult> Transfer(
 | Unprocessable | 422 Unprocessable Entity | `https://tools.ietf.org/html/rfc4918#section-11.2` | Valid format, invalid business state |
 | Rate limited | 429 Too Many Requests | `https://tools.ietf.org/html/rfc6585#section-4` | Rate limit exceeded |
 | Internal error | 500 Internal Server Error | `https://tools.ietf.org/html/rfc9110#section-15.6.1` | Unhandled exception |
-
-## Anti-Patterns
-
-### Swallowing Exceptions
-
-```csharp
-// BAD: Exception swallowed — failure is silently ignored
-try
-{
-    await _repository.DebitAccount(accountId, amount, cancellationToken);
-}
-catch (Exception)
-{
-    // "it's fine"
-}
-
-// GOOD: Handle, log, or propagate
-try
-{
-    await _repository.DebitAccount(accountId, amount, cancellationToken);
-}
-catch (SqlException ex) when (ex.Number == 1205) // Deadlock
-{
-    _logger.LogWarning(ex, "Deadlock on debit for account {AccountId}, retrying", accountId);
-    throw; // Let retry policy handle it
-}
-```
-
-### Null-for-Error
-
-```csharp
-// BAD: Caller can't distinguish "not found" from "error during lookup"
-public async Task<Account?> GetAccount(long id, CancellationToken ct)
-{
-    try { return await _repo.GetByIdAsync(id, ct); }
-    catch { return null; }
-}
-
-// GOOD: Use the established error pattern
-public async Task<ErrorOr<Account>> GetAccount(long id, CancellationToken ct)
-{
-    var account = await _repo.GetByIdAsync(id, ct);
-    return account is null
-        ? Error.NotFound("ACCOUNT_NOT_FOUND", $"Account {id} not found")
-        : account;
-}
-```
-
-### Log-and-Throw
-
-```csharp
-// BAD: Same exception logged at every layer in the call stack
-catch (Exception ex)
-{
-    _logger.LogError(ex, "Error in TransferFunds");
-    throw; // Logged again by the caller, and again by middleware
-}
-
-// GOOD: Log at the boundary only (middleware), throw/return without logging
-catch (Exception ex)
-{
-    throw; // Middleware logs it once with full context
-}
-
-// GOOD: If you must add context, wrap — don't log-and-throw
-catch (Exception ex)
-{
-    throw new TransferFailedException(command.SourceAccountId, command.Amount, ex);
-}
-```
-
-### Mixing Approaches
-
-```csharp
-// BAD: Same service uses both exceptions and Result<T>
-public class PaymentService
-{
-    public ErrorOr<Payment> CreatePayment(CreatePaymentCommand cmd) { /* Result pattern */ }
-    public void ProcessPayment(Guid id) { throw new PaymentException("..."); } // Exception pattern!
-}
-
-// GOOD: Consistent approach throughout the service
-public class PaymentService
-{
-    public ErrorOr<Payment> CreatePayment(CreatePaymentCommand cmd) { /* ... */ }
-    public ErrorOr<ProcessResult> ProcessPayment(Guid id, CancellationToken ct) { /* ... */ }
-}
-```
 
 ## Resilience & Auditability Rules
 

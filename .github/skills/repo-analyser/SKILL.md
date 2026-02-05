@@ -25,97 +25,19 @@ Discovers how a repository works — its architecture, patterns, conventions, an
 
 ## Discovery Process
 
-Work through each section. For each, explore the codebase and document what you find.
+The Repo Analyser agent contains detailed discovery instructions. In summary, explore these areas:
 
-### 1. Solution Overview
-
-Use `search` to find `*.sln` and `*.csproj` files. Use `read` to examine project files for `<TargetFramework>` values.
-
-```
-dotnet sln list
-```
-
-**Document:**
-- Solution name
-- Number and types of projects
-- .NET version(s) in use
-
-### 2. Architecture Pattern
-
-Use `search` to explore the folder structure and find directories named `Domain`, `Application`, `Infrastructure`, `Features`, `Handlers`, `Ports`, `Adapters`, `Services`, `Repositories`, `Controllers`.
-
-**Look for signals:**
-
-| Pattern | Signals |
-|---------|---------|
-| **Vertical Slice Architecture** | `/Features/` folders, handlers grouped by feature, minimal layering |
-| **Clean Architecture** | `/Domain/`, `/Application/`, `/Infrastructure/`, `/Presentation/` separation |
-| **Hexagonal (Ports & Adapters)** | `/Ports/`, `/Adapters/`, clear interface boundaries |
-| **N-Tier / Layered** | `/Services/`, `/Repositories/`, `/Controllers/` at same level |
-| **Minimal / Simple** | Flat structure, few abstractions |
-
-**Document:** The pattern you observe, or "unclear/mixed" if it doesn't fit neatly.
-
-### 3. External Dependencies
-
-Use `search` to find `*.csproj` files, then `read` them and look for `PackageReference` entries related to: EntityFramework, Dapper, Npgsql, SqlClient, Azure, RabbitMQ, MassTransit, Kafka, Redis, MongoDB.
-
-Also use `search` to look for references to `ConnectionString`, `ServiceBus`, `BlobStorage`, `CosmosDb` in `.json` and `.cs` files.
-
-**Document:**
-- Databases (SQL Server, PostgreSQL, CosmosDB, etc.)
-- Message brokers (Azure Service Bus, RabbitMQ, Kafka)
-- External APIs or services
-- Cloud services (Azure Storage, AWS S3, etc.)
-
-### 4. Testing Approach
-
-Use `search` to find test projects (`*Tests*.csproj`, `*Test*.csproj`) and test files (`*Tests.cs`, `*Test.cs`).
-
-**Use `read` to examine 3-5 actual test files** and understand:
-- Test class naming (e.g., `{ClassName}Tests`, `{Feature}Tests`)
-- Test method naming (e.g., `MethodName_Condition_Result`, `Should_X_When_Y`)
-- Assertion style (FluentAssertions, Shouldly, built-in)
-- Mocking approach (Moq, NSubstitute, hand-written fakes)
-- Test organisation (one class per SUT, feature-based, behaviour-based)
-
-**Document with actual examples** from the codebase.
-
-### 5. Code Patterns
-
-Use `search` to find `*Handler.cs`, `*Command.cs`, `*Query.cs` files. Use `search` to look for references to `MediatR`, `Wolverine`, `Result<`, `ErrorOr`, `FluentValidation`, `AutoMapper`, `Mapster`.
-
-**Use `read` to examine 3-5 representative files** and understand:
-
-| Aspect | What to Look For |
-|--------|------------------|
-| **Request handling** | MediatR, Wolverine, custom handlers, direct controller logic |
-| **Validation** | FluentValidation, DataAnnotations, manual checks |
-| **Error handling** | Result/ErrorOr types, exceptions, custom error types |
-| **Mapping** | AutoMapper, Mapster, manual mapping, extension methods |
-| **Dependency injection** | Constructor injection, how dependencies are organised |
-
-### 6. Code Style
-
-Use `read` to examine a few production `.cs` files (in `src/`) for:
-- Nullable reference types (`#nullable enable`, `?` on types)
-- File-scoped vs block-scoped namespaces
-- Primary constructors
-- Record types for DTOs
-- Expression-bodied members
-- Naming conventions (e.g., `_fieldName`, `FieldName`)
-
-### 7. Anything Else Notable
-
-Note anything unusual or project-specific:
-- Custom base classes or utilities
-- Domain-specific patterns
-- Unusual folder structures
-- Build or deployment conventions
+1. **Solution Overview** — find `*.sln` and `*.csproj` files, note .NET version(s) and project types
+2. **Architecture Pattern** — identify folder structure signals (Vertical Slice, Clean Architecture, Hexagonal, N-Tier, or mixed)
+3. **External Dependencies** — scan `PackageReference` entries and config files for databases, message brokers, cloud services
+4. **Testing Approach** — examine test projects, naming conventions, assertion libraries, mocking frameworks (read 3-5 actual test files)
+5. **Code Patterns** — identify request handling, validation, error handling, mapping, and DI approaches (read 3-5 representative files)
+6. **Code Style** — nullable refs, namespace style, primary constructors, record types, naming conventions
+7. **Anything Else Notable** — custom base classes, domain-specific patterns, unusual structures
 
 ## Output Format
 
-Create `.planning/CONVENTIONS.md`:
+Create `.planning/CONVENTIONS.md` using this template:
 
 ```markdown
 # Repository Conventions
@@ -139,19 +61,7 @@ Create `.planning/CONVENTIONS.md`:
 
 ## Project Structure
 
-```
-src/
-├── {ProjectName}/
-│   ├── {TopLevelFolder}/       # {purpose}
-│   │   └── {ExampleSubfolder}/
-│   │       ├── {ExampleFile}.cs
-│   │       └── ...
-│   └── ...
-tests/
-├── {ProjectName}.Tests/
-│   └── {MirroredStructure}/
-│       └── {ExampleTestFile}.cs
-```
+{Folder tree with purpose annotations}
 
 ## External Dependencies
 
@@ -159,7 +69,6 @@ tests/
 |------|------------|-------|
 | Database | {e.g., SQL Server via EF Core} | {any notes} |
 | Messaging | {e.g., Azure Service Bus} | {any notes} |
-| ... | ... | ... |
 
 ## Testing Conventions
 
@@ -173,10 +82,7 @@ tests/
 
 ### Example Test
 
-```csharp
-// From: {actual file path}
-{actual test method showing naming and structure}
-```
+{Actual test method from codebase showing naming and structure}
 
 ## Code Patterns
 
@@ -191,17 +97,11 @@ tests/
 
 ### Example Handler/Service
 
-```csharp
-// From: {actual file path}
-{simplified example showing typical structure}
-```
+{Simplified example from codebase showing typical structure}
 
 ### Example Error Handling
 
-```csharp
-// From: {actual file path}
-{actual example showing Result<T> vs exception usage}
-```
+{Actual example showing Result<T> vs exception usage}
 
 ## Code Style
 

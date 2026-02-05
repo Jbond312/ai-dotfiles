@@ -98,7 +98,7 @@ Both are hard blocks. Do not update PLAN.md or proceed to handoff if either fail
 
 **Rationale:** The Committer is the last gate before code is committed/advanced. Even if the Reviewer verified earlier, changes may have been made after review (feedback fixes, merge conflicts). Never trust that "tests passed earlier" — always verify.
 
-## Gate: PR Creator → Push
+## Gate: Committer → Push
 
 Before pushing and creating the PR:
 
@@ -190,8 +190,8 @@ dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --filt
 
 ## Verbosity Convention
 
-**Gate checks** (Reviewer, Committer, PR Creator, PR Reviewer, Planner) use `-v q` (quiet) to minimise context window usage. Errors and failures still appear in quiet mode — only the success noise is suppressed.
+**Gate checks** (Reviewer, Committer, PR Reviewer, Planner) use `-v q` (quiet) to minimise context window usage. Errors and failures still appear in quiet mode — only the success noise is suppressed.
 
-**Implementation agents** (TDD Coder, One-Shot Coder, Bug Fix Coder, Debug, Implementation Verifier) use default or normal verbosity because they need to see test names, assertion details, and coverage data.
+**Implementation agents** (Coder, Debug, Implementation Verifier) use default or normal verbosity because they need to see test names, assertion details, and coverage data.
 
 **On failure at a gate:** Re-run without `-v q` to get full diagnostic output before handing back to the coder or reporting to the user.

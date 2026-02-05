@@ -31,12 +31,9 @@ my-repo/
     │   ├── orchestrator.agent.md   # Entry point
     │   ├── work-item-pickup.agent.md
     │   ├── planner.agent.md
-    │   ├── tdd-coder.agent.md
-    │   ├── one-shot-coder.agent.md
-    │   ├── bug-fix-coder.agent.md  # Bug fix & hotfix diagnosis
+    │   ├── coder.agent.md          # TDD, One-shot, Bug-fix, Hotfix, Refactoring, Chore (via Workflow: field)
     │   ├── reviewer.agent.md
-    │   ├── committer.agent.md
-    │   └── pr-creator.agent.md
+    │   └── committer.agent.md      # Commit and PR creation
     └── skills/
         ├── azure-devops-workflow/
         │   └── SKILL.md
@@ -55,7 +52,7 @@ my-repo/
         │   └── SKILL.md
         ├── known-issues/
         │   └── SKILL.md
-        └── repo-analyzer/
+        └── repo-analyser/
             └── SKILL.md
 
 .vscode/
@@ -236,7 +233,7 @@ Review the plan before proceeding. You can ask for adjustments.
 
 For complex or risky changes, use the iterative TDD approach:
 
-1. Select **TDD Coder** agent
+1. Select **Coder** agent (the Planner sets `Workflow: TDD` in PLAN.md)
 2. It implements one checklist item at a time
 3. After each item, hand off to **Reviewer**
 4. Address any feedback
@@ -249,7 +246,7 @@ Each checklist item gets its own reviewed, tested commit.
 
 For small, well-defined changes:
 
-1. Select **One-Shot Coder** agent
+1. Select **Coder** agent (the Planner sets `Workflow: One-shot` in PLAN.md)
 2. It implements all checklist items in one pass
 3. Hand off to **Reviewer** once
 4. Address feedback
@@ -259,7 +256,7 @@ For small, well-defined changes:
 
 When all items are committed:
 
-1. Select **PR Creator** agent (or use the handoff)
+1. Select **Committer** agent (or use the handoff)
 2. Ask it to create the PR:
 
    ```
@@ -275,16 +272,16 @@ The agent will:
 
 ## Workflow Modes
 
-| Mode            | Best For                                        | Coder Agent    | Commits            | Review Cycles       |
-| --------------- | ----------------------------------------------- | -------------- | ------------------ | ------------------- |
-| **TDD**         | Complex changes, risky areas, learning new code | TDD Coder      | Per checklist item | Per item            |
-| **One-Shot**    | Small changes, well-understood scope            | One-Shot Coder | Single commit      | Once at end         |
-| **Bug-fix**     | Defects, incorrect behaviour                    | Bug Fix Coder  | Single commit      | Regression + minimality |
-| **Refactoring** | Behaviour-preserving restructuring              | One-Shot Coder | Single commit      | Behaviour preservation  |
-| **Chore**       | Maintenance, config, dependency updates         | One-Shot Coder | Single commit      | Lightweight         |
-| **Hotfix**      | Production emergencies (user-explicit only)      | Bug Fix Coder  | Single commit      | Expedited           |
+| Mode            | Best For                                        | Coder Agent | Commits            | Review Cycles       |
+| --------------- | ----------------------------------------------- | ----------- | ------------------ | ------------------- |
+| **TDD**         | Complex changes, risky areas, learning new code | Coder       | Per checklist item | Per item            |
+| **One-Shot**    | Small changes, well-understood scope            | Coder       | Single commit      | Once at end         |
+| **Bug-fix**     | Defects, incorrect behaviour                    | Coder       | Single commit      | Regression + minimality |
+| **Refactoring** | Behaviour-preserving restructuring              | Coder       | Single commit      | Behaviour preservation  |
+| **Chore**       | Maintenance, config, dependency updates         | Coder       | Single commit      | Lightweight         |
+| **Hotfix**      | Production emergencies (user-explicit only)      | Coder       | Single commit      | Expedited           |
 
-Choose TDD when in doubt—the overhead is small compared to catching issues late. The Planner recommends a workflow based on the work item's nature.
+Choose TDD when in doubt -- the overhead is small compared to catching issues late. The Planner recommends a workflow based on the work item's nature and sets the `Workflow:` field in PLAN.md, which the Coder agent reads to determine its mode.
 
 ## File Locations
 
@@ -344,7 +341,7 @@ Skills load automatically based on context. If a skill isn't being used:
 
 ### Plan Not Found by Coder
 
-The coder agents expect `.planning/PLAN.md` to exist:
+The Coder agent expects `.planning/PLAN.md` to exist:
 
 1. Ensure you ran the Planner first
 2. Check the file was created in the repository root
@@ -421,7 +418,7 @@ See the existing agents for examples.
 If your Azure DevOps board uses different state names, update:
 
 1. `.github/skills/azure-devops-workflow/SKILL.md` — State definitions
-2. Agents that reference specific states (work-item-pickup, pr-creator)
+2. Agents that reference specific states (work-item-pickup, committer)
 
 ## Team Rollout Checklist
 
@@ -446,14 +443,12 @@ When rolling out to your team:
 ```
 orchestrator (entry point — reads PLAN.md + git state)
     ├── No plan, main branch → show work options → work-item-pickup
-    ├── Plan exists → auto-route to correct agent (coder / reviewer / pr-creator)
-    │   ├── TDD / One-shot → TDD Coder or One-Shot Coder
-    │   ├── Bug-fix / Hotfix → Bug Fix Coder
-    │   └── Refactoring / Chore → One-Shot Coder
+    ├── Plan exists → auto-route to correct agent (coder / reviewer / committer)
+    │   └── All workflows (TDD, One-shot, Bug-fix, Hotfix, Refactoring, Chore) → Coder
     ├── Uncommitted changes → ask: continue coding or commit?
     └── Spike findings → offer: convert to plan or create PR
 
-work-item-pickup → planner → [coder → reviewer → committer] → pr-creator → orchestrator
+work-item-pickup → planner → [coder → reviewer → committer] → orchestrator
 ```
 
 **Note:** Repo Analyser and Implementation Verifier are subagent-only (`user-invokable: false`) and do not appear in the agents dropdown. They are invoked programmatically by other agents via the `agent` tool.
@@ -463,27 +458,18 @@ work-item-pickup → planner → [coder → reviewer → committer] → pr-creat
 | From             | To               | When                              |
 | ---------------- | ---------------- | --------------------------------- |
 | orchestrator     | work-item-pickup | Ready for new work                |
-| orchestrator     | tdd-coder        | Plan exists, TDD workflow         |
-| orchestrator     | one-shot-coder   | Plan exists, one-shot/refactoring/chore workflow |
-| orchestrator     | bug-fix-coder    | Plan exists, bug-fix/hotfix workflow |
+| orchestrator     | coder            | Plan exists, any workflow         |
 | orchestrator     | reviewer         | Ready for review                  |
-| orchestrator     | pr-creator       | Ready for PR                      |
+| orchestrator     | committer        | Ready for PR                      |
 | work-item-pickup | planner          | After branch created              |
-| planner          | tdd-coder        | Ready to implement (iterative)    |
-| planner          | one-shot-coder   | Ready to implement (batch/refactoring/chore) |
-| planner          | bug-fix-coder    | Ready to diagnose (bug-fix/hotfix) |
-| tdd-coder        | reviewer         | Item implemented                  |
-| one-shot-coder   | reviewer         | All items implemented             |
-| bug-fix-coder    | reviewer         | Bug fix ready for review          |
-| reviewer         | tdd-coder        | Feedback (TDD)                    |
-| reviewer         | one-shot-coder   | Feedback (one-shot/refactoring/chore) |
-| reviewer         | bug-fix-coder    | Feedback (bug-fix/hotfix)         |
+| planner          | coder            | Ready to implement                |
+| coder            | reviewer         | Implementation ready for review   |
+| reviewer         | coder            | Feedback requiring changes        |
 | reviewer         | committer        | Approved                          |
-| committer        | tdd-coder        | Next item (TDD only)              |
-| committer        | pr-creator       | All items complete                |
-| pr-creator       | orchestrator     | PR created, cycle complete        |
+| committer        | coder            | Next item (TDD only)              |
+| committer        | orchestrator     | PR created, cycle complete        |
 | debug            | orchestrator     | Issue resolved, auto-resume       |
-| debug            | bug-fix-coder    | Issue resolved, resume bug fix    |
+| debug            | coder            | Issue resolved, resume coding     |
 | spike            | orchestrator     | Spike complete                    |
 
 ### Model Configuration
@@ -495,16 +481,13 @@ Agents are configured with appropriate models to balance capability and cost:
 | orchestrator     | claude-3-5-haiku   | Stateless routing, simple decisions     |
 | work-item-pickup | claude-sonnet-4    | Predecessor checks, context gathering   |
 | planner          | claude-sonnet-4    | Codebase analysis, plan structuring     |
-| tdd-coder        | claude-sonnet-4-5  | Code generation, test writing           |
-| one-shot-coder   | claude-sonnet-4    | Code generation, test writing           |
-| bug-fix-coder    | claude-sonnet-4-5  | Root cause analysis requires deep reasoning |
+| coder            | claude-sonnet-4-5  | Code generation, test writing, root cause analysis |
 | reviewer         | claude-sonnet-4    | Code review requires judgment           |
-| committer        | claude-3-5-haiku   | Template-based, simple task             |
-| pr-creator       | claude-3-5-haiku   | Template-based, simple task             |
+| committer        | claude-3-5-haiku   | Commit and PR creation, template-based  |
 
 **To change a model:** Edit the `model:` field in the agent's YAML frontmatter. Leave blank to use the model selected in the Copilot dropdown.
 
-**Cost considerations:** Using Haiku for simple agents (committer, pr-creator, orchestrator) significantly reduces token usage without affecting quality, since these agents perform straightforward, template-based tasks.
+**Cost considerations:** Using Haiku for simple agents (committer, orchestrator) significantly reduces token usage without affecting quality, since these agents perform straightforward, template-based tasks.
 
 ### Branch Naming
 

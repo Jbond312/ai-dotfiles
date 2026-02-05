@@ -60,12 +60,12 @@ Format: `hotfix/{workitem_id}-{short-description}`
 
 | Workflow | Coder Agent | Review Mode | Branch Prefix | Default Commit Type |
 |----------|-------------|-------------|---------------|---------------------|
-| TDD | TDD Coder | Standard | `backlog/` | `feat` |
-| One-shot | One-Shot Coder | Standard | `backlog/` | `feat` |
-| Bug-fix | Bug Fix Coder | Regression + minimality | `backlog/` | `fix` |
-| Refactoring | One-Shot Coder | Behaviour preservation | `backlog/` | `refactor` |
-| Chore | One-Shot Coder | Lightweight | `backlog/` | `chore` |
-| Hotfix | Bug Fix Coder | Expedited (security + regression) | `hotfix/` | `fix` |
+| TDD | Coder | Standard | `backlog/` | `feat` |
+| One-shot | Coder | Standard | `backlog/` | `feat` |
+| Bug-fix | Coder | Regression + minimality | `backlog/` | `fix` |
+| Refactoring | Coder | Behaviour preservation | `backlog/` | `refactor` |
+| Chore | Coder | Lightweight | `backlog/` | `chore` |
+| Hotfix | Coder | Expedited (security + regression) | `hotfix/` | `fix` |
 
 ## Repository Hints
 

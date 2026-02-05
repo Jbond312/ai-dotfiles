@@ -21,8 +21,8 @@ handoffs:
     agent: Planner
     prompt: "Create an implementation plan based on the spike findings and chosen approach."
     send: false
-  - label: Create Pull Request
-    agent: PR Creator
+  - label: Commit and Create PR
+    agent: Committer
     prompt: "Create a PR with the spike findings documentation."
     send: false
 ---

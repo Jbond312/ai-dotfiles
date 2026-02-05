@@ -19,11 +19,11 @@ description: "MSSQL stored procedure development standards for banking applicati
 
 ### Must Flag as Important
 
-1. **SARGability violations** — Functions on columns in `WHERE` clauses preventing index seeks
+1. **SARGability violations** — Functions on columns in `WHERE` clauses preventing index seeks (e.g., `YEAR(col) = 2024` instead of range predicates)
 2. **Cursor usage** — Row-by-row processing where set-based operations are possible
 3. **Implicit conversions** — Parameter types not matching column types, causing scans
 4. **Missing `SET NOCOUNT ON`** — Unnecessary row count messages sent to client
-5. **`NOLOCK` on financial data** — Dirty reads on balance, payment, or transaction tables
+5. **`NOLOCK` on financial data** — Dirty reads on balance, payment, or transaction tables. `NOLOCK` must NEVER be used on financial balance calculations, payment processing, or regulatory reporting
 6. **Auto-named constraints** — Letting SQL Server generate constraint names
 
 ## Stored Procedure Template
@@ -86,16 +86,6 @@ END CATCH;
 ### Data Types for Financial Data
 
 ```sql
--- BAD: MONEY type loses precision in division/multiplication
-CREATE TABLE Banking.Transaction (
-    Amount MONEY NOT NULL
-);
-
--- BAD: FLOAT cannot exactly represent decimal values
-CREATE TABLE Banking.Transaction (
-    Amount FLOAT NOT NULL
-);
-
 -- GOOD: Explicit precision and scale
 CREATE TABLE Banking.Transaction (
     Amount          DECIMAL(19,4)   NOT NULL,  -- Currency amounts
@@ -115,29 +105,6 @@ CREATE TABLE Banking.Transaction (
 | Identifiers | `BIGINT` | For tables expected to grow |
 
 **Why not `MONEY`?** The `MONEY` type silently truncates beyond 4 decimal places during intermediate calculations. `MONEY / MONEY` produces integer division — a catastrophic financial bug.
-
-### Indexing Strategy
-
-```sql
--- GOOD: Covering index for a common query pattern
-CREATE NONCLUSTERED INDEX IX_Transaction_AccountId_Date
-ON Banking.Transaction (AccountId, TransactionDate DESC)
-INCLUDE (Amount, RunningBalance, TransactionType)
-WHERE IsVoided = 0;  -- Filtered index excludes voided transactions
-
--- BAD: Too-wide index that duplicates storage
-CREATE NONCLUSTERED INDEX IX_Transaction_Everything
-ON Banking.Transaction (AccountId, TransactionDate, Amount, Description,
-    RunningBalance, TransactionType, CreatedBy, ModifiedDate);
-```
-
-**Rules:**
-
-- Every table gets a clustered index on a narrow, unique, ever-increasing column (`BIGINT IDENTITY`)
-- Follow the ESS principle: **E**quality columns first, then **S**ort columns, then include columns for covering
-- Always index foreign key columns — SQL Server does NOT auto-index them
-- Use filtered indexes to exclude soft-deleted or voided records
-- Consider nonclustered columnstore indexes for analytical/reporting queries on OLTP tables
 
 ### Constraints
 
@@ -163,241 +130,6 @@ ON Banking.Transaction (AccountId);
 
 **Banking rule:** Never use `ON DELETE CASCADE` for financial data — audit requirements demand explicit handling.
 
-## Performance
-
-### SARGability
-
-Keep column references clean on one side of the operator. No functions, no arithmetic, no type conversions on the column.
-
-```sql
--- BAD: Function on column forces scan
-WHERE YEAR(TransactionDate) = 2024
-WHERE ISNULL(Status, 'PENDING') = 'PENDING'
-WHERE DATEDIFF(DAY, CreatedDate, GETDATE()) < 30
-WHERE CAST(AccountId AS VARCHAR) = '12345'
-WHERE Amount * 1.1 > 1000
-WHERE LEFT(AccountNumber, 3) = '100'
-WHERE LastName LIKE '%Smith'
-
--- GOOD: Column is clean, index seek possible
-WHERE TransactionDate >= '2024-01-01' AND TransactionDate < '2025-01-01'
-WHERE (Status = 'PENDING' OR Status IS NULL)
-WHERE CreatedDate > DATEADD(DAY, -30, GETDATE())
-WHERE AccountId = 12345
-WHERE Amount > 1000 - @Fee
-WHERE AccountNumber LIKE '100%'
-WHERE LastName LIKE 'Smith%'
-```
-
-**Common fix patterns:**
-
-| Non-SARGable | SARGable Fix |
-| --- | --- |
-| `YEAR(col) = 2024` | `col >= '2024-01-01' AND col < '2025-01-01'` |
-| `ISNULL(col, 'X') = 'X'` | `(col = 'X' OR col IS NULL)` |
-| `DATEDIFF(DAY, col, GETDATE()) < 30` | `col > DATEADD(DAY, -30, GETDATE())` |
-| `CONVERT(DATE, col) = '2024-06-15'` | `col >= '2024-06-15' AND col < '2024-06-16'` |
-
-### Parameter Sniffing
-
-SQL Server compiles a stored procedure's execution plan based on the parameter values of the FIRST execution. That plan is cached and reused. If data distribution is highly skewed, the cached plan may be terrible for typical calls.
-
-**Mitigation strategies, ranked by preference:**
-
-```sql
--- Strategy 1: OPTION (RECOMPILE) — best for infrequently called procs
--- or procs where parameters cause wildly different optimal plans
-SELECT TransactionId, AccountId, Amount, TransactionDate
-FROM Banking.Transaction
-WHERE (@AccountId IS NULL OR AccountId = @AccountId)
-  AND (@StartDate IS NULL OR TransactionDate >= @StartDate)
-OPTION (RECOMPILE);
-
--- Strategy 2: OPTIMIZE FOR UNKNOWN — uses average statistics
-SELECT * FROM Banking.Transaction
-WHERE AccountId = @AccountId
-OPTION (OPTIMIZE FOR (@AccountId UNKNOWN));
-
--- Strategy 3: Dynamic SQL with sp_executesql — avoids "kitchen sink" problem
-DECLARE @SQL NVARCHAR(MAX) = N'
-    SELECT TransactionId, AccountId, Amount
-    FROM Banking.Transaction WHERE 1 = 1';
-DECLARE @Params NVARCHAR(MAX) = N'
-    @AccountId BIGINT, @StartDate DATETIME2';
-
-IF @AccountId IS NOT NULL
-    SET @SQL += N' AND AccountId = @AccountId';
-IF @StartDate IS NOT NULL
-    SET @SQL += N' AND TransactionDate >= @StartDate';
-
-EXEC sp_executesql @SQL, @Params,
-    @AccountId = @AccountId, @StartDate = @StartDate;
-```
-
-### Set-Based vs Cursors
-
-```sql
--- BAD: Row-by-row interest calculation (cursor)
-DECLARE @AccountId BIGINT, @Balance DECIMAL(19,4);
-DECLARE account_cursor CURSOR FOR
-    SELECT AccountId, Balance FROM Banking.Account WHERE AccountType = 'SAVINGS';
-
-OPEN account_cursor;
-FETCH NEXT FROM account_cursor INTO @AccountId, @Balance;
-
-WHILE @@FETCH_STATUS = 0
-BEGIN
-    UPDATE Banking.Account
-    SET Balance = Balance + (Balance * 0.045 / 365)
-    WHERE AccountId = @AccountId;
-
-    FETCH NEXT FROM account_cursor INTO @AccountId, @Balance;
-END;
-CLOSE account_cursor;
-DEALLOCATE account_cursor;
-
--- GOOD: Set-based interest calculation (single pass, 10-100x faster)
-UPDATE A
-SET A.Balance = A.Balance + (A.Balance * 0.045 / 365),
-    A.ModifiedDate = SYSUTCDATETIME()
-FROM Banking.Account A
-WHERE A.AccountType = 'SAVINGS';
-```
-
-**When cursors are acceptable (rare):**
-
-- Calling stored procedures in a loop where each call depends on the previous result
-- Sending notifications for each row (external side effects)
-- Administrative tasks (rebuilding indexes per table)
-
-### Execution Plan Anti-Patterns
-
-**Key Lookups** — query returns columns not in the nonclustered index:
-
-```sql
--- BAD: Description not in index, causes key lookup per row
-SELECT TransactionId, AccountId, Amount, Description
-FROM Banking.Transaction
-WHERE AccountId = @AccountId;
-
--- GOOD: Covering index eliminates key lookups
-CREATE NONCLUSTERED INDEX IX_Transaction_AccountId
-ON Banking.Transaction (AccountId)
-INCLUDE (Amount, Description);
-```
-
-**Implicit Conversions** — parameter type doesn't match column type:
-
-```sql
--- BAD: If AccountNumber is VARCHAR(20) but @AcctNum is NVARCHAR,
--- SQL Server converts EVERY row's AccountNumber to NVARCHAR (scan!)
-DECLARE @AcctNum NVARCHAR(20) = N'1234567890';
-SELECT * FROM Banking.Account WHERE AccountNumber = @AcctNum;
-
--- GOOD: Match types exactly
-DECLARE @AcctNum VARCHAR(20) = '1234567890';
-SELECT * FROM Banking.Account WHERE AccountNumber = @AcctNum;
-```
-
-### Temp Tables vs Table Variables
-
-| Factor | Temp Tables (`#temp`) | Table Variables (`@table`) |
-| --- | --- | --- |
-| Statistics | Yes (auto-created) | No (optimizer assumes 1 row) |
-| Indexes | Full support | Primary key / unique only |
-| Parallelism | Full support | Limited |
-| Recompilation | Triggers recompile | No recompiles |
-| Scope | Session (visible in called procs) | Batch only |
-
-**Rule of thumb:**
-
-- **< ~100 rows, simple usage:** Table variable is fine
-- **> 100 rows, or joins/complex filtering:** Use temp table
-- **Need nonclustered indexes:** Use temp table
-
-### Isolation Levels for Banking
-
-| Isolation Level | Dirty Reads | Blocking | Banking Use Case |
-| --- | --- | --- | --- |
-| READ UNCOMMITTED | Yes | None | **Never for financial data** |
-| READ COMMITTED (default) | No | Readers block writers | Basic queries |
-| READ COMMITTED SNAPSHOT (RCSI) | No | No blocking | **Best default for banking OLTP** |
-| SNAPSHOT | No | No blocking | Reports, reconciliation |
-| SERIALIZABLE | No | Most locks | **Critical financial transfers** |
-
-**Recommended approach:**
-
-```sql
--- Database level: Enable RCSI as the default
-ALTER DATABASE BankingDB SET READ_COMMITTED_SNAPSHOT ON;
-
--- For critical transfers: escalate to SERIALIZABLE
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-```
-
-### NOLOCK Risks
-
-`NOLOCK` (`READ UNCOMMITTED`) can cause:
-
-- **Dirty reads** — Reading uncommitted data that later rolls back
-- **Phantom reads** — Rows appearing or disappearing mid-query
-- **Skipped/duplicate rows** — Due to page splits during scan
-
-**When NOLOCK is acceptable:** Rough row count estimates for monitoring dashboards, truly immutable append-only data.
-
-**When NOLOCK must NEVER be used:** Financial balance calculations, payment processing, regulatory reporting, any query whose results drive business decisions.
-
-## Security
-
-### Dynamic SQL Injection Prevention
-
-```sql
--- BAD: String concatenation — SQL injection vulnerability
-DECLARE @SQL NVARCHAR(MAX) = N'
-    SELECT * FROM Banking.Account
-    WHERE AccountNumber = ''' + @InputAcctNum + N'''';
-EXEC(@SQL);
-
--- GOOD: Parameterised with sp_executesql
-DECLARE @SQL NVARCHAR(MAX) = N'
-    SELECT * FROM Banking.Account
-    WHERE AccountNumber = @AcctNum';
-EXEC sp_executesql @SQL,
-    N'@AcctNum VARCHAR(20)',
-    @AcctNum = @InputAcctNum;
-
--- GOOD: Dynamic identifiers use QUOTENAME + whitelist validation
-IF @TableName NOT IN ('Account', 'Transaction', 'Payment')
-    THROW 50100, 'Invalid table name.', 1;
-
-DECLARE @SQL NVARCHAR(MAX) = N'SELECT * FROM ' + QUOTENAME(@TableName);
-```
-
-**Rules:**
-
-1. Always use `sp_executesql` with typed parameters for values
-2. Use `QUOTENAME()` for any dynamic identifiers (table names, column names)
-3. Whitelist-validate dynamic identifiers against a known-good list
-4. Never concatenate user input directly into SQL strings
-
-### Principle of Least Privilege
-
-```sql
--- Grant EXECUTE only on specific procedures (never direct table access)
-CREATE ROLE BankingAppRole;
-GRANT EXECUTE ON Banking.usp_TransferFunds TO BankingAppRole;
-DENY SELECT, INSERT, UPDATE, DELETE ON SCHEMA::Banking TO BankingAppRole;
-```
-
-Stored procedures act as an API layer. The application user cannot directly manipulate tables.
-
-### Sensitive Data Handling
-
-- Use Always Encrypted for the most sensitive PII (SSN, account numbers)
-- Use Dynamic Data Masking for casual protection (names, emails)
-- Classify columns containing PII using SQL Server's Data Classification
-- Never log sensitive data in error messages or audit tables without masking
-
 ## Banking Domain
 
 ### Financial Precision
@@ -421,24 +153,6 @@ Use Banker's rounding (round half to even) for financial calculations. Document 
 ### Idempotency Pattern
 
 ```sql
--- BAD: No idempotency — duplicate requests create duplicate payments
-CREATE PROCEDURE Banking.usp_ProcessPayment
-    @FromAccountId BIGINT,
-    @ToAccountId   BIGINT,
-    @Amount        DECIMAL(19,4)
-AS
-SET XACT_ABORT, NOCOUNT ON;
-BEGIN TRY
-    BEGIN TRANSACTION;
-        UPDATE Banking.Account SET Balance = Balance - @Amount WHERE AccountId = @FromAccountId;
-        UPDATE Banking.Account SET Balance = Balance + @Amount WHERE AccountId = @ToAccountId;
-    COMMIT TRANSACTION;
-END TRY
-BEGIN CATCH
-    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
-    THROW;
-END CATCH;
-
 -- GOOD: Idempotency key prevents duplicate processing
 CREATE PROCEDURE Banking.usp_ProcessPayment
     @IdempotencyKey UNIQUEIDENTIFIER,

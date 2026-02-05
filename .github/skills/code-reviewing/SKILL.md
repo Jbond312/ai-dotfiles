@@ -274,7 +274,7 @@ If **Approved:**
 
 If **Changes Requested:**
 
-- Return to `tdd-coder`, `one-shot-coder`, or `bug-fix-coder` with specific issues (based on `Workflow:` field in PLAN.md)
+- Return to `coder` with specific issues
 - Re-review after changes are made
 
 If **External Dependencies Flagged:**

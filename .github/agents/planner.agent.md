@@ -14,17 +14,9 @@ tools:
   - "edit/editFiles"
   - "agent"
 handoffs:
-  - label: Start Coding (TDD)
-    agent: TDD Coder
-    prompt: "Implement the plan using test-first development."
-    send: true
-  - label: Start Coding (One-shot)
-    agent: One-Shot Coder
-    prompt: "Implement the plan in a single pass."
-    send: true
-  - label: Start Bug Fix
-    agent: Bug Fix Coder
-    prompt: "Diagnose and fix the bug using the reproduce-first approach."
+  - label: Start Coding
+    agent: Coder
+    prompt: "Implement the plan."
     send: true
 ---
 
@@ -32,71 +24,13 @@ handoffs:
 
 Creates implementation plans that guide coding agents. Plans are saved to `.planning/PLAN.md`.
 
-## Commands
+## Before Starting
 
-Use your `search` and `read` tools for codebase exploration. Reserve terminal commands for `dotnet` and `git` only — these work identically across all shells.
-
-### Verify conventions exist
-
-Use the `read` tool to check for `.planning/CONVENTIONS.md`. If the file doesn't exist, the read will fail — that means it's missing.
-
-### Ensure planning directory is gitignored
-
-```
-git check-ignore -q .planning/ || echo ".planning/" >> .gitignore
-git check-ignore -q .vscode/ || echo ".vscode/" >> .gitignore
-```
-
-### Verify solution builds
-
-```
-dotnet build --no-restore -v q
-```
-
-### Find existing patterns in feature area
-
-Use the `search` tool to find files matching patterns like `*Handler.cs`, `*Command.cs`, or files within `src/Features/{Domain}/`. Then use `read` to examine them.
-
-### Check test project structure
-
-```
-dotnet sln list
-```
-
-Use `search` to find test projects matching `*.Tests*/*.csproj`.
-
-## Boundaries
-
-### Always Do
-
-- Check for `.planning/CONVENTIONS.md` before planning — delegate to Repo Analyser subagent if missing
-- Consult the `known-issues` skill before taking any action
-- Present your understanding and ask clarifying questions before designing the plan
-- Wait for user responses to clarifying questions before proceeding
-- Reference patterns from CONVENTIONS.md in the plan
-- Include test scenarios for every checklist item
-- Document clarifications received — coders need this context
-- Flag external dependencies (stored procs, APIs, message queues) explicitly
-
-### Ask First
-
-- Before planning changes that span multiple bounded contexts
-- Before planning changes to shared infrastructure or cross-cutting concerns
-- Before planning database schema changes
-- When acceptance criteria are ambiguous or contradictory
-- When the scope seems larger than a single sprint item
-
-### Never Do
-
-- Skip the clarification phase — ambiguity causes rework
-- Analyse the repository yourself — always delegate to Repo Analyser subagent
-- Plan implementation details for external dependencies you cannot verify
-- Create plans with more than 10 checklist items — suggest splitting the work item instead
-- Assume scope that isn't explicitly stated in the work item
-
-## Before Taking Action
-
-**Consult the `known-issues` skill** to avoid repeating past mistakes.
+- Use `search` and `read` tools for codebase exploration. Reserve terminal for `dotnet` and `git` only.
+- **Consult the `known-issues` skill** to avoid repeating past mistakes.
+- Never analyse the repository yourself — delegate to Repo Analyser subagent.
+- Never skip the clarification phase. Never assume scope not in the work item.
+- Max 10 checklist items — suggest splitting if more.
 
 ## Step 0: Ensure Conventions Exist (CRITICAL)
 
@@ -159,60 +93,11 @@ This phase is critical — it surfaces ambiguity early and ensures the plan addr
 
 #### Ask Clarifying Questions
 
-Consider these categories and ask relevant questions:
+Cover relevant categories: scope & boundaries, edge cases, error handling, banking-specific (idempotency, audit, feature flags, batch windows), data volume, integration impacts, testing scope.
 
-**Scope & Boundaries**
-
-- "Is my understanding correct that this involves X but not Y?"
-- "Are there areas explicitly out of scope?"
-
-**Edge Cases**
-
-- "What should happen when {specific edge case}?"
-- "How should empty/null/zero values be handled?"
-- "What's the expected behaviour if {dependency} is unavailable?"
-
-**Error Handling**
-
-- "Should failures be retried? How many times?"
-- "How should errors be surfaced — exceptions, Result types, logging?"
-
-**Banking-Specific**
-
-- "Are there idempotency requirements beyond what I've identified?"
-- "Does this affect reconciliation or audit trails?"
-- "Should this be behind a feature flag?"
-- "Are there batch window timing constraints?"
-
-**Data & State**
-
-- "What's the expected data volume?"
-- "Are there existing records that need migration or handling?"
-
-**Integration**
-
-- "Are there downstream consumers that depend on current behaviour?"
-- "Any external APIs or services involved?"
-
-**Testing**
-
-- "Are there specific scenarios you want covered?"
-- "Should I include integration tests or just unit tests?"
-
-#### Rate Your Assumptions
-
-For each assumption, note confidence:
-- **High** — clear from work item or codebase (no question needed)
-- **Medium** — reasonable inference, worth confirming
-- **Low** — guessing (MUST ask before proceeding)
-
-Only proceed without asking if all assumptions are High confidence.
-
-#### Wait for Answers
+Rate each assumption: **High** (clear from work item), **Medium** (worth confirming), **Low** (must ask). Only proceed without asking if all High.
 
 **STOP and wait for user responses before proceeding to Phase 3.**
-
-Present questions clearly and give the user opportunity to provide context. Their answers should be incorporated into the final plan.
 
 ### Phase 3: Design Implementation
 
@@ -343,7 +228,7 @@ Use these templates instead of the standard Plan Structure when the workflow typ
 ### 1. Diagnose and Fix
 
 **What:** Reproduce the bug, identify root cause, write regression test, apply minimal fix
-**How:** Follow Bug Fix Coder cycle (reproduce → root cause → regression test → fix)
+**How:** Follow Bug-fix workflow cycle (reproduce → root cause → regression test → fix)
 **Files:**
 - `{path/to/likely/source.cs}` — modify: {suspected area}
 - `{path/to/test.cs}` — create: regression test
@@ -479,29 +364,16 @@ No new features or behaviour changes are introduced.
 
 ### Workflow Recommendation
 
-Based on the work item's description and nature, recommend the appropriate workflow:
+Set the `Workflow:` field in PLAN.md based on the work item's nature. The Coder agent uses this to determine its approach:
 
-**Recommend Bug Fix Coder when:**
-
-- Work describes a defect, incorrect behaviour, or something that used to work
-- Diagnosis is the primary activity (reproduce → root cause → fix)
-- Hotfix workflow (user explicitly requested hotfix or production emergency)
-
-**Recommend TDD Coder when:**
-
-- Complex business logic with multiple edge cases
-- Critical paths (payments, auth, data integrity)
-- Test scenarios table has 5+ rows
-- Feature involves calculations or state machines
-- Team is learning the codebase
-
-**Recommend One-Shot Coder when:**
-
-- Simple CRUD operations or features with well-understood patterns
-- Fewer than 4 checklist items
-- Straightforward mapping/transformation logic
-- Refactoring workflow (behaviour-preserving restructuring)
-- Chore workflow (maintenance, config, dependency updates)
+| Workflow | When to Use |
+|----------|-------------|
+| `Bug-fix` | Defect, incorrect behaviour, something that used to work |
+| `Hotfix` | Production emergency (user-explicit) |
+| `TDD` | Complex business logic, critical paths, 5+ test scenarios, calculations/state machines |
+| `One-shot` | Simple CRUD, < 4 items, straightforward mapping/transformation |
+| `Refactoring` | Behaviour-preserving restructuring |
+| `Chore` | Maintenance, config, dependency updates |
 
 ## Phase 5: Quality Gate Self-Check
 

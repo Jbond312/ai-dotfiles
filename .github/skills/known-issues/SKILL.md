@@ -27,82 +27,30 @@ When you encounter a new mistake that isn't listed here, **add it** to the appro
 
 ## Coding & Implementation
 
-<!-- Add entries as they are discovered -->
-<!-- Example:
-| #   | Mistake | Correct Behaviour |
-| --- | ------- | ----------------- |
-| 3   | Used DateTime.Now in handler | Inject IDateTimeProvider or TimeProvider |
--->
-
-No issues recorded yet.
+<!-- | # | Mistake | Correct Behaviour | -->
 
 ## Testing
 
-<!-- Add entries as they are discovered -->
-<!-- Example:
-| #   | Mistake | Correct Behaviour |
-| --- | ------- | ----------------- |
-| 4   | Tests passed with Total: 0 | Verify test discovery before trusting results |
--->
-
-No issues recorded yet.
+<!-- | # | Mistake | Correct Behaviour | -->
 
 ## Code Review
 
-<!-- Add entries as they are discovered -->
-
-No issues recorded yet.
-
-## PR Review
-
-<!-- Add entries as they are discovered -->
-
-No issues recorded yet.
-
-## SQL & Stored Procedures
-
-<!-- Add entries as they are discovered -->
-<!-- Example:
-| #   | Mistake | Correct Behaviour |
-| --- | ------- | ----------------- |
-| 8   | Used MONEY type for financial calculations | Use DECIMAL(19,4) for all monetary values |
--->
-
-No issues recorded yet.
-
-## tSQLt Testing
-
-<!-- Add entries as they are discovered -->
-<!-- Example:
-| #   | Mistake | Correct Behaviour |
-| --- | ------- | ----------------- |
-| 9   | FakeTable without @Identity when proc uses SCOPE_IDENTITY() | Use @Identity = 1 when the proc relies on SCOPE_IDENTITY() |
--->
-
-No issues recorded yet.
+<!-- | # | Mistake | Correct Behaviour | -->
 
 ## Git & Commits
 
-<!-- Add entries as they are discovered -->
+<!-- | # | Mistake | Correct Behaviour | -->
 
-No issues recorded yet.
+## SQL & Stored Procedures
 
-## Pre-Action Checklist
-
-Before executing any action, scan the relevant section above:
-
-1. Am I using only documented script arguments?
-2. Am I using scripts (not MCP) for team-filtered queries?
-3. Are the required environment variables configured?
-4. Does my planned action match any known mistake above?
-5. Am I formatting conventional comments correctly (label, decoration, subject)?
+<!-- | # | Mistake | Correct Behaviour | -->
 
 ## Adding New Issues
 
-When you discover a repeating mistake, add it to the appropriate section using this format:
+Add to the appropriate section using this format:
 
 ```markdown
 | # | {What went wrong} | {What should happen instead} |
 ```
 
-Use the next available number. Include enough context that a future agent can recognise the same situation.
+Use the next available number (currently 3).

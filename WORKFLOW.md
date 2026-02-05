@@ -14,14 +14,7 @@ flowchart TD
     WIP --> Plan[Planner]
     Plan -->|Subagent if needed| RA2[Repo Analyser]
     RA2 --> Plan
-    Plan -->|Quality Gate| Coder
-
-    subgraph Coder[Coding Phase]
-        direction TB
-        TDD[TDD Coder]
-        OneShot[One-Shot Coder]
-        BugFix[Bug Fix Coder]
-    end
+    Plan -->|Quality Gate| Coder[Coder]
 
     Coder -->|Per-item cycle| Review1[Reviewer]
     Review1 -->|Approved| Commit1[Committer]
@@ -32,8 +25,7 @@ flowchart TD
     Coder -->|Quality Gate| Review2[Reviewer - Final]
     Review2 -->|Quality Gate| Commit2[Committer - Final]
     Review2 -->|Changes requested| Coder
-    Commit2 --> PR[PR Creator]
-    PR --> Done([PR Created])
+    Commit2 -->|Create PR| Done([PR Created])
 
     Coder -->|Build/test failure| Debug[Debug]
     Debug --> Coder
@@ -259,13 +251,13 @@ Ready to plan implementation.
 
 **Skills consulted:** `known-issues`, `quality-gates`
 
-**Handoff:** Developer confirms TDD → TDD Coder (`send: true`)
+**Handoff:** Developer confirms TDD → Coder (`send: true`)
 
 ---
 
-### Phase 4: TDD Coder
+### Phase 4: Coder (TDD Workflow)
 
-The TDD Coder works through each checklist item in a cycle: test → implement → review → commit → next.
+The Coder (in TDD mode) works through each checklist item in a cycle: test → implement → review → commit → next.
 
 **Before starting:**
 - Reads `.planning/CONVENTIONS.md` — confirms architecture and patterns
@@ -324,7 +316,7 @@ Verdict: **Approved**. Hands off to Committer.
    **Status:** Ready for implementation
    ```
 
-Hands off → TDD Coder for next item.
+Hands off → Coder for next item.
 
 > **Observation:** Per-item TDD reviews don't run the Implementation Verifier subagent — only the final item does. This is by design (verifier checks full plan completeness, which doesn't make sense for intermediate items).
 
@@ -461,11 +453,13 @@ None detected.
 
 **Skills consulted:** `known-issues`, `git-committing`
 
-**Handoff:** Create Pull Request → PR Creator (`send: true`)
+**Handoff:** Create Pull Request (Committer proceeds to PR creation)
 
 ---
 
-### Phase 7: PR Creator
+### Phase 7: Committer (PR Creation)
+
+The Committer now handles PR creation as Part 3 of its workflow.
 
 **What the agent does:**
 
@@ -508,12 +502,12 @@ Work item #4521 moved to Awaiting Merge.
 
 ## Alternate Paths
 
-### One-Shot Coder (Differences from TDD)
+### One-Shot Workflow (Differences from TDD)
 
-When the Planner recommends One-Shot (simple CRUD, well-understood patterns, < 4 items):
+When the Planner sets `Workflow: One-shot` (simple CRUD, well-understood patterns, < 4 items):
 
-| Aspect | TDD Coder | One-Shot Coder |
-|--------|-----------|----------------|
+| Aspect | TDD Workflow | One-shot Workflow |
+|--------|-------------|-------------------|
 | Implementation | One item at a time | All items in a single pass |
 | Reviews | Per-item review cycle | Single review after all items |
 | Commits | Per-item commits | Single commit for everything |
@@ -521,7 +515,7 @@ When the Planner recommends One-Shot (simple CRUD, well-understood patterns, < 4
 | Items checked off | During each item | As each is completed |
 | Best for | Complex logic, critical paths | Simple CRUD, small changes |
 
-The One-Shot Coder skips the per-item review/commit loop. It implements everything, runs the Implementation Verifier, then hands off for one review and one commit.
+The One-shot workflow skips the per-item review/commit loop. It implements everything, runs the Implementation Verifier, then hands off for one review and one commit.
 
 ### Spike (Investigation Flow)
 
@@ -530,7 +524,7 @@ When the work item type is `Spike`, the flow diverges at Work Item Pickup:
 ```
 Orchestrator → Work Item Pickup → Spike → [User Decision]
                                             ├── Convert to Plan → Planner → Coder → ...
-                                            ├── Create PR with findings → PR Creator
+                                            ├── Create PR with findings → Committer
                                             └── Return to Orchestrator
 ```
 
@@ -545,7 +539,7 @@ If the developer chooses to implement, the Spike hands off to the Planner, which
 
 ### Debug (Failure Recovery)
 
-When the TDD Coder or One-Shot Coder hits a build failure or test failure they can't resolve:
+When the Coder hits a build failure or test failure it can't resolve:
 
 ```
 Coder → Debug → [Resolution]
@@ -573,21 +567,21 @@ When the Reviewer finds issues:
 Reviewer → Coder (with feedback) → [Fixes applied] → Reviewer → Committer
 ```
 
-The Reviewer hands back to the appropriate coder (TDD or One-Shot) with specific issues listed. The coder addresses the feedback, re-runs tests, and hands back for re-review.
+The Reviewer hands back to the Coder with specific issues listed. The Coder addresses the feedback, re-runs tests, and hands back for re-review.
 
-The handoff back to the coder uses `send: false` — the developer must confirm, since they may want to address the feedback themselves.
+The handoff back to the Coder uses `send: false` — the developer must confirm, since they may want to address the feedback themselves.
 
-> **Observation:** When the Committer's pre-commit checks find issues (debug code, TODOs, secrets), it hands back to the Coder to fix, then the Coder returns to Committer. This skip re-review is by design — pre-commit fixes are trivially small (removing a `Console.WriteLine`, etc.).
+> **Observation:** When the Committer's pre-commit checks find issues (debug code, TODOs, secrets), it hands back to the Coder to fix, then the Coder returns to Committer. This skips re-review by design — pre-commit fixes are trivially small (removing a `Console.WriteLine`, etc.).
 
 ### Bug Fix Flow
 
 When the Planner determines the work item describes a defect (incorrect behaviour, something broken):
 
 ```
-Orchestrator → Work Item Pickup → Planner (Bug Diagnosis plan) → Bug Fix Coder → Reviewer → Committer → PR Creator
+Orchestrator → Work Item Pickup → Planner (Bug Diagnosis plan) → Coder (Bug-fix) → Reviewer → Committer (commit + PR)
 ```
 
-The Bug Fix Coder follows a diagnosis-first cycle:
+The Coder (in Bug-fix mode) follows a diagnosis-first cycle:
 1. **Verify baseline** — build and tests pass before any changes
 2. **Reproduce the bug** — follow reproduction steps, confirm the defect exists
 3. **Root cause analysis** — trace code, identify the defect, log in Decision Log
@@ -607,12 +601,12 @@ Key differences from TDD/One-Shot:
 When the Planner determines the work item is behaviour-preserving restructuring:
 
 ```
-Orchestrator → Work Item Pickup → Planner (Refactoring plan) → One-Shot Coder → Reviewer → Committer → PR Creator
+Orchestrator → Work Item Pickup → Planner (Refactoring plan) → Coder (One-shot) → Reviewer → Committer (commit + PR)
 ```
 
 Key differences:
 - Plan includes "behaviour-preserving" statement and `Safety check:` instead of `Tests:` per item
-- One-Shot Coder implements all refactoring steps in a single pass
+- Coder (one-shot workflow) implements all refactoring steps in a single pass
 - Reviewer uses "Behaviour preservation" review mode — flags as Critical if observable behaviour changed
 - Implementation Verifier checks no new tests were added and no assertions were modified
 - No new tests expected — existing tests serve as the safety net
@@ -622,7 +616,7 @@ Key differences:
 When the Planner determines the work item is maintenance (dependency bump, config change, CI update):
 
 ```
-Orchestrator → Work Item Pickup → Planner (Chore plan) → One-Shot Coder → Reviewer → Committer → PR Creator
+Orchestrator → Work Item Pickup → Planner (Chore plan) → Coder (One-shot) → Reviewer → Committer (commit + PR)
 ```
 
 Key differences:
@@ -638,14 +632,14 @@ Key differences:
 When the user explicitly requests a hotfix (production emergency):
 
 ```
-Orchestrator → Work Item Pickup (hotfix/ branch) → Planner (Hotfix plan) → Bug Fix Coder → Reviewer → Committer → PR Creator (non-draft PR)
+Orchestrator → Work Item Pickup (hotfix/ branch) → Planner (Hotfix plan) → Coder (Bug-fix) → Reviewer → Committer (commit + non-draft PR)
 ```
 
 Key differences:
 - Branch uses `hotfix/{id}-{description}` prefix instead of `backlog/`
-- Same diagnosis cycle as Bug-fix — Bug Fix Coder handles both workflows
+- Same diagnosis cycle as Bug-fix — Coder handles both workflows
 - Reviewer uses "Expedited" review mode — security + regression test only, skip style suggestions
-- PR Creator creates non-draft PR with `[HOTFIX]` title prefix and urgency-focused description
+- Committer creates non-draft PR with `[HOTFIX]` title prefix and urgency-focused description
 - Hotfix is **never auto-detected** — always user-explicit ("this is a hotfix", "production emergency")
 
 ### Context Loss Recovery
@@ -660,7 +654,7 @@ The Orchestrator is **stateless** — it derives all decisions from file state a
 
 - PLAN.md exists with `Status: In progress` → routes to Coder
 - PLAN.md exists with `Status: Ready for review` → routes to Reviewer
-- PLAN.md exists with `Status: Ready for PR` → routes to PR Creator
+- PLAN.md exists with `Status: Ready for PR` → routes to Committer
 - Uncommitted changes exist → asks user whether to continue coding or commit
 - SPIKE-FINDINGS.md exists → offers convert to plan or create PR
 
@@ -677,12 +671,12 @@ Which skills are consulted, when, and by whom.
 | `known-issues` | All agents | Before taking any action (pre-action check) |
 | `azure-devops-api` | Orchestrator | Querying sprint work items and team PRs |
 | `azure-devops-workflow` | Work Item Pickup | State transitions, branch naming (incl. hotfix), predecessor validation |
-| `csharp-coding` | Coders (TDD, One-Shot, Bug Fix) | Writing production code |
-| `dotnet-testing` | Coders (TDD, One-Shot, Bug Fix) | Writing tests, TDD workflow |
+| `csharp-coding` | Coder | Writing production code |
+| `dotnet-testing` | Coder | Writing tests, TDD workflow |
 | `code-reviewing` | Reviewer | Review checklist, workflow-specific review focus, report format |
 | `security-review` | Reviewer | Security checklist (injection, auth, data exposure, financial integrity) |
 | `git-committing` | Committer | Commit message format, workflow-aware type selection |
-| `quality-gates` | Planner, Coders, Reviewer | Self-check criteria at each handoff point (workflow-adjusted) |
+| `quality-gates` | Planner, Coder, Reviewer | Self-check criteria at each handoff point (workflow-adjusted) |
 | `repo-analyser` | Repo Analyser agent | Reference documentation for convention discovery |
 
 ---
@@ -693,13 +687,13 @@ What files are created, read, or updated throughout the workflow.
 
 | File | Created By | Read By | Updated By | Purpose |
 |------|-----------|---------|------------|---------|
-| `.planning/CONVENTIONS.md` | Repo Analyser (subagent) | Planner, Coders, Reviewer, Impl. Verifier | — | Repository conventions and patterns |
-| `.planning/PLAN.md` | Planner | Coders, Reviewer, Committer, Impl. Verifier, PR Creator | Coders (check off items), Committer (WIP status) | Implementation plan and progress tracker |
+| `.planning/CONVENTIONS.md` | Repo Analyser (subagent) | Planner, Coder, Reviewer, Impl. Verifier | — | Repository conventions and patterns |
+| `.planning/PLAN.md` | Planner | Coder, Reviewer, Committer, Impl. Verifier | Coder (check off items), Committer (WIP status) | Implementation plan and progress tracker |
 | `.planning/SPIKE-FINDINGS.md` | Spike | Orchestrator, Planner | — | Spike investigation results |
 | `.github/skills/known-issues/SKILL.md` | Initial setup | All agents | Orchestrator, Committer (retrospective entries) | Accumulated gotchas and lessons learned |
 | `.gitignore` | Work Item Pickup | — | Work Item Pickup (adds `.planning/`, `.vscode/`) | Prevents committing local files |
-| Production `.cs` files | Coders | Reviewer, Impl. Verifier | Debug (fixes) | Feature implementation |
-| Test `.cs` files | Coders | Reviewer, Impl. Verifier | Debug (fixes) | Test implementation |
+| Production `.cs` files | Coder | Reviewer, Impl. Verifier | Debug (fixes) | Feature implementation |
+| Test `.cs` files | Coder | Reviewer, Impl. Verifier | Debug (fixes) | Test implementation |
 
 ---
 

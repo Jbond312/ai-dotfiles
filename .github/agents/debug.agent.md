@@ -13,17 +13,9 @@ handoffs:
     agent: Orchestrator
     prompt: "Issue resolved. Determine the correct agent to resume."
     send: true
-  - label: Resume Coding (TDD)
-    agent: TDD Coder
+  - label: Resume Coding
+    agent: Coder
     prompt: "Issue resolved. Resume implementing the plan."
-    send: false
-  - label: Resume Coding (One-Shot)
-    agent: One-Shot Coder
-    prompt: "Issue resolved. Resume implementing the plan."
-    send: false
-  - label: Resume Coding (Bug Fix)
-    agent: Bug Fix Coder
-    prompt: "Issue resolved. Resume diagnosing and fixing the bug."
     send: false
   - label: Review Fix
     agent: Reviewer

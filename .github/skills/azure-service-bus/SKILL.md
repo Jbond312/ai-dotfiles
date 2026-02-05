@@ -68,51 +68,6 @@ public class PaymentEventPublisher
 }
 ```
 
-### Batch Sending
-
-```csharp
-// Send multiple messages efficiently
-public async Task PublishBatch(
-    IReadOnlyList<PaymentCreatedEvent> events,
-    string correlationId,
-    CancellationToken ct)
-{
-    using var batch = await _sender.CreateMessageBatchAsync(ct);
-
-    foreach (var @event in events)
-    {
-        var message = new ServiceBusMessage(JsonSerializer.SerializeToUtf8Bytes(@event))
-        {
-            MessageId = @event.IdempotencyKey.ToString(),
-            CorrelationId = correlationId,
-            ContentType = "application/json",
-            Subject = nameof(PaymentCreatedEvent)
-        };
-
-        if (!batch.TryAddMessage(message))
-            throw new InvalidOperationException($"Message too large for batch: {@event.IdempotencyKey}");
-    }
-
-    await _sender.SendMessagesAsync(batch, ct);
-}
-```
-
-### Scheduled Messages
-
-```csharp
-// Schedule a message for future delivery (e.g., payment reminders)
-var message = new ServiceBusMessage(JsonSerializer.SerializeToUtf8Bytes(reminder))
-{
-    MessageId = Guid.NewGuid().ToString(),
-    CorrelationId = correlationId
-};
-
-var sequenceNumber = await _sender.ScheduleMessageAsync(
-    message,
-    scheduledEnqueueTime: DateTimeOffset.UtcNow.AddHours(24),
-    cancellationToken: ct);
-```
-
 ## Processing Messages
 
 ### ServiceBusProcessor (Hosted Service)
@@ -209,100 +164,6 @@ public class PaymentEventProcessor : BackgroundService
 | Permanent failure (invalid payload, business rule) | `DeadLetterMessageAsync` | Move to DLQ with reason |
 | Duplicate (idempotency check passes) | `CompleteMessageAsync` | Already processed, safe to remove |
 
-## Retry and Error Handling
-
-### SDK Retry Policy
-
-```csharp
-var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
-{
-    RetryOptions = new ServiceBusRetryOptions
-    {
-        Mode = ServiceBusRetryMode.Exponential,
-        MaxRetries = 3,
-        Delay = TimeSpan.FromSeconds(1),
-        MaxDelay = TimeSpan.FromSeconds(30)
-    }
-});
-```
-
-### Transient vs Permanent Failures
-
-```csharp
-// Classify errors for correct handling — consult error-handling skill for patterns
-private async Task HandleMessageAsync(ProcessMessageEventArgs args)
-{
-    try
-    {
-        await ProcessAsync(args);
-        await args.CompleteMessageAsync(args.Message);
-    }
-    catch (Exception ex) when (IsTransient(ex))
-    {
-        // Let Service Bus retry (abandon returns message to queue)
-        await args.AbandonMessageAsync(args.Message);
-    }
-    catch (Exception ex) when (IsPermanent(ex))
-    {
-        // No point retrying — dead-letter with reason
-        await args.DeadLetterMessageAsync(args.Message, ex.GetType().Name, ex.Message);
-    }
-}
-
-private static bool IsTransient(Exception ex) =>
-    ex is SqlException { Number: 1205 } // Deadlock
-    or TimeoutException
-    or HttpRequestException;
-
-private static bool IsPermanent(Exception ex) =>
-    ex is JsonException
-    or ArgumentException
-    or InvalidOperationException;
-```
-
-### MaxDeliveryCount
-
-Configure at the queue/subscription level (typically 5-10). After this many failed deliveries, the message moves to the dead-letter queue automatically.
-
-## Dead-Letter Handling
-
-### DLQ Reader Pattern
-
-```csharp
-public class DeadLetterProcessor : BackgroundService
-{
-    private readonly ServiceBusReceiver _dlqReceiver;
-    private readonly ILogger<DeadLetterProcessor> _logger;
-
-    public DeadLetterProcessor(ServiceBusClient client, ILogger<DeadLetterProcessor> logger)
-    {
-        _dlqReceiver = client.CreateReceiver("payment-events",
-            new ServiceBusReceiverOptions { SubQueue = SubQueue.DeadLetter });
-        _logger = logger;
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            var message = await _dlqReceiver.ReceiveMessageAsync(
-                TimeSpan.FromSeconds(30), stoppingToken);
-
-            if (message is null) continue;
-
-            _logger.LogWarning(
-                "DLQ message: Id={MessageId}, Reason={DeadLetterReason}, Error={DeadLetterErrorDescription}",
-                message.MessageId,
-                message.DeadLetterReason,
-                message.DeadLetterErrorDescription);
-
-            // Alert, store for investigation, or attempt reprocessing
-            await _dlqReceiver.CompleteMessageAsync(message, stoppingToken);
-        }
-    }
-}
-```
-
 ## Sessions for Ordered Processing
 
 Use sessions when messages for the same entity must be processed in order (e.g., account transactions).
@@ -347,54 +208,6 @@ public record PaymentCreatedPayload
     public required long DestinationAccountId { get; init; }
     public required decimal Amount { get; init; }
     public required string Currency { get; init; }
-}
-```
-
-### Versioning
-
-- Include version in `ApplicationProperties` and/or event body
-- Support reading previous versions (backward compatible deserialization)
-- Never remove required fields — add new optional fields instead
-
-### Claim Check Pattern
-
-For messages exceeding the 256 KB limit, store the payload in Blob Storage and send a reference.
-
-```csharp
-// Send claim check reference instead of large payload
-var blobUri = await _blobStorage.UploadAsync(largePayload, ct);
-var message = new ServiceBusMessage(JsonSerializer.SerializeToUtf8Bytes(new { ClaimCheckUri = blobUri }))
-{
-    ApplicationProperties = { ["Pattern"] = "ClaimCheck" }
-};
-```
-
-## Health Checks
-
-```csharp
-// Use ServiceBusAdministrationClient for health checks
-builder.Services.AddHealthChecks()
-    .AddAzureServiceBusQueue(
-        connectionString,
-        "payment-events",
-        name: "servicebus-payment-events");
-
-// Custom health check for DLQ depth monitoring
-public class ServiceBusDlqHealthCheck : IHealthCheck
-{
-    private readonly ServiceBusAdministrationClient _admin;
-    private const int DlqThreshold = 100;
-
-    public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context, CancellationToken ct)
-    {
-        var props = await _admin.GetQueueRuntimePropertiesAsync("payment-events", ct);
-        var dlqCount = props.Value.DeadLetterMessageCount;
-
-        return dlqCount > DlqThreshold
-            ? HealthCheckResult.Degraded($"DLQ depth: {dlqCount}")
-            : HealthCheckResult.Healthy($"DLQ depth: {dlqCount}");
-    }
 }
 ```
 

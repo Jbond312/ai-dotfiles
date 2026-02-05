@@ -11,16 +11,8 @@ handoffs:
     agent: Committer
     prompt: "Code review passed. Commit the changes."
     send: true
-  - label: Request Changes (TDD)
-    agent: TDD Coder
-    prompt: "Please address the review feedback."
-    send: false
-  - label: Request Changes (One-Shot)
-    agent: One-Shot Coder
-    prompt: "Please address the review feedback."
-    send: false
-  - label: Request Changes (Bug Fix)
-    agent: Bug Fix Coder
+  - label: Request Changes
+    agent: Coder
     prompt: "Please address the review feedback."
     send: false
 ---
@@ -64,17 +56,9 @@ Read the `Workflow:` field from PLAN.md. Apply the workflow-specific review focu
 
 ### 2. Review Changed Files
 
-Check against these skill checklists:
+Consult the `code-reviewing` and `security-review` skill checklists for all changes. Additionally, consult domain-specific skill checklists based on what changed: `mssql-stored-procedures`, `tsqlt-testing`, `api-design`, `error-handling`, `dapper-data-access`, `azure-service-bus`, `aspnet-middleware`.
 
-1. **`code-reviewing` skill checklist** — correctness, tests, patterns, banking domain, external dependencies
-2. **`security-review` skill checklist** — injection, auth, data exposure, input validation, financial integrity
-3. **`mssql-stored-procedures` skill checklist** — for any `.sql` file changes
-4. **`tsqlt-testing` skill checklist** — for any tSQLt test changes
-5. **`api-design` skill checklist** — for API endpoint changes (controllers, minimal APIs, route definitions)
-6. **`error-handling` skill checklist** — for error handling changes (try/catch, Result types, exception middleware)
-7. **`dapper-data-access` skill checklist** — for data access changes (Dapper queries, repository methods, SQL calls)
-8. **`azure-service-bus` skill checklist** — for messaging changes (producers, consumers, message contracts)
-9. **`aspnet-middleware` skill checklist** — for middleware changes (pipeline configuration, custom middleware, health checks)
+Verify the implementation follows patterns in CONVENTIONS.md — correct layer placement, dependency direction, and file organisation.
 
 ### 3. Verify Build and Tests
 
@@ -94,19 +78,7 @@ Use `-v q` (quiet) to minimise context usage — errors and failures still appea
 
 **Both must pass. This is a hard blocker — do not approve if either fails, regardless of whether the failures appear related to the current changes.** A PR with failing tests or broken build will not be merged. If either command fails, re-run without `-v q` to get full diagnostic output for the handoff back to the coder.
 
-### 4. Check External Dependencies
-
-**Critical:** Flag stored procedures, external APIs, message queues. Use format from `code-reviewing` skill.
-
-### 5. Security Check
-
-Check against `security-review` skill checklist. Focus on injection, sensitive data exposure, input validation, and financial integrity.
-
-### 6. Architecture Pattern Check
-
-Consult the `architecture-patterns` skill. Verify the implementation follows the patterns documented in CONVENTIONS.md — correct layer placement, dependency direction, and file organisation.
-
-### 7. Report
+### 4. Report
 
 Use format from `code-reviewing` skill:
 
@@ -148,11 +120,8 @@ After the review report, append the quality gate summary. Refer to `quality-gate
 
 ## Handoff
 
-**Approved:** Hand off to committer.
-**Changes Requested:** Hand back to the appropriate coder based on `Workflow:` field:
-- Bug-fix / Hotfix → Bug Fix Coder
-- TDD → TDD Coder
-- One-shot / Refactoring / Chore → One-Shot Coder
+**Approved:** Hand off to Committer.
+**Changes Requested:** Hand back to Coder.
 
 ## Principles
 
