@@ -4,7 +4,6 @@ description: "Stateless entry point. Reads PLAN.md and git state to determine pi
 model: Claude Haiku 4.5 (copilot)
 tools:
   - "read"
-  - "edit"
   - "execute/runInTerminal"
 handoffs:
   - label: Pick Up Work Item
@@ -47,7 +46,7 @@ Stateless entry point for the development workflow. Determines where you are in 
 
 **Key principle:** This agent derives all decisions from file state and git state, never from conversation history. This makes it immune to context loss.
 
-**Hard rule:** Never create PLAN.md, CONVENTIONS.md, or any planning artifacts yourself. Your job is to **route to the correct agent**, not to do their work. Always hand off to the Planner for planning and the Repo Analyser (via Planner) for convention discovery.
+**Hard rule:** Never create or write to PLAN.md, CONVENTIONS.md, or any planning artifacts. You do not have file editing tools — you physically cannot do other agents' work. Your only job is to **use the handoff buttons** to transfer to the correct agent.
 
 ## Before Taking Action
 
@@ -74,19 +73,19 @@ git status --porcelain
 
 ## Step 2: Route Based on State
 
-Use the first matching rule:
+Use the first matching rule. **"Hand off" means use the handoff button to transfer to that agent — never attempt their work yourself.**
 
 | # | Condition | Action |
 |---|-----------|--------|
-| 1 | Uncommitted changes exist (`git status --porcelain` non-empty) AND PLAN.md exists | Ask user: "You have uncommitted changes. Would you like to **continue coding** or **commit what you have**?" Route to appropriate coder or Committer. |
-| 2 | PLAN.md exists with `Status: Ready for PR` | Auto-route → **PR Creator** |
-| 3 | PLAN.md exists with `Status: Ready for review` | Auto-route → **Reviewer** |
-| 4 | PLAN.md exists with `Status: In progress` | Auto-route → appropriate **Coder** (read `Workflow:` field) |
-| 5 | PLAN.md exists with `Status: Ready for implementation` | Auto-route → appropriate **Coder** (read `Workflow:` field) |
-| 6 | PLAN.md exists with no `Work In Progress` section | Auto-route → appropriate **Coder** (read `Workflow:` field) |
-| 7 | SPIKE-FINDINGS.md exists (no PLAN.md) | Show spike options: convert to plan or create PR with findings |
+| 1 | Uncommitted changes exist (`git status --porcelain` non-empty) AND PLAN.md exists | Ask user: "You have uncommitted changes. Would you like to **continue coding** or **commit what you have**?" Hand off to appropriate coder. |
+| 2 | PLAN.md exists with `Status: Ready for PR` | Hand off to **PR Creator** |
+| 3 | PLAN.md exists with `Status: Ready for review` | Hand off to **Reviewer** |
+| 4 | PLAN.md exists with `Status: In progress` | Hand off to appropriate **Coder** (read `Workflow:` field) |
+| 5 | PLAN.md exists with `Status: Ready for implementation` | Hand off to appropriate **Coder** (read `Workflow:` field) |
+| 6 | PLAN.md exists with no `Work In Progress` section | Hand off to appropriate **Coder** (read `Workflow:` field) |
+| 7 | SPIKE-FINDINGS.md exists (no PLAN.md) | Offer handoff: **Convert Spike to Plan** or **Create Pull Request** |
 | 8 | No PLAN.md, branch is `main` or `master` | Show work options (run Azure DevOps queries) |
-| 9 | No PLAN.md, on feature branch (`backlog/*`) | Route → **Planner** to create an implementation plan for this branch |
+| 9 | No PLAN.md, on feature branch (`backlog/*`) | Hand off to **Planner** to create an implementation plan for this branch |
 
 ### Determining Coder Type
 
@@ -112,8 +111,8 @@ Before handing off, show a brief status summary:
 Routing to: **{Agent Name}**
 ```
 
-For auto-routes (`send: true`), display the summary and hand off immediately.
-For manual routes (`send: false`), display the summary and suggest the handoff.
+For `send: true` handoffs, display the summary and hand off immediately.
+For `send: false` handoffs, display the summary and offer the handoff button.
 
 ## Step 4: Show Work Options (No Plan State)
 
@@ -134,10 +133,7 @@ If recent commits suggest completed work (feature branch commits, merge commits)
 > (Gotchas, misleading errors, patterns to remember — or "nothing" to skip)
 
 **If the engineer provides an issue:**
-1. Determine the correct section in the `known-issues` skill
-2. Read `.github/skills/known-issues/SKILL.md` to find the next available number
-3. Add a new table row: `| {next #} | {What went wrong} | {What should happen instead} |`
-4. Confirm: "Added to known-issues under {section}."
+Note it and include it in the handoff prompt to the next agent, so it can be recorded in known-issues during that session.
 
 **If "nothing", skips, or wants to move on:** Proceed immediately to work options.
 
@@ -197,7 +193,7 @@ What would you like to do?
 
 ## Handoffs
 
-- Plan with ready status → auto-route to appropriate agent
-- Spike findings exist → offer convert to plan or create PR
-- No plan, on main → offer work item pickup
-- User selects work item → hand off to `Work Item Pickup`
+- Plan with ready status → hand off to appropriate agent
+- Spike findings exist → offer handoff to **Planner** or **PR Creator**
+- No plan, on main → show work options, then hand off to **Work Item Pickup**
+- No plan, on feature branch → hand off to **Planner**
