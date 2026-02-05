@@ -53,6 +53,12 @@ No issues recorded yet.
 
 No issues recorded yet.
 
+## PR Review
+
+<!-- Add entries as they are discovered -->
+
+No issues recorded yet.
+
 ## Git & Commits
 
 <!-- Add entries as they are discovered -->
@@ -67,6 +73,7 @@ Before executing any action, scan the relevant section above:
 2. Am I using scripts (not MCP) for team-filtered queries?
 3. Are the required environment variables configured?
 4. Does my planned action match any known mistake above?
+5. Am I formatting conventional comments correctly (label, decoration, subject)?
 
 ## Adding New Issues
 
