@@ -4,6 +4,24 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.11.0] - 2025-02-05
+
+### Added
+
+- **`agents` arrays in YAML frontmatter** — Each agent now declares which agents it can invoke (subagents + handoffs) via the `agents` property. This enforces the routing graph at the VS Code platform level instead of relying solely on instruction text.
+
+- **`user-invokable: false` for subagent-only agents** — Repo Analyser and Implementation Verifier are now hidden from the agents dropdown since they are only invoked programmatically by other agents. Reduces visible agents from 12 to 10.
+
+### Changed
+
+- **VS Code 1.109.0+ now required** — The `agents` and `user-invokable` frontmatter properties require VS Code 1.109.0 or later. Updated prerequisites and team rollout checklist in DEVELOPER_SETUP.md.
+
+- **New setup step: `chat.customAgentInSubagent.enabled`** — Added as step 3 in DEVELOPER_SETUP.md. Required for agents to invoke other agents as subagents.
+
+### Why These Changes?
+
+The routing graph was previously enforced only through instruction text and handoff definitions. Adding `agents` arrays makes it a hard constraint — an agent can only reach targets explicitly listed in its `agents` property. Combined with `user-invokable: false`, this gives tighter control over the workflow topology and a cleaner user-facing agents dropdown.
+
 ## [0.10.0] - 2025-02-04
 
 ### Removed

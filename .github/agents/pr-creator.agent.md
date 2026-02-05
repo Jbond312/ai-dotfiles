@@ -2,6 +2,8 @@
 name: PR Creator
 description: "Creates a draft pull request linking to the work item with a structured description."
 model: Claude Haiku 4.5 (copilot)
+agents:
+  - Orchestrator
 tools:
   - "microsoft/azure-devops-mcp/*"
   - "read"

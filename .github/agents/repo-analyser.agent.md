@@ -2,6 +2,7 @@
 name: Repo Analyser
 description: "Discovers repository conventions and patterns. Used as a subagent to analyse codebases and generate .planning/CONVENTIONS.md."
 model: Claude Sonnet 4 (copilot)
+user-invokable: false
 tools:
   - "read"
   - "search"

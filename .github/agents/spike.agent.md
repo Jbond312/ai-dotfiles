@@ -2,6 +2,11 @@
 name: Spike
 description: "Investigates a time-boxed technical question and produces a findings document with options and recommendations. For Spike work items, not implementation."
 model: Claude Sonnet 4 (copilot)
+agents:
+  - Orchestrator
+  - Planner
+  - PR Creator
+  - Repo Analyser
 tools:
   - "read"
   - "search"

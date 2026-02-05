@@ -2,6 +2,10 @@
 name: Work Item Pickup
 description: "Assigns a work item, moves it to In Progress, creates the feature branch, analyses conventions, and prepares for planning."
 model: Claude Sonnet 4 (copilot)
+agents:
+  - Planner
+  - Spike
+  - Repo Analyser
 tools:
   - "microsoft/azure-devops-mcp/*"
   - "read"

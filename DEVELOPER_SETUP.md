@@ -6,7 +6,7 @@ This guide helps developers set up and use the GitHub Copilot agent workflow for
 
 Before starting, ensure you have:
 
-- **VS Code** with GitHub Copilot extension installed
+- **VS Code 1.109.0+** with GitHub Copilot extension installed
 - **GitHub Copilot subscription** (Pro, Pro+, Business, or Enterprise)
 - **Node.js 18+** installed (for the MCP server)
 - **Azure CLI** installed and authenticated (`az login`)
@@ -70,7 +70,15 @@ Agent Skills are in preview. Enable them in VS Code settings:
 2. Search for `chat.useAgentSkills`
 3. Check the box to enable
 
-### 3. Configure Azure DevOps Environment Variables
+### 3. Enable Agent-in-Subagent Support
+
+The workflow uses agents as subagents (e.g., Repo Analyser invoked by Work Item Pickup). Enable this in VS Code settings:
+
+1. Open Settings (Ctrl+,)
+2. Search for `chat.customAgentInSubagent.enabled`
+3. Check the box to enable
+
+### 4. Configure Azure DevOps Environment Variables
 
 The Python scripts read Azure DevOps configuration from environment variables. Configure these in `.vscode/settings.json`:
 
@@ -117,7 +125,7 @@ The Python scripts read Azure DevOps configuration from environment variables. C
 | `AZURE_DEVOPS_TEAM_ID` | PR filtering by team | Team settings URL contains the GUID |
 | `AZURE_DEVOPS_USER_ID` | Exclude own PRs | Azure DevOps API or network inspection |
 
-### 4. Add entries to .gitignore
+### 5. Add entries to .gitignore
 
 The workflow creates planning files and uses local settings that shouldn't be committed:
 
@@ -138,14 +146,14 @@ If you want to share some VS Code settings with your team while keeping secrets 
 echo ".vscode/settings.json" >> .gitignore
 ```
 
-### 5. Configure the MCP Server (Optional)
+### 6. Configure the MCP Server (Optional)
 
 If you need Azure DevOps MCP for individual work item lookups:
 
 1. Edit `.vscode/mcp.json` if you need to adjust the Azure DevOps organisation name
 2. The server will prompt for this when it starts
 
-### 6. Verify Setup
+### 7. Verify Setup
 
 1. Open a new terminal in VS Code
 2. Run a test query:
@@ -156,7 +164,7 @@ python .github/skills/azure-devops-api/scripts/get_sprint_work_items.py --unassi
 
 If configured correctly, you'll see JSON output with work items. If not, you'll see an error indicating which environment variable is missing.
 
-### 7. Verify Azure CLI Authentication
+### 8. Verify Azure CLI Authentication
 
 The MCP server uses your Azure CLI credentials:
 
@@ -416,7 +424,9 @@ When rolling out to your team:
 
 - [ ] Copy `.github/` directory to shared repositories (agents, skills, instructions)
 - [ ] Each developer configures `.vscode/settings.json` with Azure DevOps environment variables
+- [ ] VS Code 1.109.0+ installed (required for `agents` and `user-invokable` properties)
 - [ ] Enable `chat.useAgentSkills` in VS Code settings
+- [ ] Enable `chat.customAgentInSubagent.enabled` in VS Code settings
 - [ ] Review pattern-specific instructions in `.github/instructions/` for your team's conventions
 - [ ] Add `.planning/` and `.vscode/` to `.gitignore` (agents will also auto-add if missing)
 - [ ] Ensure everyone has Azure CLI configured
@@ -437,6 +447,8 @@ orchestrator (entry point — reads PLAN.md + git state)
 
 work-item-pickup → planner → [coder → reviewer → committer] → pr-creator → orchestrator
 ```
+
+**Note:** Repo Analyser and Implementation Verifier are subagent-only (`user-invokable: false`) and do not appear in the agents dropdown. They are invoked programmatically by other agents via the `agent` tool.
 
 ### Handoff Shortcuts
 

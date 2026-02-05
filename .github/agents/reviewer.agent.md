@@ -2,6 +2,10 @@
 name: Reviewer
 description: "Reviews code for correctness, patterns, and banking domain concerns. Flags external dependencies for human verification."
 model: Claude Sonnet 4 (copilot)
+agents:
+  - Committer
+  - TDD Coder
+  - One-Shot Coder
 tools:
   - "read"
   - "search"

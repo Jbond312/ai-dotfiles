@@ -2,6 +2,7 @@
 name: Implementation Verifier
 description: "Verifies that implementation matches the plan. Used as a subagent to check completeness before handoff. Returns a verification report."
 model: Claude Sonnet 4 (copilot)
+user-invokable: false
 tools:
   - "read"
   - "search"

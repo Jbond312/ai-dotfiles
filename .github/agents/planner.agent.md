@@ -2,6 +2,10 @@
 name: Planner
 description: "Analyses work item and codebase to produce implementation plan with test scenarios. Creates .planning/PLAN.md."
 model: Claude Sonnet 4 (copilot)
+agents:
+  - TDD Coder
+  - One-Shot Coder
+  - Repo Analyser
 tools:
   - "microsoft/azure-devops-mcp/*"
   - "search"
