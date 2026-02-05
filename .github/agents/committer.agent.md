@@ -23,13 +23,14 @@ Commits reviewed code and updates the plan. Refer to `git-committing` skill for 
 
 ## Process
 
-1. **Verify state:** `git status` — modified files ready
+1. **Verify state:** `git status` — check for modified files
 2. **Read context:** `.planning/PLAN.md` for current item and workflow
-3. **Pre-commit checks:** Scan staged changes for issues (see below)
-4. **Stage:** `git add -u` (tracked files only — never use `git add -A`)
-5. **Commit:** Message per `git-committing` skill
-6. **Verify:** `git log -1 --oneline`
-7. **Update plan:** Update Work In Progress status
+3. **If no changes to commit:** Skip steps 4-7, go straight to **Plan Updates**. Some TDD items are verification-only (confirming existing behaviour with a test that already passes, checking execution plans, validating configurations). These are legitimate completed items that don't produce code changes.
+4. **Pre-commit checks:** Scan staged changes for issues (see below)
+5. **Stage:** `git add -u` (tracked files only — never use `git add -A`)
+6. **Commit:** Message per `git-committing` skill
+7. **Verify:** `git log -1 --oneline`
+8. **Update plan:** Update Work In Progress status
 
 ## Pre-Commit Checks (Step 3)
 
@@ -100,10 +101,11 @@ Before handing off to PR Creator, ask:
 
 **TDD with more items:** Do NOT hand off to TDD Coder. Instead, instruct the user to start a new chat session. This ensures the next item gets a fresh context window, preventing quality degradation from context accumulation across items.
 
-Use this message:
+Use this message (adapt wording depending on whether a commit was made):
 
 ```markdown
 Committed: `{hash}` - {message}
+<!-- or if no changes: "No code changes for this item (verification only)." -->
 
 **Item {N} of {total} complete.** Next up: {next item summary}
 
