@@ -70,12 +70,11 @@ Note:
 ### 4. Build and Test
 
 ```bash
-dotnet build --no-restore
+dotnet build --no-restore -v q
+dotnet test --no-build -v q
 ```
 
-```bash
-dotnet test --no-build
-```
+Use `-v q` (quiet) to minimise context usage — errors and failures still appear, but successful build/test noise is suppressed. If either fails, re-run without `-v q` for full diagnostic output.
 
 Record results. Build/test failures are **non-blocking for the review** — they become `note (blocking)` comments in the output. Complete the full review regardless of build status.
 

@@ -60,11 +60,13 @@ Check against these skill checklists:
 ### 3. Verify Build and Tests
 
 ```bash
-dotnet build --no-restore
-dotnet test --no-build
+dotnet build --no-restore -v q
+dotnet test --no-build -v q
 ```
 
-**Both must pass. This is a hard blocker — do not approve if either fails, regardless of whether the failures appear related to the current changes.** A PR with failing tests or broken build will not be merged.
+Use `-v q` (quiet) to minimise context usage — errors and failures still appear, but successful build/test noise is suppressed.
+
+**Both must pass. This is a hard blocker — do not approve if either fails, regardless of whether the failures appear related to the current changes.** A PR with failing tests or broken build will not be merged. If either command fails, re-run without `-v q` to get full diagnostic output for the handoff back to the coder.
 
 ### 4. Check External Dependencies
 

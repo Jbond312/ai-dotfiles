@@ -4,6 +4,42 @@ All notable changes to the GitHub Copilot agent configuration will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.12.0] - 2026-02-05
+
+### Added
+
+- **`mssql-stored-procedures` skill** — MSSQL stored procedure development standards for banking applications. Covers schema design, the Sommarskog error handling pattern, performance (SARGability, parameter sniffing, set-based operations, temp tables vs table variables, isolation levels), security (injection prevention, least privilege), and banking domain (DECIMAL precision, idempotency, concurrency control, temporal tables, double-entry accounting). Includes good/bad code examples and review checklist.
+
+- **`tsqlt-testing` skill** — tSQLt unit testing standards for SQL Server stored procedures. Covers test structure and naming, core features (FakeTable, SpyProcedure, ExpectException, FakeFunction, ApplyConstraint, ApplyTrigger), what to test vs what not to test, test data patterns (minimal data, factories, determinism), and common pitfalls (identity loss, transaction rollback, temp tables, schema-bound views, cross-database, concurrency). Includes good/bad examples and review checklist.
+
+- **SQL sections in `known-issues` skill** — Placeholder sections for "SQL & Stored Procedures" and "tSQLt Testing" with example formats.
+
+- **Build & test gates on Committer and PR Creator** — Both agents now run `dotnet build` and `dotnet test` as hard blockers before proceeding. The Committer verifies after committing (catches post-review regressions); the PR Creator verifies before pushing (last line of defence before code reaches the team).
+
+- **Universal build/test failure rule in `quality-gates` skill** — "A failing build or failing tests is never 'unrelated to our changes.' The workflow stops until it's fixed — no exceptions." Codifies the principle that we never advance work on a broken codebase.
+
+### Changed
+
+- **TDD session-per-item architecture** — The Committer no longer hands off to the TDD Coder. Instead, after each commit it instructs the user to start a new chat session. The Orchestrator picks up from PLAN.md state and routes to the next item with a fresh context window. This prevents quality degradation from context accumulation across items (research shows 20-30% performance loss with accumulated context).
+
+- **Verification-only TDD items** — The Committer now handles items that produce no code changes (confirming existing behaviour, checking execution plans, validating configurations). It skips commit steps and proceeds directly to plan updates and the "start new session" message.
+
+- **Quiet verbosity at gate checkpoints** — Reviewer, Committer, PR Creator, PR Reviewer, and Planner now use `-v q` (quiet) for build and test commands. Errors and failures still appear, but successful build/test noise is suppressed — significantly reducing context window consumption. Implementation agents (TDD Coder, One-Shot Coder, Debug, Implementation Verifier) retain default/normal verbosity for diagnostic detail. On failure at a gate, agents re-run without `-v q` for full output.
+
+- **Reviewer runs build before tests** — The Reviewer now runs `dotnet build` before `dotnet test`, with stronger wording: "do not approve if either fails, regardless of whether the failures appear related to the current changes."
+
+- **Reviewer and PR Reviewer reference new SQL skills** — Both agents now include `mssql-stored-procedures` and `tsqlt-testing` skill checklists for `.sql` file changes and SQL test changes respectively.
+
+### Why These Changes?
+
+**SQL skills:** Banking applications have significant stored procedure codebases. The new skills provide the same depth of guidance for SQL development and testing that `code-reviewing` and `security-review` provide for .NET — including banking-specific concerns like DECIMAL precision, idempotency, and temporal tables for audit trails.
+
+**Session-per-item TDD:** VS Code Copilot has no `/compact` command. The only way to get a fresh context window is a new chat session. Research (Anthropic's multi-session harness pattern, Chroma's context rot study) shows monotonic quality degradation as context grows. The file-based state design (PLAN.md) already supports session breaks — this change makes the workflow explicitly leverage it.
+
+**Quiet verbosity:** Build and test output is the #1 context consumer, run 6+ times across agents in a single item's lifecycle. Gate checks only need pass/fail — the detailed output is wasted context. Using `-v q` at gates while preserving detail in implementation agents gives the best of both: lean gates and rich diagnostics where they're needed.
+
+**Build/test gates everywhere:** Prevents the AI from dismissing failures as "unrelated to our changes" — a pattern observed in practice. Every handoff point now enforces green builds as a hard blocker.
+
 ## [0.11.0] - 2025-02-05
 
 ### Added

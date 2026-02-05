@@ -46,7 +46,7 @@ git check-ignore -q .vscode/ || echo ".vscode/" >> .gitignore
 ### Verify solution builds
 
 ```
-dotnet build --no-restore
+dotnet build --no-restore -v q
 ```
 
 ### Find existing patterns in feature area

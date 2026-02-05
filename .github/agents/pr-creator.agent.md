@@ -32,11 +32,13 @@ Read `.planning/PLAN.md` for work item ID and summary.
 **Before pushing, confirm the codebase is green. This is the last line of defence before code reaches the team.**
 
 ```bash
-dotnet build --no-restore
-dotnet test --no-build
+dotnet build --no-restore -v q
+dotnet test --no-build -v q
 ```
 
-**Both must pass. If either fails, STOP and report the failure to the user.** Do not push or create a PR with a broken build or failing tests.
+Use `-v q` (quiet) to minimise context usage — errors and failures still appear, but successful build/test noise is suppressed.
+
+**Both must pass. If either fails, STOP.** Re-run without `-v q` to get full diagnostic output, then report the failure to the user. Do not push or create a PR with a broken build or failing tests.
 
 ### 3. Get Commit History
 

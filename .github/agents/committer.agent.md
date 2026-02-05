@@ -67,15 +67,17 @@ Hand back to the coder to resolve. Do not commit with known issues.
 **After committing (or after confirming no changes for verification-only items), verify the codebase is green:**
 
 ```bash
-dotnet build --no-restore
-dotnet test --no-build
+dotnet build --no-restore -v q
+dotnet test --no-build -v q
 ```
+
+Use `-v q` (quiet) to minimise context usage — errors and failures still appear, but successful build/test noise is suppressed.
 
 **Both must pass. This is a hard blocker.** Do not proceed to Plan Updates or Handoff if either fails. The build and all tests must be green regardless of whether failures appear related to the current changes — we never advance the workflow with a broken codebase.
 
-**If build or tests fail after committing:** Hand back to the coder to fix. Do not amend the commit — the coder should fix and you'll create a new commit.
+**If build or tests fail after committing:** Re-run without `-v q` to get full diagnostic output, then hand back to the coder to fix. Do not amend the commit — the coder should fix and you'll create a new commit.
 
-**If build or tests fail for a verification-only item (no commit):** Hand back to the coder to investigate. Something is broken that needs fixing before moving on.
+**If build or tests fail for a verification-only item (no commit):** Re-run without `-v q` for diagnostics, then hand back to the coder to investigate.
 
 ## Plan Updates (Critical)
 
