@@ -50,12 +50,12 @@ If a verification report exists, note its status.
 
 ### 2. Review Changed Files
 
-Check against `code-reviewing` skill checklist. Focus on:
+Check against these skill checklists:
 
-- Pattern adherence (does it match CONVENTIONS.md?)
-- Security and data integrity
-- Banking domain concerns (idempotency, audit trails)
-- Error handling
+1. **`code-reviewing` skill checklist** — correctness, tests, patterns, banking domain, external dependencies
+2. **`security-review` skill checklist** — injection, auth, data exposure, input validation, financial integrity
+3. **`mssql-stored-procedures` skill checklist** — for any `.sql` file changes
+4. **`tsqlt-testing` skill checklist** — for any tSQLt test changes
 
 ### 3. Verify Tests Pass
 

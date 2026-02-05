@@ -59,6 +59,28 @@ No issues recorded yet.
 
 No issues recorded yet.
 
+## SQL & Stored Procedures
+
+<!-- Add entries as they are discovered -->
+<!-- Example:
+| #   | Mistake | Correct Behaviour |
+| --- | ------- | ----------------- |
+| 8   | Used MONEY type for financial calculations | Use DECIMAL(19,4) for all monetary values |
+-->
+
+No issues recorded yet.
+
+## tSQLt Testing
+
+<!-- Add entries as they are discovered -->
+<!-- Example:
+| #   | Mistake | Correct Behaviour |
+| --- | ------- | ----------------- |
+| 9   | FakeTable without @Identity when proc uses SCOPE_IDENTITY() | Use @Identity = 1 when the proc relies on SCOPE_IDENTITY() |
+-->
+
+No issues recorded yet.
+
 ## Git & Commits
 
 <!-- Add entries as they are discovered -->
