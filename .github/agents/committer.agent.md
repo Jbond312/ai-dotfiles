@@ -7,10 +7,6 @@ tools:
   - "read"
   - "edit"
 handoffs:
-  - label: Continue to Next Item (TDD)
-    agent: TDD Coder
-    prompt: "Proceed with the next checklist item."
-    send: true
   - label: Create Pull Request
     agent: PR Creator
     prompt: "All items complete. Create a pull request."
@@ -102,12 +98,16 @@ Before handing off to PR Creator, ask:
 
 ## Handoff
 
-**TDD with more items:** Offer "Continue to Next Item"
+**TDD with more items:** Do NOT hand off to TDD Coder. Instead, instruct the user to start a new chat session. This ensures the next item gets a fresh context window, preventing quality degradation from context accumulation across items.
 
-**Final item or One-shot:** Offer "Create Pull Request"
+Use this message:
 
-Do not auto-create PR. Wait for confirmation.
+```markdown
+Committed: `{hash}` - {message}
 
-## Communication
+**Item {N} of {total} complete.** Next up: {next item summary}
 
-"Committed: `a1b2c3d` - feat(payments): add balance validation. Ready for next item."
+Start a **new chat session** to continue — the Orchestrator will pick up from PLAN.md and route to the next item with a fresh context window.
+```
+
+**Final item or One-shot:** Offer "Create Pull Request". Do not auto-create PR — wait for confirmation.
