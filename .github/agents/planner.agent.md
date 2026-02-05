@@ -187,6 +187,15 @@ Consider these categories and ask relevant questions:
 - "Are there specific scenarios you want covered?"
 - "Should I include integration tests or just unit tests?"
 
+#### Rate Your Assumptions
+
+For each assumption, note confidence:
+- **High** — clear from work item or codebase (no question needed)
+- **Medium** — reasonable inference, worth confirming
+- **Low** — guessing (MUST ask before proceeding)
+
+Only proceed without asking if all assumptions are High confidence.
+
 #### Wait for Answers
 
 **STOP and wait for user responses before proceeding to Phase 3.**
@@ -199,7 +208,7 @@ After clarification, break work into logical units (15-60 min each):
 
 - Cohesive and testable
 - Ordered by dependencies
-- Each has: **What**, **How**, **Done when**
+- Each has: **What**, **How**, **Files**, **Done when**
 
 **Aim for 3-6 checklist items.** If you're approaching 10, suggest splitting the work item.
 
@@ -220,9 +229,16 @@ Write to `.planning/PLAN.md` using the structure below.
 
 {2-3 sentence overview, incorporating clarifications received}
 
-## Clarifications Received
+## Scope
 
-{Document key answers from the user — this provides context for coders}
+**Includes:**
+- {thing 1}
+- {thing 2}
+
+**Excludes:**
+- {explicitly out of scope item — reason}
+
+## Clarifications Received
 
 - **Q:** {question}
   **A:** {answer}
@@ -232,22 +248,23 @@ Write to `.planning/PLAN.md` using the structure below.
 ### 1. {Unit of work}
 
 **What:** {Description}
-**How:** {Approach, files, patterns from CONVENTIONS.md}
+**How:** {Approach and patterns from CONVENTIONS.md}
+**Files:**
+- `{path/to/file.cs}` — {create | modify}: {brief description}
+- `{path/to/test.cs}` — {create | modify}: {brief description}
+**Reference:** `{path/to/similar/existing/file.cs}` — follow this pattern
 **Done when:** {Observable outcome}
+**Contracts:** _{optional — method signatures for new public APIs or cross-component boundaries}_
 
 **Tests:**
-
-- [ ] {Test scenario 1 using naming from CONVENTIONS.md}
-- [ ] {Test scenario 2}
+- [ ] {Test scenario using naming from CONVENTIONS.md}
 
 **Tasks:**
-
 - [ ] {Implementation task}
 
 ---
 
 ### 2. {Next unit}
-
 ...
 
 ---
@@ -258,7 +275,7 @@ Write to `.planning/PLAN.md` using the structure below.
 
 ## Assumptions & Risks
 
-- {Assumption made during planning}
+- {Assumption — confidence: High/Medium}
 - {Risk or uncertainty to monitor}
 
 ## Notes
@@ -293,8 +310,9 @@ Re-read `.planning/PLAN.md` and check:
 2. External Dependencies section exists (write "None" if absent)
 3. Assumptions & Risks section exists
 4. Clarifications Received section has content (if clarification phase ran)
-5. Each item has What, How, and Done criteria
+5. Each item has What, How, Files, and Done criteria
 6. Item count is between 3 and 10
+7. Scope section has Includes and Excludes
 
 **If any fail:** Fix the plan immediately before offering handoff.
 
@@ -307,6 +325,7 @@ Re-read `.planning/PLAN.md` and check:
 - External Dependencies: PASS
 - Assumptions & Risks: PASS
 - Clarifications documented: PASS
-- Item structure: PASS
+- Item structure (What/How/Files/Done): PASS
 - Item count (N items): PASS
+- Scope defined: PASS
 ```

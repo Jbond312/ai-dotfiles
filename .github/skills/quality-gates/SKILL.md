@@ -32,8 +32,9 @@ After saving PLAN.md, verify:
 | 2 | External Dependencies | Section exists (even if "None") |
 | 3 | Assumptions & Risks | Section exists |
 | 4 | Clarifications documented | "Clarifications Received" section has content |
-| 5 | Item structure | Each item has What, How, and Done criteria |
+| 5 | Item structure | Each item has What, How, Files, and Done criteria |
 | 6 | Item count | Between 3 and 10 items |
+| 7 | Scope defined | Scope section has Includes and Excludes |
 
 **On failure:** Fix the plan before offering handoff.
 

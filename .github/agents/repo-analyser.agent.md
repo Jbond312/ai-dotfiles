@@ -85,6 +85,23 @@ Create `.planning/CONVENTIONS.md`:
 | .NET Version   | {version}              |
 | Architecture   | {pattern or "unclear"} |
 | Test Framework | {framework}            |
+| Key Packages   | {e.g., FluentValidation 11.x, MediatR 12.x} |
+
+## Project Structure
+
+```
+src/
+├── {ProjectName}/
+│   ├── {TopLevelFolder}/       # {purpose}
+│   │   └── {ExampleSubfolder}/
+│   │       ├── {ExampleFile}.cs
+│   │       └── ...
+│   └── ...
+tests/
+├── {ProjectName}.Tests/
+│   └── {MirroredStructure}/
+│       └── {ExampleTestFile}.cs
+```
 
 ## Testing Conventions
 
@@ -101,7 +118,6 @@ Create `.planning/CONVENTIONS.md`:
 // From: {path}
 {actual example}
 ```
-````
 
 ## Code Patterns
 
@@ -111,6 +127,20 @@ Create `.planning/CONVENTIONS.md`:
 | Validation       | {FluentValidation/DataAnnotations/manual} |
 | Error handling   | {Result type/exceptions}                  |
 | Mapping          | {AutoMapper/Mapster/manual}               |
+
+### Example Handler/Service
+
+```csharp
+// From: {path}
+{actual example showing typical request-handling pattern}
+```
+
+### Example Error Handling
+
+```csharp
+// From: {path}
+{actual example showing Result<T> vs exception usage}
+```
 
 ## Code Style
 
@@ -129,13 +159,14 @@ Create `.planning/CONVENTIONS.md`:
 
 ## For Agents
 
-When writing code in this repository:
+**Critical rules when writing code in this repository:**
 
-- Follow test naming: `{pattern}`
-- Use {error handling approach} for errors
-- {Key guidance}
-
-```
+1. **Architecture:** Place new features in `{path pattern}` following {pattern}
+2. **Error handling:** Use `{Result<T> | exceptions}` — see Example Error Handling above
+3. **Test naming:** `{pattern}` — see Example Test above
+4. **Assertions:** Use `{assertion library}` syntax
+5. **New files:** Follow the folder structure in Project Structure above
+````
 
 ## Return Value
 

@@ -5,6 +5,8 @@ description: "C# coding conventions for all C# files"
 
 # C# Conventions
 
+**Check `.planning/CONVENTIONS.md` first** for repo-specific patterns. These instructions are general; conventions are authoritative.
+
 Modern idiomatic C#: file-scoped namespaces, primary constructors, collection expressions.
 
 Use `var` when type is obvious; explicit types when it aids readability.
