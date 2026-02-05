@@ -27,19 +27,30 @@ Creates a draft PR with description linked to work item.
 
 Read `.planning/PLAN.md` for work item ID and summary.
 
-### 2. Get Commit History
+### 2. Verify Build and Tests
+
+**Before pushing, confirm the codebase is green. This is the last line of defence before code reaches the team.**
+
+```bash
+dotnet build --no-restore
+dotnet test --no-build
+```
+
+**Both must pass. If either fails, STOP and report the failure to the user.** Do not push or create a PR with a broken build or failing tests.
+
+### 3. Get Commit History
 
 ```bash
 git log origin/main..HEAD --oneline
 ```
 
-### 3. Push Branch
+### 4. Push Branch
 
 ```bash
 git push -u origin HEAD
 ```
 
-### 4. Create PR
+### 5. Create PR
 
 Using MCP, create draft PR with:
 
@@ -78,11 +89,11 @@ Closes AB#{id}
 {Any additional context}
 ```
 
-### 5. Update Work Item
+### 6. Update Work Item
 
 Move to `Awaiting Merge` state.
 
-### 6. Report
+### 7. Report
 
 ```markdown
 ## Pull Request Created

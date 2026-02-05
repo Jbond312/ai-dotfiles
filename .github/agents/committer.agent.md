@@ -25,12 +25,13 @@ Commits reviewed code and updates the plan. Refer to `git-committing` skill for 
 
 1. **Verify state:** `git status` — check for modified files
 2. **Read context:** `.planning/PLAN.md` for current item and workflow
-3. **If no changes to commit:** Skip steps 4-7, go straight to **Plan Updates**. Some TDD items are verification-only (confirming existing behaviour with a test that already passes, checking execution plans, validating configurations). These are legitimate completed items that don't produce code changes.
+3. **If no changes to commit:** Skip steps 4-8, go straight to **Build & Test Gate**.
 4. **Pre-commit checks:** Scan staged changes for issues (see below)
 5. **Stage:** `git add -u` (tracked files only — never use `git add -A`)
 6. **Commit:** Message per `git-committing` skill
 7. **Verify:** `git log -1 --oneline`
-8. **Update plan:** Update Work In Progress status
+8. **Build & Test Gate:** Run build and tests before proceeding (see below)
+9. **Update plan:** Update Work In Progress status
 
 ## Pre-Commit Checks (Step 3)
 
@@ -60,6 +61,21 @@ Please fix these before committing. Handing back to coder.
 ```
 
 Hand back to the coder to resolve. Do not commit with known issues.
+
+## Build & Test Gate (Step 8)
+
+**After committing (or after confirming no changes for verification-only items), verify the codebase is green:**
+
+```bash
+dotnet build --no-restore
+dotnet test --no-build
+```
+
+**Both must pass. This is a hard blocker.** Do not proceed to Plan Updates or Handoff if either fails. The build and all tests must be green regardless of whether failures appear related to the current changes — we never advance the workflow with a broken codebase.
+
+**If build or tests fail after committing:** Hand back to the coder to fix. Do not amend the commit — the coder should fix and you'll create a new commit.
+
+**If build or tests fail for a verification-only item (no commit):** Hand back to the coder to investigate. Something is broken that needs fixing before moving on.
 
 ## Plan Updates (Critical)
 

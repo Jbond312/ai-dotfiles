@@ -62,6 +62,35 @@ After review completes:
 | 2 | No security blockers | Zero Critical security findings (hard block) |
 | 3 | Important issues addressed | Fixed or explicitly accepted |
 | 4 | External deps flagged | New external dependencies documented |
-| 5 | Tests pass | `dotnet test` exit code 0 (hard block) |
+| 5 | Build passes | `dotnet build` exit code 0 (hard block) |
+| 6 | All tests pass | `dotnet test` exit code 0 (hard block) |
 
-Criteria 1-2, 5 are hard blocks. Criteria 3-4 are soft (WARN if unmet).
+Criteria 1-2, 5-6 are hard blocks. Criteria 3-4 are soft (WARN if unmet).
+
+## Gate: Committer → Next Step
+
+After committing (or confirming no changes for verification-only items):
+
+| # | Criterion | Check |
+|---|-----------|-------|
+| 1 | Build passes | `dotnet build` exit code 0 (hard block) |
+| 2 | All tests pass | `dotnet test` exit code 0 (hard block) |
+
+Both are hard blocks. Do not update PLAN.md or proceed to handoff if either fails. Hand back to the coder to fix.
+
+**Rationale:** The Committer is the last gate before code is committed/advanced. Even if the Reviewer verified earlier, changes may have been made after review (feedback fixes, merge conflicts). Never trust that "tests passed earlier" — always verify.
+
+## Gate: PR Creator → Push
+
+Before pushing and creating the PR:
+
+| # | Criterion | Check |
+|---|-----------|-------|
+| 1 | Build passes | `dotnet build` exit code 0 (hard block) |
+| 2 | All tests pass | `dotnet test` exit code 0 (hard block) |
+
+Both are hard blocks. Do not push or create a PR if either fails. This is the last line of defence before code reaches the team.
+
+## Build & Test Failures: Universal Rule
+
+**A failing build or failing tests is never "unrelated to our changes".** If the codebase doesn't compile or tests don't pass, the workflow stops until it's fixed. This applies to every agent at every gate — no exceptions, no "it was already broken" dismissals. We do not advance work on a broken codebase.

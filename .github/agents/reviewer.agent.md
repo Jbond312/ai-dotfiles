@@ -57,13 +57,14 @@ Check against these skill checklists:
 3. **`mssql-stored-procedures` skill checklist** — for any `.sql` file changes
 4. **`tsqlt-testing` skill checklist** — for any tSQLt test changes
 
-### 3. Verify Tests Pass
+### 3. Verify Build and Tests
 
 ```bash
+dotnet build --no-restore
 dotnet test --no-build
 ```
 
-All tests must pass. This is a blocker.
+**Both must pass. This is a hard blocker — do not approve if either fails, regardless of whether the failures appear related to the current changes.** A PR with failing tests or broken build will not be merged.
 
 ### 4. Check External Dependencies
 
