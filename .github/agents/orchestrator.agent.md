@@ -30,6 +30,10 @@ handoffs:
     agent: PR Creator
     prompt: "All items complete. Create a pull request."
     send: true
+  - label: Review Team PR
+    agent: PR Reviewer
+    prompt: "Review this PR branch and produce conventional comments."
+    send: true
   - label: Start Investigation
     agent: Spike
     prompt: "Investigate this technical question."
@@ -85,6 +89,7 @@ Use the first matching rule. **"Hand off" means use the handoff button to transf
 | 6 | PLAN.md exists with no `Work In Progress` section | Hand off to appropriate **Coder** (read `Workflow:` field) |
 | 7 | SPIKE-FINDINGS.md exists (no PLAN.md) | Offer handoff: **Convert Spike to Plan** or **Create Pull Request** |
 | 8 | No PLAN.md, branch is `main` or `master` | Show work options (run Azure DevOps queries) |
+| 8a | No PLAN.md, branch is not `main`/`master`, branch is not `backlog/*` | Ask: "You're on branch `{name}`. Is this a PR you'd like to review?" Offer **Review Team PR** handoff |
 | 9 | No PLAN.md, on feature branch (`backlog/*`) | Hand off to **Planner** to create an implementation plan for this branch |
 
 ### Determining Coder Type
@@ -156,6 +161,10 @@ If items exist, ask if they want to continue or see other options.
 ```bash
 python .github/skills/azure-devops-api/scripts/get_team_prs.py
 ```
+
+> To review a PR, check out its branch first:
+> `git fetch origin && git checkout {branch-name}`
+> Then use the **Review Team PR** button.
 
 ### 3. Available Work Items
 
