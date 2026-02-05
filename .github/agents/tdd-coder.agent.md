@@ -40,6 +40,16 @@ Check `.planning/CONVENTIONS.md` for architectural patterns. Follow the discover
 
 Create a todo list to track your progress through the implementation checklist.
 
+## Contextual Skills
+
+When implementing code in specific areas, consult the relevant skill for patterns and hard rules:
+
+- **API endpoints** (controllers, minimal APIs): Consult the `api-design` skill
+- **Error handling** (Result types, exceptions, ProblemDetails): Consult the `error-handling` skill
+- **Data access** (Dapper queries, stored procedure calls): Consult the `dapper-data-access` skill
+- **Messaging** (Service Bus producers, consumers): Consult the `azure-service-bus` skill
+- **Middleware** (pipeline, exception handling, health checks): Consult the `aspnet-middleware` skill
+
 ## Implementation Cycle
 
 ### 0. Verify Baseline (First Item Only)

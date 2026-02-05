@@ -86,8 +86,12 @@ For each changed file, read the full file and review against:
 2. **`security-review` skill checklist** — injection, auth, data exposure, input validation, financial integrity, audit
 3. **`mssql-stored-procedures` skill checklist** — for stored procedure and schema changes
 4. **`tsqlt-testing` skill checklist** — for SQL test changes
-5. **CONVENTIONS.md patterns** — does the code match established conventions?
-6. **.NET best practices** — async/await patterns, IDisposable, nullability, concurrency, EF Core usage
+5. **`api-design` skill checklist** — for API endpoint changes
+6. **`error-handling` skill checklist** — for error handling pattern changes
+7. **`dapper-data-access` skill checklist** — for data access changes (Dapper queries, repository methods)
+8. **`azure-service-bus` skill checklist** — for messaging changes (producers, consumers, message handlers)
+9. **CONVENTIONS.md patterns** — does the code match established conventions?
+10. **.NET best practices** — async/await patterns, IDisposable, nullability, concurrency, EF Core usage
 
 Focus your review on the **changed lines** but read surrounding context to understand intent.
 

@@ -186,6 +186,8 @@ tests/
 | Validation | {FluentValidation/DataAnnotations/manual} |
 | Error handling | {Result type/exceptions/etc.} |
 | Mapping | {AutoMapper/Mapster/manual/extensions} |
+| API style | {Controllers / Minimal APIs / mixed} |
+| Data access | {Dapper raw / Dapper.Contrib / EF Core / mixed} |
 
 ### Example Handler/Service
 
@@ -225,6 +227,8 @@ tests/
 3. **Test naming:** `{pattern}` — see Example Test above
 4. **Assertions:** Use `{assertion library}` syntax
 5. **New files:** Follow the folder structure in Project Structure above
+6. **API style:** Use `{Controllers | Minimal APIs}` — see existing endpoints for reference
+7. **Data access:** Use `{Dapper pattern}` — see existing repositories/queries for reference
 ```
 
 ## After Generation

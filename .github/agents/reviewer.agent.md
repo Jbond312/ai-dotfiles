@@ -56,6 +56,11 @@ Check against these skill checklists:
 2. **`security-review` skill checklist** — injection, auth, data exposure, input validation, financial integrity
 3. **`mssql-stored-procedures` skill checklist** — for any `.sql` file changes
 4. **`tsqlt-testing` skill checklist** — for any tSQLt test changes
+5. **`api-design` skill checklist** — for API endpoint changes (controllers, minimal APIs, route definitions)
+6. **`error-handling` skill checklist** — for error handling changes (try/catch, Result types, exception middleware)
+7. **`dapper-data-access` skill checklist** — for data access changes (Dapper queries, repository methods, SQL calls)
+8. **`azure-service-bus` skill checklist** — for messaging changes (producers, consumers, message contracts)
+9. **`aspnet-middleware` skill checklist** — for middleware changes (pipeline configuration, custom middleware, health checks)
 
 ### 3. Verify Build and Tests
 
@@ -78,7 +83,7 @@ Check against `security-review` skill checklist. Focus on injection, sensitive d
 
 ### 6. Architecture Pattern Check
 
-Verify the implementation follows the architectural patterns documented in CONVENTIONS.md.
+Consult the `architecture-patterns` skill. Verify the implementation follows the patterns documented in CONVENTIONS.md — correct layer placement, dependency direction, and file organisation.
 
 ### 7. Report
 

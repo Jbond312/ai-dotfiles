@@ -64,6 +64,12 @@ Use `search` to find test projects (`*Tests*.csproj`, `*Test*.csproj`) and test 
 
 Use `search` to find `*Handler.cs`, `*Command.cs`, `*Query.cs` files. Use `search` to look for references to `MediatR`, `Result<`, `ErrorOr`, `FluentValidation`, `AutoMapper`, `Mapster`. Use `read` to examine representative files.
 
+Use `search` to find `[ApiController]`, `MapGet(`, `MapPost(` to determine API style (Controllers vs Minimal APIs vs mixed).
+
+Use `search` to find `OneOf<`, `FluentResults`, `ErrorOr<` to determine error handling approach details.
+
+Use `search` to find Dapper usage patterns: `QueryAsync`, `ExecuteAsync`, `IDbConnection` to determine data access approach details (raw Dapper, Dapper.Contrib, DapperAOT).
+
 ### 6. Code Style
 
 Use `read` to examine a few production `.cs` files for: nullable refs, file-scoped namespaces, records, field naming.
