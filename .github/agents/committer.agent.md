@@ -2,9 +2,6 @@
 name: Committer
 description: "Commits reviewed code with conventional commit messages and updates the plan."
 model: Claude Haiku 4.5 (copilot)
-agents:
-  - TDD Coder
-  - PR Creator
 tools:
   - "execute/runInTerminal"
   - "read"

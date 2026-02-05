@@ -3,8 +3,6 @@ name: One-Shot Coder
 description: "Implements all checklist items in a single pass, then hands off for review. Best for small, well-defined changes."
 model: Claude Sonnet 4 (copilot)
 agents:
-  - Reviewer
-  - Debug
   - Implementation Verifier
 tools:
   - "edit"

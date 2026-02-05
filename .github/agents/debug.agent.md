@@ -2,11 +2,6 @@
 name: Debug
 description: "Diagnoses build failures, test failures, and runtime errors. Analyses error output, identifies root cause, and suggests or applies fixes."
 model: Claude Sonnet 4.5 (copilot)
-agents:
-  - Orchestrator
-  - TDD Coder
-  - One-Shot Coder
-  - Reviewer
 tools:
   - "read"
   - "search"

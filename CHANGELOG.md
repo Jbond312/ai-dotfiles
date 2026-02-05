@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **`agents` arrays in YAML frontmatter** — Each agent now declares which agents it can invoke (subagents + handoffs) via the `agents` property. This enforces the routing graph at the VS Code platform level instead of relying solely on instruction text.
+- **`agents` arrays in YAML frontmatter** — Agents that invoke subagents (Work Item Pickup, Planner, TDD Coder, One-Shot Coder, Spike) now declare their subagent targets via the `agents` property. This restricts which agents can be called via the `agent` tool at the platform level. Handoffs are separately constrained by the `handoffs` section.
 
 - **`user-invokable: false` for subagent-only agents** — Repo Analyser and Implementation Verifier are now hidden from the agents dropdown since they are only invoked programmatically by other agents. Reduces visible agents from 12 to 10.
 
@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Why These Changes?
 
-The routing graph was previously enforced only through instruction text and handoff definitions. Adding `agents` arrays makes it a hard constraint — an agent can only reach targets explicitly listed in its `agents` property. Combined with `user-invokable: false`, this gives tighter control over the workflow topology and a cleaner user-facing agents dropdown.
+Subagent invocations were previously unconstrained — any agent with the `agent` tool could invoke any other agent. Adding `agents` arrays restricts this at the platform level so each agent can only invoke its intended subagents. Handoffs remain separately constrained by the `handoffs` section. Combined with `user-invokable: false`, this gives tighter control over the workflow topology and a cleaner user-facing agents dropdown.
 
 ## [0.10.0] - 2025-02-04
 

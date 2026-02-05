@@ -2,14 +2,6 @@
 name: Orchestrator
 description: "Stateless entry point. Reads PLAN.md and git state to determine pipeline position, then routes to the correct agent. Start here."
 model: Claude Haiku 4.5 (copilot)
-agents:
-  - Work Item Pickup
-  - Planner
-  - TDD Coder
-  - One-Shot Coder
-  - Reviewer
-  - PR Creator
-  - Spike
 tools:
   - "read"
   - "edit"

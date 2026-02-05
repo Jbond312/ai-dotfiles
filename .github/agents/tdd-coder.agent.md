@@ -3,9 +3,6 @@ name: TDD Coder
 description: "Implements checklist items iteratively—test first, then production code, then handoff for review. One item at a time."
 model: Claude Sonnet 4.5 (copilot)
 agents:
-  - Reviewer
-  - Committer
-  - Debug
   - Implementation Verifier
 tools:
   - "edit"
