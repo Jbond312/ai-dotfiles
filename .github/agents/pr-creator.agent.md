@@ -31,9 +31,16 @@ Read `.planning/PLAN.md` for work item ID and summary.
 
 **Before pushing, confirm the codebase is green. This is the last line of defence before code reaches the team.**
 
+**Check PLAN.md for `**Integration Tests:** Excluded`.** If present, append `--filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"` to the test command.
+
 ```bash
 dotnet build --no-restore -v q
+
+# Standard (all tests):
 dotnet test --no-build -v q
+
+# If integration tests excluded:
+dotnet test --no-build -v q --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
 ```
 
 Use `-v q` (quiet) to minimise context usage — errors and failures still appear, but successful build/test noise is suppressed.

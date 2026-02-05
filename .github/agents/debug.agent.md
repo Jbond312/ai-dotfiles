@@ -54,11 +54,18 @@ This agent is **not** for implementing features or writing new tests — hand ba
 
 ### 1. Reproduce the Error
 
+**Check PLAN.md for `**Integration Tests:** Excluded`.** If present, append `--filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"` to test commands throughout this process.
+
 Run the failing command and capture the full output:
 
 ```
 dotnet build --no-restore
+
+# Standard (all tests):
 dotnet test --no-build --verbosity normal
+
+# If integration tests excluded:
+dotnet test --no-build --verbosity normal --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
 ```
 
 ### 2. Analyse the Error

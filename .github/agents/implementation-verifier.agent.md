@@ -55,9 +55,16 @@ Check:
 
 ### 4. Run Build and Tests
 
+**Check PLAN.md for `**Integration Tests:** Excluded`.** If present, append `--filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"` to the test command.
+
 ```bash
 dotnet build --no-restore
+
+# Standard (all tests):
 dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage"
+
+# If integration tests excluded:
+dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
 ```
 
 Capture:

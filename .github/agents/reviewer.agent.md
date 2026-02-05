@@ -78,9 +78,16 @@ Check against these skill checklists:
 
 ### 3. Verify Build and Tests
 
+**Check PLAN.md for `**Integration Tests:** Excluded`.** If present, append `--filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"` to the test command.
+
 ```bash
 dotnet build --no-restore -v q
+
+# Standard (all tests):
 dotnet test --no-build -v q
+
+# If integration tests excluded:
+dotnet test --no-build -v q --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
 ```
 
 Use `-v q` (quiet) to minimise context usage — errors and failures still appear, but successful build/test noise is suppressed.

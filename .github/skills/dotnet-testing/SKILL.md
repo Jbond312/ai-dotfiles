@@ -265,9 +265,12 @@ dotnet test
 dotnet test ./tests/MyProject.UnitTests/
 dotnet test --filter "FullyQualifiedName~OrderServiceTests"
 dotnet test --filter "Category=Unit"
+dotnet test --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
 dotnet test --list-tests
 dotnet test --collect:"XPlat Code Coverage"
 ```
+
+The compound filter excludes all tests from integration test projects — covering both `IntegrationTests` and `Integration.Tests` naming conventions. Use this when integration tests are excluded via the `quality-gates` skill protocol.
 
 ## Verification Checklist
 

@@ -64,11 +64,18 @@ Hand back to the coder to resolve. Do not commit with known issues.
 
 ## Build & Test Gate (Step 8)
 
-**After committing (or after confirming no changes for verification-only items), verify the codebase is green:**
+**After committing (or after confirming no changes for verification-only items), verify the codebase is green.**
+
+**Check PLAN.md for `**Integration Tests:** Excluded`.** If present, append `--filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"` to the test command.
 
 ```bash
 dotnet build --no-restore -v q
+
+# Standard (all tests):
 dotnet test --no-build -v q
+
+# If integration tests excluded:
+dotnet test --no-build -v q --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
 ```
 
 Use `-v q` (quiet) to minimise context usage — errors and failures still appear, but successful build/test noise is suppressed.

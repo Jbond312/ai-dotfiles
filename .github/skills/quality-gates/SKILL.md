@@ -113,6 +113,81 @@ Both are hard blocks. Do not push or create a PR if either fails. This is the la
 
 **A failing build or failing tests is never "unrelated to our changes".** If the codebase doesn't compile or tests don't pass, the workflow stops until it's fixed. This applies to every agent at every gate — no exceptions, no "it was already broken" dismissals. We do not advance work on a broken codebase.
 
+**Exception:** Integration tests may be excluded from this rule via the Integration Test Exclusion Protocol (see below). When excluded, "all tests pass" means "all non-integration tests pass".
+
+## Integration Test Exclusion Protocol
+
+Integration tests often depend on external resources (SQL connection strings, message queues, external APIs) that may not be available in every development environment. This protocol allows the workflow to proceed when only integration tests are failing due to environment configuration.
+
+### When This Applies
+
+**Only during baseline verification** (the first test run before any changes are made). This protocol does NOT apply to tests that start failing after code changes — those are always treated as real failures.
+
+### Detection
+
+After running `dotnet test`, if tests fail:
+
+1. **Examine the output** to identify which test projects failed
+2. **Check if ALL failures are in integration test projects** — projects whose name contains `IntegrationTests` or `Integration.Tests` (e.g., `MyProject.IntegrationTests`, `MyProject.Integration.Tests`)
+3. **If non-integration tests also fail:** STOP. The codebase is broken. Report to developer. Do not apply this protocol.
+
+### User Prompt
+
+If only integration test projects failed, ask:
+
+> Integration tests are failing — this is typically caused by missing connection strings or external service configuration.
+>
+> **Do you need integration tests for this work?**
+>
+> 1. **No** — exclude integration tests and proceed (unit tests will still run at every gate)
+> 2. **Yes** — please ensure integration tests can execute successfully before we start
+
+### Recording the Decision
+
+**If excluded:** Add the following field to PLAN.md immediately after the `**Progress:**` line:
+
+```markdown
+**Integration Tests:** Excluded
+```
+
+Then re-run tests excluding integration test projects to confirm the remaining tests pass:
+
+```bash
+dotnet test --no-build --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
+```
+
+If the remaining tests also fail, STOP — this is a genuine failure, not an integration test issue.
+
+**If included:** STOP and ask the user to fix integration test configuration before starting. Do not proceed with a failing test suite.
+
+### How Gates Adjust
+
+When `**Integration Tests:** Excluded` is present in PLAN.md, **all agents at all gates** replace:
+
+```bash
+dotnet test --no-build
+```
+
+with:
+
+```bash
+dotnet test --no-build --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
+```
+
+The same applies to quiet-mode gate checks — append the filter:
+
+```bash
+dotnet test --no-build -v q --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
+```
+
+And to verification runs with coverage:
+
+```bash
+dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"
+```
+
+**The filter is the same everywhere.** Agents do not need to discover project names — the compound filter excludes any test whose namespace contains "IntegrationTests" or "Integration.Tests", covering both common naming conventions (`MyProject.IntegrationTests` and `MyProject.Integration.Tests`).
+
 ## Verbosity Convention
 
 **Gate checks** (Reviewer, Committer, PR Creator, PR Reviewer, Planner) use `-v q` (quiet) to minimise context window usage. Errors and failures still appear in quiet mode — only the success noise is suppressed.

@@ -56,9 +56,21 @@ When implementing code in specific areas, consult the relevant skill for pattern
 
 ### 1. Verify Baseline
 
-Before ANY changes, verify existing tests pass. Refer to `dotnet-testing` skill.
+Before ANY changes, verify the codebase is green:
 
-**If tests fail:** STOP. Report to developer.
+```bash
+dotnet build --no-restore
+dotnet test --no-build
+```
+
+**If build fails:** STOP. Report to developer.
+
+**If tests fail:** Check whether ALL failures are in integration test projects (projects named `*IntegrationTests*` or `*Integration.Tests*`). Refer to the `quality-gates` skill (Integration Test Exclusion Protocol):
+
+- **Only integration tests fail:** Ask the user if they need integration tests for this work. If excluded, record `**Integration Tests:** Excluded` in PLAN.md and re-run with `dotnet test --no-build --filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"` to confirm remaining tests pass.
+- **Non-integration tests also fail:** STOP. Report to developer.
+
+**If `**Integration Tests:** Excluded` is already recorded in PLAN.md** (set during a previous session), use the filtered command for baseline verification.
 
 ### 2. Load Plan
 
@@ -85,11 +97,13 @@ For each checklist item: write tests, write production code, verify. **Check off
 
 **Before handing off, the solution MUST compile and all tests MUST pass.**
 
+**If `**Integration Tests:** Excluded` is in PLAN.md**, append `--filter "FullyQualifiedName!~IntegrationTests & FullyQualifiedName!~Integration.Tests"` to the test command.
+
 ```bash
 # Build must succeed
 dotnet build --no-restore
 
-# All tests must pass
+# All tests must pass (use filtered command if integration tests excluded)
 dotnet test --no-build
 ```
 
