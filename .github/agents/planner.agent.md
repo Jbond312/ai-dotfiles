@@ -225,6 +225,7 @@ Write to `.planning/PLAN.md` using the structure below.
 **Work Item:** #{id}
 **Branch:** {branch}
 **Created:** {timestamp}
+**Progress:** 0/{N} items
 
 ## Summary
 
@@ -243,6 +244,12 @@ Write to `.planning/PLAN.md` using the structure below.
 
 - **Q:** {question}
   **A:** {answer}
+
+## Decision Log
+
+| # | Decision | Rationale | Agent |
+|---|----------|-----------|-------|
+| _(populated during implementation)_ | | | |
 
 ## Implementation Checklist
 
@@ -314,6 +321,8 @@ Re-read `.planning/PLAN.md` and check:
 5. Each item has What, How, Files, and Done criteria
 6. Item count is between 3 and 10
 7. Scope section has Includes and Excludes
+8. Decision Log section exists (can be empty — populated during implementation)
+9. Progress header exists with correct item count
 
 **If any fail:** Fix the plan immediately before offering handoff.
 
@@ -329,4 +338,6 @@ Re-read `.planning/PLAN.md` and check:
 - Item structure (What/How/Files/Done): PASS
 - Item count (N items): PASS
 - Scope defined: PASS
+- Decision Log section: PASS
+- Progress header: PASS
 ```

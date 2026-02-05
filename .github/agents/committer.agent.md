@@ -81,7 +81,7 @@ Use `-v q` (quiet) to minimise context usage — errors and failures still appea
 
 ## Plan Updates (Critical)
 
-**Items are checked off by coders during implementation.** Update the Work In Progress status:
+**Items are checked off by coders during implementation.** Update the Work In Progress status. Also verify the `**Progress:**` header reflects the actual item count (e.g., `**Progress:** 3/6 items`):
 
 More items (TDD):
 

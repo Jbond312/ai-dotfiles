@@ -35,6 +35,8 @@ After saving PLAN.md, verify:
 | 5 | Item structure | Each item has What, How, Files, and Done criteria |
 | 6 | Item count | Between 3 and 10 items |
 | 7 | Scope defined | Scope section has Includes and Excludes |
+| 8 | Decision Log section | Section exists (can be empty — populated during implementation) |
+| 9 | Progress header | `**Progress:** 0/{N} items` present with correct count |
 
 **On failure:** Fix the plan before offering handoff.
 

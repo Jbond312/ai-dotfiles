@@ -34,6 +34,14 @@ Implements all checklist items together, then hands off for review and commit.
 
 Check `.planning/CONVENTIONS.md` for patterns. Follow the discovered patterns when implementing.
 
+## Progress Persistence
+
+**Update PLAN.md after completing each checklist item** to prevent context loss if the session ends unexpectedly:
+
+- Check off tasks as you complete them (see Step 4)
+- Update `**Progress:**` in the plan header after each item (e.g., `**Progress:** 3/6 items`)
+- Log non-trivial implementation decisions in the `## Decision Log` table (e.g., chose one approach over another, deviated from the plan, discovered something unexpected)
+
 ## Contextual Skills
 
 When implementing code in specific areas, consult the relevant skill for patterns and hard rules:

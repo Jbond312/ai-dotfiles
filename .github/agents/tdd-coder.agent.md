@@ -40,6 +40,14 @@ Check `.planning/CONVENTIONS.md` for architectural patterns. Follow the discover
 
 Create a todo list to track your progress through the implementation checklist.
 
+## Progress Persistence
+
+**Update PLAN.md after every significant action** to prevent context loss if the session ends unexpectedly:
+
+- Check off tasks as you complete them (test written, implementation done)
+- Update `**Progress:**` in the plan header when a checklist item is fully complete (e.g., `**Progress:** 2/6 items`)
+- Log non-trivial implementation decisions in the `## Decision Log` table (e.g., chose one approach over another, deviated from the plan, discovered something unexpected)
+
 ## Contextual Skills
 
 When implementing code in specific areas, consult the relevant skill for patterns and hard rules:
@@ -103,6 +111,10 @@ dotnet test --no-build
 - [x] **Test:** {description}
 - [x] **Implement:** {description}
 ```
+
+Update `**Progress:**` in the plan header (e.g., `**Progress:** 3/6 items`).
+
+If you made a non-trivial implementation choice, add a row to the `## Decision Log` table.
 
 ### 7. Final Verification (Last Item Only)
 
